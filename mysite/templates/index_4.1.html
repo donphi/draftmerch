@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Merch Draft</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <img id="logo" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+    <div id="imageContainer">
+        {% if error %}
+        <p>{{ error }}</p>
+        {% elif image_url %}
+        <div class="image-wrapper checkered-background">
+            <a href="{{ image_url }}" target="_blank">
+                <img id="resultImage" src="{{ image_url }}" alt="Generated Image">
+            </a>
+        </div>
+        {% else %}
+        <p id="loading" class="warning-message">Generating image, please wait...</p>
+        {% endif %}
+    </div>
+
+    <div id="explainerBox">
+        <p>Design your team's triumphant emblem! Choose an animal, trait, and hue, then blend in sport and action. Hit 'Generate' to create and elevate your logo with sharp vector detail, free from any background. Your team's moment to dazzle has arrived! 🔮🎨🏆🛡️</p>
+        </div>
+    <form method="post">
+        Character
+        <select id="animal-dropdown" name="animal" onchange="checkCustom(this, 'animal-custom-input')" required></select>
+        <input type="text" id="animal-custom-input" name="animal-custom" style="display: none;" />
+
+        Personality
+        <select id="personality-dropdown" name="personality" onchange="checkCustom(this, 'personality-custom-input')" required></select>
+        <input type="text" id="personality-custom-input" name="personality-custom" style="display: none;" />
+
+        Sport
+        <select id="sport-dropdown" name="sport" onchange="checkCustom(this, 'sport-custom-input')" required></select>
+        <input type="text" id="sport-custom-input" name="sport-custom" style="display: none;" />
+
+        Color
+        <select id="color-dropdown" name="color" onchange="checkCustom(this, 'color-custom-input')" required></select>
+        <input type="text" id="color-custom-input" name="color-custom" style="display: none;" />
+
+        Action *optional
+        <select id="action-dropdown" name="action" onchange="checkCustom(this, 'action-custom-input')"></select>
+        <input type="text" id="action-custom-input" name="action-custom" style="display: none;" />
+
+        <p id="waitingMessage" class="hidden"></p>
+        <p></p>
+        <div class="switches-container">
+        <div class="switch-container">
+            <!-- Rounded switch -->
+            <label class="switch">
+                <input type="checkbox" id="backgroundRemovalSwitch" disabled>
+                <span class="slider round"></span>
+            </label>
+            <span class="switch-label">Bg Remover</span>
+        </div>
+        <div class="switch-container">
+            <!-- Rounded switch -->
+            <label class="switch">
+                <input type="checkbox" id="vectorizeSwitch" disabled>
+                <span class="slider round"></span>
+            </label>
+            <span class="switch-label">Vectorize</span>
+        </div>
+    </div>
+    <input type="button" id="generateActionButton" value="Random Action" onclick="generateCustomAction()">
+    <input type="submit" value="Generate">
+    </form>
+        {% if generated_prompt %}
+        <div id="generatedPrompt">
+            <p><strong>Generated Prompt:</strong> {{ generated_prompt }}</p>
+        </div>
+        {% endif %}
+        <div class="footer">
+        <p>Designed by <a href="https://chonkie.io/" target="_blank">chonkie</a></p>
+            <p>Version 4.0</p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+
+
+

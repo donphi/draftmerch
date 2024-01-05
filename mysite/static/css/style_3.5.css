@@ -1,0 +1,262 @@
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #ffffff;
+            padding-bottom: 30px; /* Adds padding at the bottom of the page */
+        }
+        form {
+            max-width: 400px;
+            width: 90%;
+            margin: 20px auto;
+            padding: 12px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-sizing: border-box; /* Ensure consistent box sizing */
+            display: flex; /* Align form items */
+            flex-direction: column; /* Stack form items vertically */
+            align-items: center;
+        }
+
+        /* Optionally, remove the margin from the last element to prevent extra space at the bottom */
+        form > *:last-child {
+            margin-bottom: 0;
+        }
+
+
+        input[type="text"], select {
+            width: 100%; /* Adjust width */
+            padding: 10px 15px; /* Adjust padding as needed */
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box; /* Add box-sizing */
+            font-size: 16px; /* Match font size */
+            background-color: #fff; /* Match background color */
+            height: 40px; /* Example fixed height */
+
+
+        }
+        input[type="submit"] {
+            width: 100%; /* Match width with padding */
+            padding: 10px;
+            margin: 10px;
+            background-color: #FFCB37;
+            color: white;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+        input[type="submit"]:hover {
+            background-color: #DFB232;
+        }
+        input[type="button"], #generateNameButton {
+            width: 100%;
+            padding: 10px;
+            margin: 10px;
+            background-color: #FFCB37; /* primary color */
+            color: white;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        input[type="button"]:hover, #generateNameButton:hover {
+            background-color: #DFB232; /* darker shade for hover effect */
+        }
+        #logo {
+            width: 250px;
+            height: auto;
+            margin: 20px 0;
+        }
+        #resultImage {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+        #imageContainer {
+            width: 100%;
+            max-width: 350px;
+            height: 350px;
+            background-color: #F5F5F5;
+            border: 2px dashed #ccc;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden; /* Hide overflow to maintain box size */
+    }
+
+        #imageContainer img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block; /* Remove extra space below the image */
+            margin: auto; /* Center the image within the container */
+    }
+
+        #imageContainer p {
+            margin: 0; /* Reset default margins for paragraphs */
+            width: 100%;
+            text-align: center;
+    }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #explainerBox {
+                background-color: #ffffff; /* Light background for the explainer box */
+                border: 0px solid #ddd; /* Border for the box */
+                padding: 5px; /* Padding inside the box */
+                margin: 5px auto; /* Margin around the box */
+                border-radius: 0px; /* Rounded corners for the box */
+                box-shadow: 0 0px 0px rgba(0,0,0,0); /* Subtle shadow for depth */
+                max-width: 400px; /* Maximum width of the box */
+                text-align: left; /* Align text to the left */
+                font-size: 16px; /* Adjust font size as needed */
+                text-align:center;
+                width: 90%;
+        }
+
+         /* Inactive state */
+        #generateActionButton {
+            /*background-color: transparent; /* Transparent background */
+            /*color: gray; /* White text color */
+            /*cursor: not-allowed; /* Indicates the button is not clickable */
+            /*border: 2px solid gray; /* Grey border for inactive state */
+            /*border-radius: 5px;*/
+            /*width: 100%;*/
+            /*padding: 10px;*/
+            /*margin: 10px;*/
+        display: none;
+        }
+
+        /* Active state */
+        #generateActionButton.active {
+            color: #FFCB37; /* Yellow text color for active state */
+            border: 2px solid #FFCB37; /* Yellow border for active state */
+            cursor: pointer;
+        }
+
+        .footer p {
+            margin: 0; /* Removes default margin */
+            padding: 2px 0; /* Adds a small padding, adjust as needed */
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px; /* Adjust the size as needed */
+            text-align: center;
+            color: #333; /* Adjust the color as needed */
+        }
+
+        .footer {
+            margin-top: 10px; /* Space above the footer */
+        }
+        .footer a {
+            color: inherit; /* Hyperlink color, change as needed */
+            text-decoration: underline; /* Removes underline from links */
+        }
+        /* The switch - the box around the slider */
+        .switch-container {
+          display: flex;
+          align-items: center; /* Aligns the switch and the text vertically */
+        }
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;  /* Default width */
+          height: 34px; /* Default height */
+          margin-right: 10px;
+        }
+        .switch-label {
+            font-family: 'Poppins', sans-serif;
+            font-size: 16;
+            text-align: left;
+        }
+
+
+        /* Hide default checkbox */
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+
+        /* The slider */
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc; /* Background of the slider */
+          transition: .4s;
+          border-radius: 34px; /* Rounded corners for the slider */
+        }
+
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%; /* Rounded shape for the toggle knob */
+        }
+        /* Media query for desktop screens */
+        @media (min-width: 768px) {
+        .switch {
+            width: 40px;  /* Larger width for desktop */
+            height: 22px; /* Larger height for desktop */
+          }
+
+        .slider:before {
+            width: 18px; /* Larger toggle knob for desktop */
+            height: 18px;
+            left: 2px; /* Adjust this value as needed to center the ball */
+            bottom: 2px; /* Adjust this value as needed to center the ball */
+        }
+
+        /* Media query for mobile screens */
+        @media (max-width: 767px) {
+          /* You can adjust styles for mobile if needed */
+        }
+
+        input:checked + .slider {
+          background-color: #2196F3; /* Color of the slider when it is checked */
+        }
+
+        input:focus + .slider {
+          box-shadow: 0 0 1px #2196F3; /* Shadow effect on focus */
+        }
+
+        input:checked + .slider:before {
+          transform: translateX(18px); /* Move the toggle knob when checked */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media screen and (max-width: 600px) {
+        input[type="text"], select {
+            padding: 15px; /* Increase padding for larger touch targets */
+            font-size: 18px; /* Increase font size for readability */
+        }
+
+        input[type="submit"], input[type="button"] {
+            padding: 15px; /* Increase padding for easier clicking */
+            font-size: 18px; /* Increase font size */
+        }
