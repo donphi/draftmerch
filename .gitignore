@@ -1,0 +1,8 @@
+dev/
+mysite/static/background_rm/*.png
+mysite/static/processed/*.png
+mysite/static/raw/*.png
+mysite/static/raw2x/*.png
+mysite/static/temp/*.png
+mysite/static/tempvector/*.png
+mysite/static/vector/*.*
