@@ -11,16 +11,13 @@ docutils==0.17.1
 HTMLParser==0.0.2
 ipython==8.3.0
 ipywidgets==7.7.0
-jnius==1.1.0
 keyring==24.3.0
 lockfile==0.12.2
 lxml==4.7.1
 mock==4.0.3
 numpy==1.21.6
-Pillow==9.0.0
 Pillow==10.2.0
 protobuf==3.20.1
-pyOpenSSL==22.0.0
 pyOpenSSL==23.3.0
 python-dotenv==1.0.0
 railroad==0.5.0
@@ -31,4 +28,3 @@ toml==0.10.2
 tornado==6.2
 trove_classifiers==2023.11.29
 watchdog==3.0.0
-xmlrpclib==1.0.1
