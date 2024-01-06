@@ -35,7 +35,7 @@ def add_png_watermark(image_path, watermark_path, output_path):
         watermark = watermark.convert("RGBA")
 
         # Resize watermark to match the size of the base image
-        watermark = watermark.resize(base_image.size, Image.ANTIALIAS)
+        watermark = watermark.resize(base_image.size, Image.LANCZOS)
 
         # Create an empty (transparent) image for the final output
         transparent_img = Image.new("RGBA", base_image.size)
@@ -60,7 +60,7 @@ def add_watermark(image_path, watermark_path):
     with Image.open(image_path).convert("RGBA") as base_image:
         with Image.open(watermark_path).convert("RGBA") as watermark:
             # Resize watermark to match the base image size
-            watermark = watermark.resize(base_image.size, Image.ANTIALIAS)
+            watermark = watermark.resize(base_image.size, Image.LANCZOS)
 
             # Now the watermark is the same size as the base image
             # Combine the base image and the watermark
@@ -181,7 +181,7 @@ def index():
 
                 # Apply watermark to the copy of the image
                 watermark = Image.open(watermark_path).convert("RGBA")
-                watermark = watermark.resize(watermarked_image.size, Image.ANTIALIAS)
+                watermark = watermark.resize(watermarked_image.size, Image.LANCZOS)
                 combined = Image.alpha_composite(watermarked_image, watermark)
                 combined = combined.convert("RGB")  # Convert back to RGB if you don't need the alpha channel
 
