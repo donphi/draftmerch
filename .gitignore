@@ -6,3 +6,5 @@ mysite/static/raw2x/*.png
 mysite/static/temp/*.png
 mysite/static/tempvector/*.png
 mysite/static/vector/*.*
+.venv/
+mysite/prompts.log
