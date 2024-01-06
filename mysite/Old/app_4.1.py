@@ -238,7 +238,7 @@ def vectorize_image():
         # Change 'vectorized_image.svg' to use the dynamic 'filename'
         # Note that filename is with .png extension you need to change to .svg
         vectorized_filename = filename.replace('.png', '.svg')
-        print('Vectorized filename:', vectorized_filename)  // Add this line
+
         save_directory = os.path.join(app.root_path, 'static', 'vector')
         os.makedirs(save_directory, exist_ok=True)
         vectorized_file_path = os.path.join(save_directory, vectorized_filename)
