@@ -27,6 +27,12 @@
             const vectorizeSwitch = document.getElementById('vectorizeSwitch');
             const imageWrapper = document.querySelector('.image-wrapper');
             const resultImage = document.getElementById('resultImage');
+            
+            // Animal Dropdown listener
+            document.getElementById('animal-dropdown').addEventListener('change', function() {
+                updatePersonalityAndAction(this.value);
+            });
+
 
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -180,34 +186,72 @@
         customInput.style.display = selectElement.value === "custom" ? 'block' : 'none';
     }
 
-    function loadDropdownData(dropdownId, filePath) {
-    fetch(filePath)
-        .then(response => response.text())
-        .then(text => {
-            let options = text.split('\n');
-            let dropdown = document.getElementById(dropdownId + '-dropdown'); // Ensure this ID is correct
+    function updatePersonalityAndAction(selectedAnimal) {
+        if (selectedAnimal.trim() === '') {
+            // Reset the dropdowns if no animal is selected or if it's set back to empty
+            loadDropdownData('personality', '/static/txt/personality.txt');
+            loadDropdownData('action', '/static/txt/action.txt');
+        } else {
+            // Load personality and action for the chosen animal
+            loadDropdownData('personality', `/static/txt/personality/${selectedAnimal}_personality.txt`);
+            // For action, combine options from the specific character and extra actions
+            loadDropdownData('action', `/static/txt/action/${selectedAnimal}_action.txt`, '/static/txt/extra_action.txt');
+        }
+        // Remember to disable the form submit button since the options have changed
+        checkAllDropdowns();
+    }
 
-            if (!dropdown) {
-                console.error('Dropdown with ID ' + dropdownId + '-dropdown' + ' does not exist in the DOM.');
-                return;
-            }
-
-            // Clear dropdown before appending new options
-            dropdown.innerHTML = '';
-            dropdown.appendChild(new Option('', ''));
-            dropdown.appendChild(new Option('Custom', 'custom'));
-
-            options.forEach(option => {
-                if (option.trim() !== '') {
+    function loadDropdownData(dropdownId, filePath, extraFilePath = null) {
+        const dropdown = document.getElementById(dropdownId + '-dropdown');
+        if (!dropdown) {
+            console.error('Dropdown with ID ' + dropdownId + '-dropdown' + ' does not exist in the DOM.');
+            return;
+        }
+    
+        // Clear dropdown before appending new options
+        dropdown.innerHTML = '';
+        dropdown.appendChild(new Option('', ''));
+        dropdown.appendChild(new Option('Custom', 'custom'));
+    
+        fetch(filePath)
+            .then(response => response.text())
+            .then(text => {
+                // Parse and add the main options
+                let options = text.split('\n').filter(option => option.trim() !== '');
+                // Sort options alphabetically
+                options.sort();
+    
+                // Add the sorted options to the dropdown
+                options.forEach(option => {
                     let opt = document.createElement('option');
                     opt.value = option.trim();
                     opt.innerHTML = option.trim();
                     dropdown.appendChild(opt);
+                });
+    
+                // If an extra file path is provided, fetch and append those options as well
+                if (extraFilePath) {
+                    return fetch(extraFilePath).then(response => response.text());
                 }
-            });
-        })
-        .catch(error => console.error('Error loading ' + dropdownId + ':', error));
-}
+                return null; // No extra file to fetch
+            })
+            .then(extraText => {
+                if (extraText) {
+                    let extraOptions = extraText.split('\n').filter(option => option.trim() !== '');
+                    // Sort extra options alphabetically
+                    extraOptions.sort();
+    
+                    // Add the sorted options to the dropdown
+                    extraOptions.forEach(option => {
+                        let opt = document.createElement('option');
+                        opt.value = option.trim();
+                        opt.innerHTML = option.trim();
+                        dropdown.appendChild(opt);
+                    });
+                }
+            })
+            .catch(error => console.error('Error loading ' + dropdownId + ':', error));
+    }
 
 function updateOverlayMessageAfterDelay(message, delay) {
     setTimeout(() => {

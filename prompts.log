@@ -1163,3 +1163,197 @@ FileNotFoundError: [Errno 2] No such file or directory: 'static/raw/Elephant - B
 2024-01-06 15:28:34,707:INFO:SVG to PNG conversion complete.
 2024-01-06 15:28:35,968:INFO:Watermarked PNG image saved.
 2024-01-06 15:28:35,968:INFO:Returning watermarked PNG image URL: /static/tempvector/Watermarked_(Vector)%20Bear%20-%20Brave%20-%20Baseball%20-%20Red%20-%20Breakdancing%20-%2015255606012024.png
+2024-01-07 06:38:23,392:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 06:38:23,394:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 06:38:23,401:INFO: * Restarting with stat
+2024-01-07 06:38:25,393:WARNING: * Debugger is active!
+2024-01-07 06:38:25,400:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:38:50,455:INFO:127.0.0.1 - - [07/Jan/2024 06:38:50] "GET / HTTP/1.1" 200 -
+2024-01-07 06:38:50,627:INFO:127.0.0.1 - - [07/Jan/2024 06:38:50] "[33mGET /static/css/style.css HTTP/1.1[0m" 404 -
+2024-01-07 06:38:50,649:INFO:127.0.0.1 - - [07/Jan/2024 06:38:50] "[33mGET /static/js/script.js HTTP/1.1[0m" 404 -
+2024-01-07 06:38:50,711:INFO:127.0.0.1 - - [07/Jan/2024 06:38:50] "[33mGET /static/logo.png HTTP/1.1[0m" 404 -
+2024-01-07 06:38:50,755:INFO:127.0.0.1 - - [07/Jan/2024 06:38:50] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2024-01-07 06:38:57,581:INFO:127.0.0.1 - - [07/Jan/2024 06:38:57] "GET / HTTP/1.1" 200 -
+2024-01-07 06:38:57,665:INFO:127.0.0.1 - - [07/Jan/2024 06:38:57] "[33mGET /static/js/script.js HTTP/1.1[0m" 404 -
+2024-01-07 06:38:57,667:INFO:127.0.0.1 - - [07/Jan/2024 06:38:57] "[33mGET /static/css/style.css HTTP/1.1[0m" 404 -
+2024-01-07 06:38:57,743:INFO:127.0.0.1 - - [07/Jan/2024 06:38:57] "[33mGET /static/logo.png HTTP/1.1[0m" 404 -
+2024-01-07 06:40:12,024:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 06:40:12,024:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 06:40:12,026:INFO: * Restarting with stat
+2024-01-07 06:40:13,941:WARNING: * Debugger is active!
+2024-01-07 06:40:13,942:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:40:15,025:INFO:127.0.0.1 - - [07/Jan/2024 06:40:15] "GET / HTTP/1.1" 200 -
+2024-01-07 06:40:15,126:INFO:127.0.0.1 - - [07/Jan/2024 06:40:15] "[33mGET /static/css/style.css HTTP/1.1[0m" 404 -
+2024-01-07 06:40:15,162:INFO:127.0.0.1 - - [07/Jan/2024 06:40:15] "[33mGET /static/logo.png HTTP/1.1[0m" 404 -
+2024-01-07 06:40:15,167:INFO:127.0.0.1 - - [07/Jan/2024 06:40:15] "[33mGET /static/static/js/script.js HTTP/1.1[0m" 404 -
+2024-01-07 06:42:41,404:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 06:42:41,405:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 06:42:41,407:INFO: * Restarting with stat
+2024-01-07 06:42:43,566:WARNING: * Debugger is active!
+2024-01-07 06:42:43,567:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:43:03,608:INFO:127.0.0.1 - - [07/Jan/2024 06:43:03] "GET / HTTP/1.1" 200 -
+2024-01-07 06:43:03,743:INFO:127.0.0.1 - - [07/Jan/2024 06:43:03] "[33mGET /static/css/style.css HTTP/1.1[0m" 404 -
+2024-01-07 06:43:03,757:INFO:127.0.0.1 - - [07/Jan/2024 06:43:03] "[33mGET /static/js/script.js HTTP/1.1[0m" 404 -
+2024-01-07 06:43:03,772:INFO:127.0.0.1 - - [07/Jan/2024 06:43:03] "[33mGET /static/logo.png HTTP/1.1[0m" 404 -
+2024-01-07 06:43:11,636:INFO:127.0.0.1 - - [07/Jan/2024 06:43:11] "[33mGET /static/js/script.js HTTP/1.1[0m" 404 -
+2024-01-07 06:46:42,631:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 06:46:42,638:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 06:46:42,639:INFO: * Restarting with stat
+2024-01-07 06:46:44,615:WARNING: * Debugger is active!
+2024-01-07 06:46:44,618:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:46:49,013:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET / HTTP/1.1" 200 -
+2024-01-07 06:46:49,181:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET /static/css/style.css HTTP/1.1" 200 -
+2024-01-07 06:46:49,184:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET /static/js/script.js HTTP/1.1" 200 -
+2024-01-07 06:46:49,187:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET /static/logo.png HTTP/1.1" 200 -
+2024-01-07 06:46:49,291:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET /static/txt/animal.txt HTTP/1.1" 200 -
+2024-01-07 06:46:49,332:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET /static/txt/personality.txt HTTP/1.1" 200 -
+2024-01-07 06:46:49,352:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET /static/txt/sport.txt HTTP/1.1" 200 -
+2024-01-07 06:46:49,358:INFO:127.0.0.1 - - [07/Jan/2024 06:46:49] "GET /static/txt/action.txt HTTP/1.1" 200 -
+2024-01-07 06:48:35,115:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 06:48:35,115:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 06:48:35,117:INFO: * Restarting with stat
+2024-01-07 06:48:37,102:WARNING: * Debugger is active!
+2024-01-07 06:48:37,108:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:48:40,400:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 06:48:40,400:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 06:48:40,402:INFO: * Restarting with stat
+2024-01-07 06:48:42,363:WARNING: * Debugger is active!
+2024-01-07 06:48:42,368:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:51:23,093:INFO: * Detected change in '/home/chonkie/Code/draftmerchtest/mysite/app.py', reloading
+2024-01-07 06:52:24,188:INFO: * Restarting with stat
+2024-01-07 06:52:26,066:WARNING: * Debugger is active!
+2024-01-07 06:52:26,070:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:52:32,135:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 06:52:32,135:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 06:52:32,136:INFO: * Restarting with stat
+2024-01-07 06:52:34,065:WARNING: * Debugger is active!
+2024-01-07 06:52:34,067:INFO: * Debugger PIN: 981-360-885
+2024-01-07 06:52:35,507:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "GET / HTTP/1.1" 200 -
+2024-01-07 06:52:35,640:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2024-01-07 06:52:35,645:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2024-01-07 06:52:35,666:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "[36mGET /static/logo.png HTTP/1.1[0m" 304 -
+2024-01-07 06:52:35,746:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "[36mGET /static/txt/animal.txt HTTP/1.1[0m" 304 -
+2024-01-07 06:52:35,753:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "[36mGET /static/txt/personality.txt HTTP/1.1[0m" 304 -
+2024-01-07 06:52:35,783:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "[36mGET /static/txt/sport.txt HTTP/1.1[0m" 304 -
+2024-01-07 06:52:35,800:INFO:127.0.0.1 - - [07/Jan/2024 06:52:35] "[36mGET /static/txt/action.txt HTTP/1.1[0m" 304 -
+2024-01-07 06:52:43,503:INFO:Generated Prompt: Use the generation ID (gen_id) of uvpARKZcAUCKOBn7. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Dolphin mascot for NASCAR, depicting intricate detail in the sport's attire and equipment.  The Dolphin is depicted Punching the Air. Emotion: Fearless Lighting: Flat, Vivid and bold,  with a primary focus on DeepPink. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of DeepPink, modern design --ar 1:1 View: front view
+2024-01-07 06:52:59,141:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Dolphin - Fearless - NASCAR - DeepPink - Punching the Air - 06524307012024.png
+2024-01-07 06:53:00,010:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Dolphin - Fearless - NASCAR - DeepPink - Punching the Air - 06524307012024.png
+2024-01-07 06:53:00,016:INFO:127.0.0.1 - - [07/Jan/2024 06:53:00] "POST / HTTP/1.1" 200 -
+2024-01-07 06:53:00,043:INFO:127.0.0.1 - - [07/Jan/2024 06:53:00] "GET /static/temp/(Watermark)%20Dolphin%20-%20Fearless%20-%20NASCAR%20-%20DeepPink%20-%20Punching%20the%20Air%20-%2006524307012024.png HTTP/1.1" 200 -
+2024-01-07 06:53:05,003:INFO:Generated Prompt: Use the generation ID (gen_id) of uvpARKZcAUCKOBn7. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Dolphin mascot for NASCAR, depicting intricate detail in the sport's attire and equipment.  The Dolphin is depicted Punching the Air. Emotion: Fearless Lighting: Flat, Vivid and bold,  with a primary focus on DeepPink. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of DeepPink, modern design --ar 1:1 View: front view
+2024-01-07 06:53:21,111:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Dolphin - Fearless - NASCAR - DeepPink - Punching the Air - 06530507012024.png
+2024-01-07 06:53:21,984:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Dolphin - Fearless - NASCAR - DeepPink - Punching the Air - 06530507012024.png
+2024-01-07 06:53:21,987:INFO:127.0.0.1 - - [07/Jan/2024 06:53:21] "POST / HTTP/1.1" 200 -
+2024-01-07 06:53:22,019:INFO:127.0.0.1 - - [07/Jan/2024 06:53:22] "GET /static/temp/(Watermark)%20Dolphin%20-%20Fearless%20-%20NASCAR%20-%20DeepPink%20-%20Punching%20the%20Air%20-%2006530507012024.png HTTP/1.1" 200 -
+2024-01-07 06:53:33,477:INFO:Generated Prompt: Use the generation ID (gen_id) of uvpARKZcAUCKOBn7. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Knight mascot for NASCAR, depicting intricate detail in the sport's attire and equipment.  The Knight is depicted Punching the Air. Emotion: Fearless Lighting: Flat, Vivid and bold,  with a primary focus on DeepPink. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of DeepPink, modern design --ar 1:1 View: front view
+2024-01-07 06:53:45,875:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Knight - Fearless - NASCAR - DeepPink - Punching the Air - 06533307012024.png
+2024-01-07 06:53:46,610:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Knight - Fearless - NASCAR - DeepPink - Punching the Air - 06533307012024.png
+2024-01-07 06:53:46,617:INFO:127.0.0.1 - - [07/Jan/2024 06:53:46] "POST / HTTP/1.1" 200 -
+2024-01-07 06:53:46,680:INFO:127.0.0.1 - - [07/Jan/2024 06:53:46] "GET /static/temp/(Watermark)%20Knight%20-%20Fearless%20-%20NASCAR%20-%20DeepPink%20-%20Punching%20the%20Air%20-%2006533307012024.png HTTP/1.1" 200 -
+2024-01-07 06:54:04,363:INFO:Generated Prompt: Use the generation ID (gen_id) of uvpARKZcAUCKOBn7. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Viking mascot for NASCAR, depicting intricate detail in the sport's attire and equipment.  The Viking is depicted Eating Spaghetti Messily. Emotion: Fearless Lighting: Flat, Vivid and bold,  with a primary focus on DeepPink. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of DeepPink, modern design --ar 1:1 View: front view
+2024-01-07 06:54:18,191:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Viking - Fearless - NASCAR - DeepPink - Eating Spaghetti Messily - 06540407012024.png
+2024-01-07 06:54:19,124:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Viking - Fearless - NASCAR - DeepPink - Eating Spaghetti Messily - 06540407012024.png
+2024-01-07 06:54:19,129:INFO:127.0.0.1 - - [07/Jan/2024 06:54:19] "POST / HTTP/1.1" 200 -
+2024-01-07 06:54:19,152:INFO:127.0.0.1 - - [07/Jan/2024 06:54:19] "GET /static/temp/(Watermark)%20Viking%20-%20Fearless%20-%20NASCAR%20-%20DeepPink%20-%20Eating%20Spaghetti%20Messily%20-%2006540407012024.png HTTP/1.1" 200 -
+2024-01-07 06:54:36,941:INFO:Generated Prompt: Use the generation ID (gen_id) of uvpARKZcAUCKOBn7. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Viking mascot for NASCAR, depicting intricate detail in the sport's attire and equipment.  The Viking is depicted Eating Spaghetti Messily. Emotion: Fearless Lighting: Flat, Vivid and bold,  with a primary focus on Yellow. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of Yellow, modern design --ar 1:1 View: front view
+2024-01-07 06:54:49,526:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Viking - Fearless - NASCAR - Yellow - Eating Spaghetti Messily - 06543607012024.png
+2024-01-07 06:54:50,375:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Viking - Fearless - NASCAR - Yellow - Eating Spaghetti Messily - 06543607012024.png
+2024-01-07 06:54:50,388:INFO:127.0.0.1 - - [07/Jan/2024 06:54:50] "POST / HTTP/1.1" 200 -
+2024-01-07 06:54:50,415:INFO:127.0.0.1 - - [07/Jan/2024 06:54:50] "GET /static/temp/(Watermark)%20Viking%20-%20Fearless%20-%20NASCAR%20-%20Yellow%20-%20Eating%20Spaghetti%20Messily%20-%2006543607012024.png HTTP/1.1" 200 -
+2024-01-07 06:55:27,770:INFO: * Detected change in '/home/chonkie/Code/draftmerchtest/mysite/app.py', reloading
+2024-01-07 06:55:35,021:INFO: * Restarting with stat
+2024-01-07 11:08:26,432:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 11:08:26,432:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 11:08:26,434:INFO: * Restarting with stat
+2024-01-07 11:08:27,053:WARNING: * Debugger is active!
+2024-01-07 11:08:27,054:INFO: * Debugger PIN: 134-486-855
+2024-01-07 11:08:45,664:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "GET / HTTP/1.1" 200 -
+2024-01-07 11:08:45,806:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "GET /static/css/style.css HTTP/1.1" 200 -
+2024-01-07 11:08:45,807:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "GET /static/js/script.js HTTP/1.1" 200 -
+2024-01-07 11:08:45,811:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "GET /static/logo.png HTTP/1.1" 200 -
+2024-01-07 11:08:45,953:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "GET /static/txt/animal.txt HTTP/1.1" 200 -
+2024-01-07 11:08:45,955:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "[36mGET /static/txt/personality.txt HTTP/1.1[0m" 304 -
+2024-01-07 11:08:45,959:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "[36mGET /static/txt/sport.txt HTTP/1.1[0m" 304 -
+2024-01-07 11:08:45,960:INFO:127.0.0.1 - - [07/Jan/2024 11:08:45] "[36mGET /static/txt/action.txt HTTP/1.1[0m" 304 -
+2024-01-07 11:08:48,178:INFO:127.0.0.1 - - [07/Jan/2024 11:08:48] "[33mGET /static/txt/animal/Bear_personality.txt HTTP/1.1[0m" 404 -
+2024-01-07 11:08:48,184:INFO:127.0.0.1 - - [07/Jan/2024 11:08:48] "[33mGET /static/txt/animal/Bear_action.txt HTTP/1.1[0m" 404 -
+2024-01-07 11:08:48,207:INFO:127.0.0.1 - - [07/Jan/2024 11:08:48] "[33mGET /static/txt/extra_action.txt HTTP/1.1[0m" 404 -
+2024-01-07 18:26:26,134:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 18:26:26,137:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 18:26:26,138:INFO: * Restarting with stat
+2024-01-07 18:26:27,240:WARNING: * Debugger is active!
+2024-01-07 18:26:27,242:INFO: * Debugger PIN: 127-020-737
+2024-01-07 18:26:34,640:INFO:127.0.0.1 - - [07/Jan/2024 18:26:34] "GET / HTTP/1.1" 200 -
+2024-01-07 18:26:34,977:INFO:127.0.0.1 - - [07/Jan/2024 18:26:34] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2024-01-07 18:26:34,978:INFO:127.0.0.1 - - [07/Jan/2024 18:26:34] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2024-01-07 18:26:34,980:INFO:127.0.0.1 - - [07/Jan/2024 18:26:34] "[36mGET /static/logo.png HTTP/1.1[0m" 304 -
+2024-01-07 18:26:35,177:INFO:127.0.0.1 - - [07/Jan/2024 18:26:35] "[36mGET /static/txt/animal.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:26:35,179:INFO:127.0.0.1 - - [07/Jan/2024 18:26:35] "[36mGET /static/txt/sport.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:26:35,180:INFO:127.0.0.1 - - [07/Jan/2024 18:26:35] "[36mGET /static/txt/action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:26:35,182:INFO:127.0.0.1 - - [07/Jan/2024 18:26:35] "[36mGET /static/txt/personality.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:26:38,134:INFO:127.0.0.1 - - [07/Jan/2024 18:26:38] "[33mGET /static/txt/personality/Cowboy_personality.txt HTTP/1.1[0m" 404 -
+2024-01-07 18:26:38,148:INFO:127.0.0.1 - - [07/Jan/2024 18:26:38] "[33mGET /static/txt/action/Cowboy_action.txt HTTP/1.1[0m" 404 -
+2024-01-07 18:26:38,248:INFO:127.0.0.1 - - [07/Jan/2024 18:26:38] "[36mGET /static/txt/extra_action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:37:17,709:INFO: * Detected change in '/home/chonkie/Code/draftmerchtest/mysite/app.py', reloading
+2024-01-07 18:37:17,762:INFO: * Restarting with stat
+2024-01-07 18:37:18,573:WARNING: * Debugger is active!
+2024-01-07 18:37:18,574:INFO: * Debugger PIN: 127-020-737
+2024-01-07 18:37:23,558:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "GET / HTTP/1.1" 200 -
+2024-01-07 18:37:23,701:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2024-01-07 18:37:23,702:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2024-01-07 18:37:23,708:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "[36mGET /static/logo.png HTTP/1.1[0m" 304 -
+2024-01-07 18:37:23,775:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "[36mGET /static/txt/animal.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:37:23,782:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "[36mGET /static/txt/personality.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:37:23,788:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "[36mGET /static/txt/sport.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:37:23,790:INFO:127.0.0.1 - - [07/Jan/2024 18:37:23] "[36mGET /static/txt/action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:37:25,955:INFO:127.0.0.1 - - [07/Jan/2024 18:37:25] "GET /static/txt/personality/Astronaut_personality.txt HTTP/1.1" 200 -
+2024-01-07 18:37:25,961:INFO:127.0.0.1 - - [07/Jan/2024 18:37:25] "GET /static/txt/action/Astronaut_action.txt HTTP/1.1" 200 -
+2024-01-07 18:37:26,007:INFO:127.0.0.1 - - [07/Jan/2024 18:37:26] "[36mGET /static/txt/extra_action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:50:50,619:INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-01-07 18:50:50,619:INFO:[33mPress CTRL+C to quit[0m
+2024-01-07 18:50:50,622:INFO: * Restarting with stat
+2024-01-07 18:50:51,208:WARNING: * Debugger is active!
+2024-01-07 18:50:51,318:INFO: * Debugger PIN: 121-858-158
+2024-01-07 18:51:12,497:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "GET / HTTP/1.1" 200 -
+2024-01-07 18:51:12,544:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "GET /static/js/script.js HTTP/1.1" 200 -
+2024-01-07 18:51:12,545:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2024-01-07 18:51:12,548:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "[36mGET /static/logo.png HTTP/1.1[0m" 304 -
+2024-01-07 18:51:12,571:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "[36mGET /static/txt/animal.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:51:12,595:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "[36mGET /static/txt/personality.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:51:12,616:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "[36mGET /static/txt/action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:51:12,617:INFO:127.0.0.1 - - [07/Jan/2024 18:51:12] "[36mGET /static/txt/sport.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:51:17,024:INFO:127.0.0.1 - - [07/Jan/2024 18:51:17] "GET /static/txt/personality/Bear_personality.txt HTTP/1.1" 200 -
+2024-01-07 18:51:17,025:INFO:127.0.0.1 - - [07/Jan/2024 18:51:17] "GET /static/txt/action/Bear_action.txt HTTP/1.1" 200 -
+2024-01-07 18:51:17,031:INFO:127.0.0.1 - - [07/Jan/2024 18:51:17] "[36mGET /static/txt/extra_action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:51:23,801:INFO:127.0.0.1 - - [07/Jan/2024 18:51:23] "GET /static/txt/personality/Samurai_personality.txt HTTP/1.1" 200 -
+2024-01-07 18:51:23,806:INFO:127.0.0.1 - - [07/Jan/2024 18:51:23] "GET /static/txt/action/Samurai_action.txt HTTP/1.1" 200 -
+2024-01-07 18:51:23,816:INFO:127.0.0.1 - - [07/Jan/2024 18:51:23] "[36mGET /static/txt/extra_action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:51:34,898:INFO:Generated Prompt: Use the generation ID TXLnYeq6rsLqVTTa, uvpARKZcAUCKOBn7 and P3PUOoDqFsKHJXAA. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Samurai mascot for Baseball, depicting intricate detail in the sport's attire and equipment.  The Samurai is depicted Swinging on a Chandelier. Emotion: Honorable Lighting: Flat, Vivid and bold,  with a primary focus on Red. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of Red, modern design --ar 1:1 View: front view
+2024-01-07 18:51:48,037:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Samurai - Honorable - Baseball - Red - Swinging on a Chandelier - 18513407012024.png
+2024-01-07 18:51:48,740:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Samurai - Honorable - Baseball - Red - Swinging on a Chandelier - 18513407012024.png
+2024-01-07 18:51:48,745:INFO:127.0.0.1 - - [07/Jan/2024 18:51:48] "POST / HTTP/1.1" 200 -
+2024-01-07 18:51:48,757:INFO:127.0.0.1 - - [07/Jan/2024 18:51:48] "GET /static/temp/(Watermark)%20Samurai%20-%20Honorable%20-%20Baseball%20-%20Red%20-%20Swinging%20on%20a%20Chandelier%20-%2018513407012024.png HTTP/1.1" 200 -
+2024-01-07 18:52:13,323:INFO:Generated Prompt: Use the generation ID TXLnYeq6rsLqVTTa, uvpARKZcAUCKOBn7 and P3PUOoDqFsKHJXAA. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Samurai mascot for Baseball, depicting intricate detail in the sport's attire and equipment.  The Samurai is depicted Swinging on a Chandelier. Emotion: Honorable Lighting: Flat, Vivid and bold,  with a primary focus on Red. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of Red, modern design --ar 1:1 View: front view
+2024-01-07 18:52:28,450:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Samurai - Honorable - Baseball - Red - Swinging on a Chandelier - 18521307012024.png
+2024-01-07 18:52:29,217:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Samurai - Honorable - Baseball - Red - Swinging on a Chandelier - 18521307012024.png
+2024-01-07 18:52:29,222:INFO:127.0.0.1 - - [07/Jan/2024 18:52:29] "POST / HTTP/1.1" 200 -
+2024-01-07 18:52:29,234:INFO:127.0.0.1 - - [07/Jan/2024 18:52:29] "GET /static/temp/(Watermark)%20Samurai%20-%20Honorable%20-%20Baseball%20-%20Red%20-%20Swinging%20on%20a%20Chandelier%20-%2018521307012024.png HTTP/1.1" 200 -
+2024-01-07 18:52:55,794:INFO:127.0.0.1 - - [07/Jan/2024 18:52:55] "GET /static/txt/personality/Pirate_personality.txt HTTP/1.1" 200 -
+2024-01-07 18:52:55,794:INFO:127.0.0.1 - - [07/Jan/2024 18:52:55] "GET /static/txt/action/Pirate_action.txt HTTP/1.1" 200 -
+2024-01-07 18:52:55,804:INFO:127.0.0.1 - - [07/Jan/2024 18:52:55] "[36mGET /static/txt/extra_action.txt HTTP/1.1[0m" 304 -
+2024-01-07 18:53:05,028:INFO:Generated Prompt: Use the generation ID TXLnYeq6rsLqVTTa, uvpARKZcAUCKOBn7 and P3PUOoDqFsKHJXAA. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A Pirate mascot for Baseball, depicting intricate detail in the sport's attire and equipment.  The Pirate is depicted Parrot-training. Emotion: Free-spirited Lighting: Flat, Vivid and bold,  with a primary focus on Red. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of Red, modern design --ar 1:1 View: front view
+2024-01-07 18:53:20,036:INFO:Original image saved: /home/chonkie/Code/draftmerchtest/mysite/static/raw/Pirate - Free-spirited - Baseball - Red - Parrot-training - 18530507012024.png
+2024-01-07 18:53:20,875:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Pirate - Free-spirited - Baseball - Red - Parrot-training - 18530507012024.png
+2024-01-07 18:53:20,878:INFO:127.0.0.1 - - [07/Jan/2024 18:53:20] "POST / HTTP/1.1" 200 -
+2024-01-07 18:53:20,885:INFO:127.0.0.1 - - [07/Jan/2024 18:53:20] "GET /static/temp/(Watermark)%20Pirate%20-%20Free-spirited%20-%20Baseball%20-%20Red%20-%20Parrot-training%20-%2018530507012024.png HTTP/1.1" 200 -
