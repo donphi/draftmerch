@@ -1357,3 +1357,7 @@ FileNotFoundError: [Errno 2] No such file or directory: 'static/raw/Elephant - B
 2024-01-07 18:53:20,875:INFO:Watermarked image saved: /home/chonkie/Code/draftmerchtest/mysite/static/temp/(Watermark) Pirate - Free-spirited - Baseball - Red - Parrot-training - 18530507012024.png
 2024-01-07 18:53:20,878:INFO:127.0.0.1 - - [07/Jan/2024 18:53:20] "POST / HTTP/1.1" 200 -
 2024-01-07 18:53:20,885:INFO:127.0.0.1 - - [07/Jan/2024 18:53:20] "GET /static/temp/(Watermark)%20Pirate%20-%20Free-spirited%20-%20Baseball%20-%20Red%20-%20Parrot-training%20-%2018530507012024.png HTTP/1.1" 200 -
+2024-01-07 19:06:52,762:INFO: * Detected change in '/home/chonkie/Code/draftmerchtest/mysite/app.py', reloading
+2024-01-07 19:06:52,824:INFO: * Restarting with stat
+2024-01-07 19:06:53,436:WARNING: * Debugger is active!
+2024-01-07 19:06:53,437:INFO: * Debugger PIN: 121-858-158
