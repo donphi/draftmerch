@@ -27,7 +27,7 @@
             const vectorizeSwitch = document.getElementById('vectorizeSwitch');
             const imageWrapper = document.querySelector('.image-wrapper');
             const resultImage = document.getElementById('resultImage');
-            
+
             // Animal Dropdown listener
             document.getElementById('animal-dropdown').addEventListener('change', function() {
                 updatePersonalityAndAction(this.value);
@@ -45,6 +45,7 @@
                 explainerBox.classList.add('hidden');
                 vectorizeSwitchContainer.classList.add('hidden');
                 downloadContainer.classList.add('hidden');
+                form.classList.add('hidden');
 
 
                 // Show loading state and message in the image container
@@ -85,6 +86,7 @@
 
                         vectorizeSwitchContainer.classList.remove('hidden'); // Show the switch container
                         vectorizeSwitch.disabled = false; // Enable the switch
+                        form.classList.remove('hidden'); // Show the switch container
 
                         // Hide the waiting message as the image is now displayed
                         waitingMessage.classList.add('hidden');
@@ -207,12 +209,12 @@
             console.error('Dropdown with ID ' + dropdownId + '-dropdown' + ' does not exist in the DOM.');
             return;
         }
-    
+
         // Clear dropdown before appending new options
         dropdown.innerHTML = '';
         dropdown.appendChild(new Option('', ''));
         dropdown.appendChild(new Option('Custom', 'custom'));
-    
+
         fetch(filePath)
             .then(response => response.text())
             .then(text => {
@@ -220,7 +222,7 @@
                 let options = text.split('\n').filter(option => option.trim() !== '');
                 // Sort options alphabetically
                 options.sort();
-    
+
                 // Add the sorted options to the dropdown
                 options.forEach(option => {
                     let opt = document.createElement('option');
@@ -228,7 +230,7 @@
                     opt.innerHTML = option.trim();
                     dropdown.appendChild(opt);
                 });
-    
+
                 // If an extra file path is provided, fetch and append those options as well
                 if (extraFilePath) {
                     return fetch(extraFilePath).then(response => response.text());
@@ -240,7 +242,7 @@
                     let extraOptions = extraText.split('\n').filter(option => option.trim() !== '');
                     // Sort extra options alphabetically
                     extraOptions.sort();
-    
+
                     // Add the sorted options to the dropdown
                     extraOptions.forEach(option => {
                         let opt = document.createElement('option');
