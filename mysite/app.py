@@ -133,7 +133,7 @@ def index():
         action = request.form.get('action-custom') if request.form.get('action') == 'custom' else request.form.get('action', '').strip()
 
         if action:
-            prompt = ("Use the generation ID TXLnYeq6rsLqVTTa, uvpARKZcAUCKOBn7 and P3PUOoDqFsKHJXAA. Medium: two-dimensional, shield-like shaped, very detailed sports vector emblem only. Subject: A {animal} mascot for {sport}, depicting intricate detail in the sport's attire and equipment.  The {animal} is depicted {action}. Emotion: {personality} Lighting: Flat, Vivid and bold,  with a primary focus on {color}. White background. Scene: Surrounded by Pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of {color}, modern design --ar 1:1 View: front view")
+            prompt = ("Use the generation ID TXLnYeq6rsLqVTTa, uvpARKZcAUCKOBn7 and P3PUOoDqFsKHJXAA. Medium: 2D, shield-like shaped, very detailed sports vector emblem only. Subject: A {animal} mascot for {sport}, depicting intricate detail in the {sport}'s attire and equipment.  The {animal} is depicted {action}. Emotion: {personality}, displayed in detail on the {animal}'s face. Lighting: Flat, Vivid, and bold, primarily focusing on {color}. White background. Scene: The emblem is surrounded by a pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, bold use of {color}. --ar 1:1")
         else:
             prompt = ("Design a new image based on the image with the referenced image ID [46rGDvYUaAZqSxIv]. It must be a very detailed, two-dimensional, non-symmetrical emblem featuring a {animal} mascot for a logo. The only object should be this single emblem as it is for printing purposes, which should be outlined in a bold, thick line style with only solid color. The central theme is to embody the facial expression of the {animal}'s {personality} traits. Use a striking {color} to accentuate key elements like the sportswear and equipment, ensuring they stand out against a stark white background, surrounding the entire single emblem. The design should be vibrant and expressive, capturing the movement and spirit of {sport}, with a clear emphasis on the emblem's outline and stylistic elements. The {animal}'s features should be real and proportionally correct. It is very important to make sure the image structure is a emblem.")
 
@@ -153,7 +153,8 @@ def index():
             "model": "dall-e-3",
             "prompt": final_prompt,
             "n": 1,
-            "size": "1024x1024"
+            "size": "1024x1024",
+            "quality": "hd"
         }
 
         response = requests.post(api_url, headers=headers, data=json.dumps(data))

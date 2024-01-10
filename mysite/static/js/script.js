@@ -1,24 +1,6 @@
     let originalImageUrl = null;
     let vectorizedImageUrl = null;
 
-    const colorMappings = {
-        "Red": "#FF5733",
-        "Orange": "#FF7F50",
-        "Yellow": "#FFD700",
-        "Green": "#BFFF00",
-        "LightGreen": "#98FF98",
-        "Cyan": "#40E0D0",
-        "LightBlue": "#87CEEB",
-        "Blue": "#1E90FF",
-        "DarkBlue": "#4B0082",
-        "Purple": "#9400D3",
-        "Violet": "#FF00FF",
-        "DeepPink": "#FF1493",
-        "Pink": "#FF69B4",
-        "PalePink": "#FFB6C1",
-        "DarkRed": "#DC143C"
-    };
-
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
             const loading = document.getElementById('loading');
@@ -129,7 +111,7 @@
                 }
             });
 
-        populateColorDropdown('color-dropdown');
+        loadDropdownData('color','/static/txt/color.txt');
         loadDropdownData('animal', '/static/txt/animal.txt');
         loadDropdownData('personality', '/static/txt/personality.txt');
         loadDropdownData('sport', '/static/txt/sport.txt');
