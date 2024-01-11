@@ -171,7 +171,7 @@
     }
 
     function updatePersonalityAndAction(selectedAnimal) {
-        if (selectedAnimal.trim() === '') {
+        if (selectedAnimal.trim() === 'custom') {
             // Reset the dropdowns if no animal is selected or if it's set back to empty
             loadDropdownData('personality', '/static/txt/personality.txt');
             loadDropdownData('action', '/static/txt/action.txt');

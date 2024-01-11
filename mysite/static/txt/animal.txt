@@ -7,6 +7,8 @@ Dragon
 Eagle
 Elephant
 Falcon
+Fairy
+Ghost
 Gladiator
 Gorilla
 Griffin
@@ -18,11 +20,12 @@ Lumberjack
 Ninja
 Octopus
 Panther
-Phoenix
+Frog
 Pirate
 Robot
 Samurai
 Shark
+Spartan
 Superhero
 Tiger
 Unicorn
