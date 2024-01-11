@@ -250,6 +250,10 @@ function vectorizeImage(filename) {
     console.log('Filename:', filename);
     updateOverlayMessageAfterDelay('Removing background...', 8000); // 8000 milliseconds = 8 seconds
     updateOverlayMessageAfterDelay('Optimizing image...', 16000);
+    updateOverlayMessageAfterDelay('Still...optimizing image...', 25000);
+    updateOverlayMessageAfterDelay('Still...optimizing...🙄', 33000);
+    updateOverlayMessageAfterDelay('Still...opitmizing...WTF', 39000);
+    updateOverlayMessageAfterDelay('I might aswell draw this myself...', 45000);
 
     // If the overlay is removed with the imageContainer's innerHTML reset, create it dynamically
     let imageOverlay = document.getElementById('imageOverlay');

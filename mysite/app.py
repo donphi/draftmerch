@@ -1,5 +1,7 @@
 import logging
+import numpy as np
 import os
+import cv2
 import base64
 import json
 import requests
@@ -235,6 +237,171 @@ def add_svg_watermark(svg_path, watermark_path):
     # Implement watermarking logic for SVG files here
     pass
 
+def is_background_white(image_path, threshold=0.9):
+    with Image.open(image_path) as img:
+        img = img.convert("RGB")
+
+        border_width = 10
+        width, height = img.size
+        white_pixels = 0
+
+        for y in range(height):
+            for x in range(width):
+                if x < border_width or x >= width - border_width or y < border_width or y >= height - border_width:
+                    r, g, b = img.getpixel((x, y))
+                    if r > 210 and g > 210 and b > 210:  # Adjust for different shades of white
+                        white_pixels += 1
+
+        total_border_pixels = (width * border_width * 2) + ((height - 2 * border_width) * border_width * 2)
+        white_proportion = white_pixels / total_border_pixels
+
+        return white_proportion >= threshold
+
+def remove_background_and_preserve_white(input_image_path, output_image_path, white_threshold=100, debug=False):
+    # Read the image
+    img = cv2.imread(input_image_path)
+    img_rgba = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+    
+    # Step 1: Remove the white background
+    lower_white = np.array([white_threshold, white_threshold, white_threshold, 255], dtype=np.uint8)
+    mask_background = np.ones_like(img_rgba, dtype=np.uint8) * 255  # Full opacity mask
+    mask_background[np.all(img_rgba >= lower_white, axis=2)] = [0, 0, 0, 0]  # Set white areas to transparent
+
+    # Apply the background removal mask to the image
+    result_background_removed = cv2.bitwise_and(img_rgba, mask_background)
+    
+    # Debug: Save the result of background removal
+    if debug:
+        cv2.imwrite('debug_background_removed.png', result_background_removed)
+    
+    # Step 2: Use the object mask to add back any white areas within the emblem
+    object_mask = create_object_mask(input_image_path)
+
+    # Smooth the mask edges before applying it to add white areas back
+    smoothed_object_mask = smooth_mask_edges(object_mask, kernel_size=5, sigma=1, erosion_size=5)
+    
+    # Debug: Save the smoothed object mask
+    if debug:
+        cv2.imwrite('debug_smoothed_object_mask.png', smoothed_object_mask)
+
+    # Apply the smoothed object mask to the entire image, adding back the white within the emblem
+    img_rgba[:, :, 3] = cv2.bitwise_or(result_background_removed[:, :, 3], smoothed_object_mask)
+    
+    # Debug: Save the result after applying the smoothed object mask
+    if debug:
+        cv2.imwrite('debug_final_with_white.png', img_rgba)
+
+    # Save the final result with transparency
+    cv2.imwrite(output_image_path, img_rgba)
+
+def create_object_mask2(image_path, debug=False):
+    # Read the image and convert to grayscale
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    
+    # Apply a blur to reduce noise
+    blurred_img = cv2.GaussianBlur(img, (5, 5), 0)
+
+    # Apply edge detection
+    edges = cv2.Canny(blurred_img, 50, 150)  # Adjusted threshold values for experimentation
+    
+    # Debug: Save the edge detection result
+    if debug:
+        cv2.imwrite('debug_edges.png', edges)
+    
+    # Find contours
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Create an empty mask
+    mask = np.zeros_like(img, dtype=np.uint8)
+
+    # Identify contours that are sufficiently large
+    min_contour_area = 100  # Adjust as necessary for your image
+    large_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_contour_area]
+
+    # Fill these contours
+    cv2.drawContours(mask, large_contours, -1, color=255, thickness=cv2.FILLED)
+
+    # Debug: Save the initial mask
+    if debug:
+        cv2.imwrite('debug_object_mask.png', mask)
+    
+    return mask
+
+def create_object_mask(image_path, debug=False):
+    # Read the image and convert to grayscale
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    
+    # Thresholding to create a binary image
+    _, binary = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    # Debugging: Save the binary image for inspection
+    if debug:
+        cv2.imwrite('debug_binary.png', binary)
+    
+    # Find contours
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Create an empty mask
+    mask = np.zeros_like(img)
+
+    # If there are contours found
+    if contours:
+        # Assume the largest contour is the emblem
+        largest_contour = max(contours, key=cv2.contourArea)
+        # Fill the largest contour with white
+        cv2.drawContours(mask, [largest_contour], -1, color=255, thickness=cv2.FILLED)
+
+    # Debugging: Save the mask for inspection
+    if debug:
+        cv2.imwrite('debug_object_mask.png', mask)
+
+    return mask
+
+def smooth_mask_edges(mask, kernel_size=5, sigma=1, erosion_size=5):
+    # Define the erosion kernel size, the bigger, the more the mask will contract
+    erosion_kernel = np.ones((erosion_size, erosion_size), np.uint8)
+    
+    # Apply erosion to contract the edges of the mask
+    eroded_mask = cv2.erode(mask, erosion_kernel, iterations=1)
+    
+    # Apply Gaussian blur to the eroded mask
+    blurred_mask = cv2.GaussianBlur(eroded_mask, (kernel_size, kernel_size), sigma)
+    
+    # Normalize the mask to ensure that values are still between 0 and 255
+    _, blurred_mask = cv2.threshold(blurred_mask, 1, 255, cv2.THRESH_BINARY)
+    
+    return blurred_mask
+
+def remove_background_with_mask(input_image_path, output_image_path, debug=False):
+    # Create the object's mask
+    object_mask = create_object_mask(input_image_path, debug=debug)
+
+    # Smooth the edges of the mask by blurring
+    smoothed_mask = smooth_mask_edges(object_mask.astype(np.float32))
+
+    # Debug: Save intermediate results
+    if debug:
+        cv2.imwrite('debug_object_mask.png', object_mask)
+        cv2.imwrite('debug_smoothed_mask.png', smoothed_mask)
+
+    # Read the original image and convert to RGBA
+    img = cv2.imread(input_image_path)
+    img_rgba = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
+
+    # Create an alpha channel based on the smoothed mask
+    alpha_channel = np.zeros_like(img[:, :, 0], dtype=np.uint8)
+    alpha_channel[smoothed_mask > 0] = smoothed_mask[smoothed_mask > 0]
+
+    # Merge the alpha channel back into the image
+    img_rgba[:, :, 3] = alpha_channel
+
+    # Debug: Save the image with alpha channel applied
+    if debug:
+        cv2.imwrite('debug_img_with_alpha.png', img_rgba)
+
+    # Save the image with the background removed (transparent background)
+    cv2.imwrite(output_image_path, img_rgba)
+
 @app.route('/vectorize_image', methods=['POST'])
 def vectorize_image():
     logging.info("Vectorize_image route called.")
@@ -256,145 +423,145 @@ def vectorize_image():
     original_image_path = get_image_path_from_static_folder(filename)
     logging.info(f"Original image path resolved to: {original_image_path}")
 
-    # Make sure the file exists before proceeding
-    if not os.path.exists(original_image_path):
-        error_message = f"File does not exist at path: {original_image_path}"
-        logging.error(error_message)
-        return jsonify({'error': error_message}), 400
-
-    # Step 2: Prepare the image for the background removal API call
-    # Read the image data and construct the multipart form data payload
-    background_removal_files = {'image': (filename, open(original_image_path, 'rb'), 'image/png')}
-
-    # API details
-    background_removal_url = "https://background-removal4.p.rapidapi.com/v1/results"
-    background_removal_headers = {
-        "X-RapidAPI-Key": "f11731b818msh7a295f044947cf9p1f908ejsncfd12a96ba01",
-        "X-RapidAPI-Host": "background-removal4.p.rapidapi.com"
-    }
-    background_removal_params = {"mode": "fg-image"}
-
-    # Make the API request for background removal
-    response = requests.post(
-        url=background_removal_url,
-        headers=background_removal_headers,
-        files=background_removal_files,
-        params=background_removal_params
-    )
-
-    # Check the JSON response and the status code
-    response_json = response.json()
-
     # Directory for background removed images
     background_rm_path = os.path.join(app.root_path, 'static', 'background_rm')
     os.makedirs(background_rm_path, exist_ok=True)
     background_rm_file_path = os.path.join(background_rm_path, filename)
 
-    if response.status_code == 200:
-        result = response_json['results'][0]
-        status = result['status']
-
-        if status['code'] == 'ok':
-            # Extracts the base64-encoded image data from the response
-            img_data = base64.b64decode(result['entities'][0]['image'])
-
-            # Save the processed image data to a file
-            with open(background_rm_file_path, 'wb') as image_file:
-                image_file.write(img_data)
-            logging.info(f"Background-removed image saved at: {background_rm_file_path}")
-
-        else:
-            # Handle cases where the API operation was not successful
-            logging.error(f"Background removal API returned an error: {status['message']}")
-            return jsonify({'error': status['message']}), 422
-    else:
-        # Handle cases where the API HTTP response was not OK
-        error_message = f"Failed with status code: {response.status_code}, response: {response_json}"
+    # Make sure the file exists before proceeding
+    if not os.path.exists(original_image_path):
+        error_message = f"File does not exist at path: {original_image_path}"
         logging.error(error_message)
-        return jsonify({'error': error_message}), response.status_code
+        return jsonify({'error': error_message}), 400
+    
+    logging.info(f"Background remove file path resolved to: {background_rm_file_path}")
+    
+    # Define background_removal_files outside the if/else block
+    bbackground_removed = False
 
-    try:
-        with open(background_rm_file_path, 'rb') as image_file:
-            files = {'image': (filename, image_file, 'image/png')}
-            data = {
-                'format': 'svg',
-                'blur': 4,
-                'colors': 16,
-                'model': 'photo',
-                'algorithm': 'overlap',
-                'details': 'max',
-                'antialiasing': 'high',
-                #'transparency-threshold':1,
-                'background-threshold': 180,
-                'transparency-color': 'FFFFFF',
-                'colormergefactor': 20,
-                'roundness': 'max',
-                'noisereduction': 'high',
-                #'minarea': 8,
-                'unit': 'px',
-                'width': 2048,
-                'height': 2048,
-                'filter-step-removal': 'half',
-            }
-            api_key = "V4XJ7Q712"  # Use your actual API key
+    if is_background_white(upscaled_image_path):
+        # Using OpenCV method for removal if the background is white
+        logging.info("Background is predominantly white. Using OpenCV method for removal.")
+        remove_background_and_preserve_white(upscaled_image_path, background_rm_file_path) #Add Def either flood or remove background with mask
+        logging.info("Background removed using OpenCV method.")
+        background_removed = True
+    else:
+        # Prepare the image for the background removal API call when background is not white
+        image_file = open(original_image_path, 'rb') 
+        background_removal_files = {'image': (filename, image_file, 'image/png')}
+        logging.info("Background is not predominantly white. Using API method for removal.")
 
-            # Set headers for the vectorization API request
-            vectorization_headers = {'X-CREDITS-CODE': api_key}
+        # API details
+        background_removal_url = "https://background-removal4.p.rapidapi.com/v1/results"
+        background_removal_headers = {
+            "X-RapidAPI-Key": "f11731b818msh7a295f044947cf9p1f908ejsncfd12a96ba01",
+            "X-RapidAPI-Host": "background-removal4.p.rapidapi.com"
+        }
+        background_removal_params = {"mode": "fg-image"}
 
-            logging.info("Sending request to vectorization API.")
-            # Make sure to include the `data` and `files` inside the request while the file is still open
-            vectorization_response = requests.post(
-                'https://api.vectorizer.io/v4.0/vectorize',
-                headers=vectorization_headers,
-                data=data,
-                files=files
-            )
+        # Make the API request for background removal
+        response = requests.post(
+            url=background_removal_url,
+            headers=background_removal_headers,
+            files=background_removal_files,
+            params=background_removal_params
+        )
+
+        # Check the JSON response and the status code
+        response_json = response.json()
+
+        if response.status_code == 200:
+            result = response_json['results'][0]
+            status = result['status']
+
+            if status['code'] == 'ok':
+                background_removed = True
+                # Extracts the base64-encoded image data from the response
+                img_data = base64.b64decode(result['entities'][0]['image'])
+
+                # Save the processed image data to a file
+                with open(background_rm_file_path, 'wb') as image_file:
+                    image_file.write(img_data)
+                logging.info(f"Background-removed image saved at: {background_rm_file_path}")
+
+            else:
+                # Handle cases where the API operation was not successful
+                logging.error(f"Background removal API returned an error: {status['message']}")
+                return jsonify({'error': status['message']}), 422
+        else:
+            # Handle cases where the API HTTP response was not OK
+            error_message = f"Failed with status code: {response.status_code}, response: {response_json}"
+            logging.error(error_message)
+            return jsonify({'error': error_message}), response.status_code
+
+
+    if background_removed:
+        try:
+            with open(background_rm_file_path, 'rb') as image_file:
+                files = {'image': (filename, image_file, 'image/png')}
+                data = {
+                    'mode': 'production',
+                    'output.size.width': 1024,
+                    'output.size.height': 1024,
+                    'output.svg.version': 'svg_tiny_1_2',
+                    'processing.max_colors': 30,
+                    'output.group_by': 'color',
+                    'output.curves.line_fit_tolerance': 0.09,
+                    'output.size.unit': 'px'
+                }
+                auth = ('vk8pdr7het9gzzc', 'dmkle2kd6ddhefamk9ln6rn7rcuos12e2633qf6405v7qgvhbbb7')
+                vectorization_response = requests.post(
+                    'https://vectorizer.ai/api/v1/vectorize',
+                    files=files,
+                    data=data,
+                    auth=auth
+                )
 
             logging.info("Received response from vectorization API.")
+            files['image'][1].close()
+            # Directory for vectorized images
+            vectorized_path = os.path.join(app.root_path, 'static', 'vector')
+            os.makedirs(vectorized_path, exist_ok=True)
+            vectorized_filename = '(Vector) ' + filename.replace('.png', '.svg')
+            vectorized_file_path = os.path.join(vectorized_path, vectorized_filename)
 
-        # Directory for vectorized images
-        vectorized_path = os.path.join(app.root_path, 'static', 'vector')
-        os.makedirs(vectorized_path, exist_ok=True)
-        vectorized_filename = '(Vector) ' + filename.replace('.png', '.svg')
-        vectorized_file_path = os.path.join(vectorized_path, vectorized_filename)
+            if vectorization_response.status_code == 200:
+                # Step 7: Save and convert SVG to PNG, assuming convert_svg_to_png is correctly implemented
+                with open(vectorized_file_path, 'wb') as file:
+                    file.write(vectorization_response.content)
+                logging.info(f"Vectorized SVG image file written successfully at: {vectorized_file_path}")
 
-        if vectorization_response.status_code == 200:
-            # Step 7: Save and convert SVG to PNG, assuming convert_svg_to_png is correctly implemented
-            with open(vectorized_file_path, 'wb') as file:
-                file.write(vectorization_response.content)
-            logging.info(f"Vectorized SVG image file written successfully at: {vectorized_file_path}")
+                png_file_path = vectorized_file_path.replace('.svg', '.png')
+                convert_svg_to_png(vectorized_file_path, png_file_path)
+                logging.info("SVG to PNG conversion complete.")
 
-            png_file_path = vectorized_file_path.replace('.svg', '.png')
-            convert_svg_to_png(vectorized_file_path, png_file_path)
-            logging.info("SVG to PNG conversion complete.")
+                # Step 8-9: Apply watermark to PNG and save in 'static/tempvector'
+                temp_vector_dir = os.path.join(app.root_path, 'static', 'tempvector')
+                os.makedirs(temp_vector_dir, exist_ok=True)
 
-            # Step 8-9: Apply watermark to PNG and save in 'static/tempvector'
-            temp_vector_dir = os.path.join(app.root_path, 'static', 'tempvector')
-            os.makedirs(temp_vector_dir, exist_ok=True)
+                watermarked_png_path = os.path.join(temp_vector_dir, f"Watermarked_{vectorized_filename.replace('.svg', '.png')}")
+                watermark_path = os.path.join(app.root_path, 'static', 'watermark', 'watermark.png')
+                add_png_watermark(png_file_path, watermark_path, watermarked_png_path)
+                logging.info("Watermarked PNG image saved.")
 
-            watermarked_png_path = os.path.join(temp_vector_dir, f"Watermarked_{vectorized_filename.replace('.svg', '.png')}")
-            watermark_path = os.path.join(app.root_path, 'static', 'watermark', 'watermark.png')
-            add_png_watermark(png_file_path, watermark_path, watermarked_png_path)
-            logging.info("Watermarked PNG image saved.")
+                watermarked_image_url = url_for('static', filename=os.path.join('tempvector', os.path.basename(watermarked_png_path)))
+                logging.info(f"Returning watermarked PNG image URL: {watermarked_image_url}")
 
-            watermarked_image_url = url_for('static', filename=os.path.join('tempvector', os.path.basename(watermarked_png_path)))
-            logging.info(f"Returning watermarked PNG image URL: {watermarked_image_url}")
+                return jsonify({'url': watermarked_image_url,
+                                'svg_filename': vectorized_filename})
 
-            return jsonify({'url': watermarked_image_url,
-                            'svg_filename': vectorized_filename})
+            else:
+                # If vectorization API did not return success
+                error_message = f"Vectorization API returned status code {vectorization_response.status_code}"
+                logging.error(error_message)
+                return jsonify({'error': error_message}), 500
 
-        else:
-            # If vectorization API did not return success
-            error_message = f"Vectorization API returned status code {vectorization_response.status_code}"
-            logging.error(error_message)
-            return jsonify({'error': error_message}), 500
-
-    except requests.exceptions.RequestException as e:
-        logging.error(traceback.format_exc())  # Logs the full stack trace
-        return jsonify({'error': str(e)}), 500
-    except Exception as e:
-        logging.error(traceback.format_exc())  # Also logs the full stack trace
-        return jsonify({'error': str(e)}), 500
+        except requests.exceptions.RequestException as e:
+            logging.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+        except Exception as e:
+            logging.error(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
