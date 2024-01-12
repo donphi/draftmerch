@@ -249,7 +249,7 @@ def is_background_white(image_path, threshold=0.9):
             for x in range(width):
                 if x < border_width or x >= width - border_width or y < border_width or y >= height - border_width:
                     r, g, b = img.getpixel((x, y))
-                    if r > 210 and g > 210 and b > 210:  # Adjust for different shades of white
+                    if r > 180 and g > 180 and b > 180:  # Adjust for different shades of white
                         white_pixels += 1
 
         total_border_pixels = (width * border_width * 2) + ((height - 2 * border_width) * border_width * 2)
@@ -269,16 +269,19 @@ def remove_background_and_preserve_white(input_image_path, output_image_path, wh
 
     # Apply the background removal mask to the image
     result_background_removed = cv2.bitwise_and(img_rgba, mask_background)
-    
-    # Debug: Save the result of background removal
-    if debug:
-        cv2.imwrite('debug_background_removed.png', result_background_removed)
+
     
     # Step 2: Use the object mask to add back any white areas within the emblem
-    object_mask = create_object_mask(input_image_path)
+    object_mask1 = create_object_mask(input_image_path)
+
+    # Third object mask
+    object_mask2 = create_object_mask2(input_image_path)
+
+    # Combine all object masks
+    combined_mask = cv2.bitwise_or(object_mask1, object_mask2)
 
     # Smooth the mask edges before applying it to add white areas back
-    smoothed_object_mask = smooth_mask_edges(object_mask, kernel_size=5, sigma=1, erosion_size=5)
+    smoothed_object_mask = smooth_mask_edges(combined_mask, kernel_size=5, sigma=2, erosion_iterations=6, dilation_iterations=1)
     
     # Debug: Save the smoothed object mask
     if debug:
@@ -301,21 +304,30 @@ def create_object_mask2(image_path, debug=False):
     # Apply a blur to reduce noise
     blurred_img = cv2.GaussianBlur(img, (5, 5), 0)
 
-    # Apply edge detection
-    edges = cv2.Canny(blurred_img, 50, 150)  # Adjusted threshold values for experimentation
+    # Apply Sobel edge detection
+    sobelx = cv2.Sobel(blurred_img, cv2.CV_64F, 1, 0, ksize=5)
+    sobely = cv2.Sobel(blurred_img, cv2.CV_64F, 0, 1, ksize=5)
+    sobel_mag = np.hypot(sobelx, sobely)
+    sobel_mag = np.uint8(sobel_mag / np.max(sobel_mag) * 255)
+
+    # Apply edge detection using Canny
+    edges_canny = cv2.Canny(blurred_img, 0, 30)  # Adjusted threshold values for experimentation
     
+    # Combine Sobel and Canny edges
+    combined_edges = cv2.bitwise_or(edges_canny, sobel_mag)
+
     # Debug: Save the edge detection result
     if debug:
-        cv2.imwrite('debug_edges.png', edges)
+        cv2.imwrite('debug_edges.png', combined_edges)
     
     # Find contours
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(combined_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Create an empty mask
     mask = np.zeros_like(img, dtype=np.uint8)
 
     # Identify contours that are sufficiently large
-    min_contour_area = 100  # Adjust as necessary for your image
+    min_contour_area = 250  # Adjust as necessary for your image
     large_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_contour_area]
 
     # Fill these contours
@@ -357,20 +369,23 @@ def create_object_mask(image_path, debug=False):
 
     return mask
 
-def smooth_mask_edges(mask, kernel_size=5, sigma=1, erosion_size=5):
-    # Define the erosion kernel size, the bigger, the more the mask will contract
-    erosion_kernel = np.ones((erosion_size, erosion_size), np.uint8)
+def smooth_mask_edges(mask, kernel_size=5, sigma=1, erosion_iterations=2, dilation_iterations=1):
+    # Define the erosion kernel size
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
     
     # Apply erosion to contract the edges of the mask
-    eroded_mask = cv2.erode(mask, erosion_kernel, iterations=1)
+    eroded_mask = cv2.erode(mask, kernel, iterations=erosion_iterations)
     
-    # Apply Gaussian blur to the eroded mask
-    blurred_mask = cv2.GaussianBlur(eroded_mask, (kernel_size, kernel_size), sigma)
+    # Optionally, apply dilation to expand the mask again, if you find it necessary
+    dilated_mask = cv2.dilate(eroded_mask, kernel, iterations=dilation_iterations)
+    
+    # Apply Gaussian blur to the mask
+    blurred_mask = cv2.GaussianBlur(dilated_mask, (kernel_size, kernel_size), sigma)
     
     # Normalize the mask to ensure that values are still between 0 and 255
-    _, blurred_mask = cv2.threshold(blurred_mask, 1, 255, cv2.THRESH_BINARY)
+    _, normalized_mask = cv2.threshold(blurred_mask, 1, 255, cv2.THRESH_BINARY)
     
-    return blurred_mask
+    return normalized_mask
 
 def remove_background_with_mask(input_image_path, output_image_path, debug=False):
     # Create the object's mask
