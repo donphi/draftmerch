@@ -249,7 +249,7 @@ def is_background_white(image_path, threshold=0.9):
             for x in range(width):
                 if x < border_width or x >= width - border_width or y < border_width or y >= height - border_width:
                     r, g, b = img.getpixel((x, y))
-                    if r > 180 and g > 180 and b > 180:  # Adjust for different shades of white
+                    if r > 245 and g > 245 and b > 245:  # Adjust for different shades of white
                         white_pixels += 1
 
         total_border_pixels = (width * border_width * 2) + ((height - 2 * border_width) * border_width * 2)
@@ -311,7 +311,7 @@ def create_object_mask2(image_path, debug=False):
     sobel_mag = np.uint8(sobel_mag / np.max(sobel_mag) * 255)
 
     # Apply edge detection using Canny
-    edges_canny = cv2.Canny(blurred_img, 0, 30)  # Adjusted threshold values for experimentation
+    edges_canny = cv2.Canny(blurred_img, 20, 50)  # Adjusted threshold values for experimentation
     
     # Combine Sobel and Canny edges
     combined_edges = cv2.bitwise_or(edges_canny, sobel_mag)
@@ -452,7 +452,7 @@ def vectorize_image():
     logging.info(f"Background remove file path resolved to: {background_rm_file_path}")
     
     # Define background_removal_files outside the if/else block
-    bbackground_removed = False
+    background_removed = False
 
     if is_background_white(upscaled_image_path):
         # Using OpenCV method for removal if the background is white
@@ -467,47 +467,37 @@ def vectorize_image():
         logging.info("Background is not predominantly white. Using API method for removal.")
 
         # API details
-        background_removal_url = "https://background-removal4.p.rapidapi.com/v1/results"
-        background_removal_headers = {
-            "X-RapidAPI-Key": "f11731b818msh7a295f044947cf9p1f908ejsncfd12a96ba01",
-            "X-RapidAPI-Host": "background-removal4.p.rapidapi.com"
-        }
-        background_removal_params = {"mode": "fg-image"}
+        background_removal_url = "https://api.pixian.ai/api/v2/remove-background"
+        auth=('pxgze8ryzbalt7h', '6oc87e4f5td19tpoo5spi96or5moslsfrulqesls6kdav413pu2q')
+        background_removal_params = {"test": "false",
+                                     "output.format": "png",
+                                     "output.jpeg_quality": 75
+                                     
+                                     }
 
         # Make the API request for background removal
         response = requests.post(
             url=background_removal_url,
-            headers=background_removal_headers,
+            auth=auth,
             files=background_removal_files,
             params=background_removal_params
         )
 
-        # Check the JSON response and the status code
-        response_json = response.json()
+        # Check just the status code of the response
+        if response.status_code == requests.codes.ok:
+            background_removed = True
 
-        if response.status_code == 200:
-            result = response_json['results'][0]
-            status = result['status']
+            # Write the response content directly to a file as binary
+            with open(background_rm_file_path, 'wb') as image_file:
+                image_file.write(response.content)
+            logging.info(f"Background removed image saved at: {background_rm_file_path}")
 
-            if status['code'] == 'ok':
-                background_removed = True
-                # Extracts the base64-encoded image data from the response
-                img_data = base64.b64decode(result['entities'][0]['image'])
+            # Continue with any further processing, such as conversion, watermarking etc.
+            # ...
 
-                # Save the processed image data to a file
-                with open(background_rm_file_path, 'wb') as image_file:
-                    image_file.write(img_data)
-                logging.info(f"Background-removed image saved at: {background_rm_file_path}")
-
-            else:
-                # Handle cases where the API operation was not successful
-                logging.error(f"Background removal API returned an error: {status['message']}")
-                return jsonify({'error': status['message']}), 422
         else:
-            # Handle cases where the API HTTP response was not OK
-            error_message = f"Failed with status code: {response.status_code}, response: {response_json}"
-            logging.error(error_message)
-            return jsonify({'error': error_message}), response.status_code
+            # Handle non-OK responses
+            logging.error(f"Error during background removal API call: {response.status_code}, {response.text}")
 
 
     if background_removed:
@@ -518,13 +508,13 @@ def vectorize_image():
                     'mode': 'production',
                     'output.size.width': 1024,
                     'output.size.height': 1024,
-                    'output.svg.version': 'svg_tiny_1_2',
+                    #'output.svg.version': 'svg_tiny_1_2',
                     'processing.max_colors': 30,
                     'output.group_by': 'color',
-                    'output.curves.line_fit_tolerance': 0.09,
+                    'output.curves.line_fit_tolerance': 0.1,
                     'output.size.unit': 'px'
                 }
-                auth = ('vk8pdr7het9gzzc', 'dmkle2kd6ddhefamk9ln6rn7rcuos12e2633qf6405v7qgvhbbb7')
+                auth = ('vks6jkifmn7zyyb', '49k3631p2bcb9iouuurrhln5fjeregsoomv7kgu7e0hrokbsjs5v')
                 vectorization_response = requests.post(
                     'https://vectorizer.ai/api/v1/vectorize',
                     files=files,

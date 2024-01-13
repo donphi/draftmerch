@@ -5,5 +5,5 @@ Yellow
 Green
 Blue
 Navy
-Grayscale
-Colorful
+Grayscale Color
+Colorful Color
