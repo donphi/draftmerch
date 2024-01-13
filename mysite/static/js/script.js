@@ -335,7 +335,7 @@ function vectorizeImage(filename) {
             // Handler for the return button
             returnButton.onclick = function() {
                 // Logic to return, for example, navigate to a different page or view
-                window.location.href = 'https://chonkie.pythonanywhere.com'; // Change to your root site URL
+                window.location.href = 'https://www.draftmerch.com'; // Change to your root site URL
             };
 
             // Show the download button by removing the "hidden" class
