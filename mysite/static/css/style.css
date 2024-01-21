@@ -47,6 +47,7 @@ input[type="submit"] {
     cursor: pointer;
     border: none;
     border-radius: 5px;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
     font-size: 16px;
 }
 input[type="submit"]:hover {
@@ -163,6 +164,31 @@ input[type="button"]:hover, #generateNameButton:hover {
 
 }
 
+#upload-section {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    margin-top: 8px;
+}
+#upload-buttons {
+    display: flex;
+    flex-direction: row;
+    margin-top: 2px;
+}
+
+#image-upload, #file-chosen {
+    display: inline-block; /* or 'block' */
+    width: 100%; /* This makes the span take the full width of its container */
+    text-align: center; 
+}
+
+.sections {
+    text-align: center;
+    width: 100%;
+    align-items: center;
+}
 .button {
     padding: 10px;
     margin: 8px; /* Adjust the space between buttons */
@@ -181,10 +207,42 @@ input[type="button"]:hover, #generateNameButton:hover {
 .gray-button {
     background-color: #cccccc; /* Gray background */
 }
+.button:hover {
+    background-color: #DFB232;
+}
+
+.pillbutton {
+    height: 32px;
+    display: inline-flex; /* makes the hight accurate */
+    align-items: center;/* Center the text horizontally */
+    justify-content: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin: 8px; /* Adjust the space between buttons */
+    background-color: transparent; /* No fill color */
+    color: black; /* Text color */
+    cursor: pointer;
+    border: 2px solid black; /* 2px thick black outline */
+    border-radius: 20px; /* Pill shape */
+    font-size: 16px;
+    text-decoration: none; /* Remove underline from links if using <a> */
+    line-height: 32px; /* Line height equal to the button's height for vertical centering */
+    box-sizing: border-box;
+}
+
+.pillbutton:active {
+    background-color: black; /* Color changes when the button is actively clicked */
+    color: white;
+}
+
+.pillbutton.uploaded {
+    background-color: black;
+    color: white;
+}
 
 /* More space above the switch buttons container */
 .switchButtons {
-    margin-top: 20px; /* More space above */
+    margin-top: 10px; /* More space above */
 }
 
 /* More space below the vector switch container */
@@ -332,6 +390,13 @@ input[type="button"]:hover, #generateNameButton:hover {
         font-size: 18px; /* Larger font size for readability */
         height: 50px; /* Larger height for a touch-friendly interface */
         border-radius: 10px; /* Rounded corners for a modern look */
+    }
+    .pillbutton {
+        padding-top: 2px ;
+        padding-left: 22px;
+        padding-right: 22px;
+        padding-bottom: 2px;
+        height: 36px;
     }
 
     body {

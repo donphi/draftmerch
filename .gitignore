@@ -8,3 +8,5 @@ mysite/static/tempvector/*.png
 mysite/static/vector/*.*
 .venv/
 mysite/prompts.log
+lambda/
+venv/

@@ -44,25 +44,39 @@
         <p>Spark your team's tale! Pick a character, charm, sport, shade, and sway, then marvel as AI magically molds your emblem. Adore it? Alter and awaken anew! Seal the deal, let us upscale, hone, and vectorize for a vivid, vibrant logo. Your team's legend leaps today! 🔮🎨🏆🛡️</p>
         </div>
     <form method="post" id="form">
-        Heroes
+        <div id="heroes" class="sections">Heroes
         <select id="animal-dropdown" name="animal" onchange="checkCustom(this, 'animal-custom-input')" required></select>
-        <input type="text" id="animal-custom-input" name="animal-custom" style="display: none;" />
+        <input type="text" id="animal-custom-input" name="animal-custom" style="display: none;" /></div>
 
-        Team Spirit
+        <!-- The upload section, to start hidden -->
+        <div id="upload-section" class="hidden">
+            <div>
+                <span id="file-chosen" class="hidden">less than 5MB</span>
+                <input type="file" id="image-upload" name="image-upload" accept="image/*" class="hidden" />
+                <div id="upload-buttons">
+                    <!-- 'Browse' button as a label for the file input -->
+                    <label for="image-upload" class="pillbutton hidden">Browse</label>
+                    <!-- 'Add' button -->
+                    <button type="button" id="upload-btn" class="pillbutton hidden">Add</button>
+                </div>
+            </div>  
+        </div>
+
+        <div id="team_spirit" class="sections">Team Spirit
         <select id="personality-dropdown" name="personality" onchange="checkCustom(this, 'personality-custom-input')" required></select>
-        <input type="text" id="personality-custom-input" name="personality-custom" style="display: none;" />
+        <input type="text" id="personality-custom-input" name="personality-custom" style="display: none;" /></div>
 
-        Arenas
+        <div id="arenas" class="sections">Arenas
         <select id="sport-dropdown" name="sport" onchange="checkCustom(this, 'sport-custom-input')" required></select>
-        <input type="text" id="sport-custom-input" name="sport-custom" style="display: none;" />
+        <input type="text" id="sport-custom-input" name="sport-custom" style="display: none;" /></div>
 
-        Team Colors
+        <div id="team_colors" class="sections">Team Colors
         <select id="color-dropdown" name="color" onchange="checkCustom(this, 'color-custom-input')" required></select>
-        <input type="text" id="color-custom-input" name="color-custom" style="display: none;" />
+        <input type="text" id="color-custom-input" name="color-custom" style="display: none;" /></div>
 
-        Winning Moves
+        <div id="winning_moves" class="sections">Winning Moves
         <select id="action-dropdown" name="action" onchange="checkCustom(this, 'action-custom-input')" required></select>
-        <input type="text" id="action-custom-input" name="action-custom" style="display: none;" />
+        <input type="text" id="action-custom-input" name="action-custom" style="display: none;" /></div>
 
     <p></p>
     <input type="submit" id="submit-button" value="Generate">
@@ -73,14 +87,9 @@
         <button id="downloadSvgButton" class="button">Download</button>
     </div>
     </div>
-        {% if generated_prompt %}
-        <div id="generatedPrompt">
-            <p><strong>Generated Prompt:</strong> {{ generated_prompt }}</p>
-        </div>
-        {% endif %}
         <div class="footer">
         <p>Designed by <a href="https://chonkie.io/" target="_blank">chonkie</a></p>
-            <p>Version 6.0</p>
+            <p>Version 7.1</p>
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
