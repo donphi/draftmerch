@@ -38,7 +38,7 @@ logging.basicConfig(filename='prompts.log', level=logging.INFO,
 #####API Defs
 ###Image Generation
 #Generate
-def generate_image(animal, personality, sport, color, action, uploaded_image_description=None):
+def generate_image(hero, personality, sport, color, action, uploaded_image_description=None):
     OPENAI_API_KEY = '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'
     api_url = 'https://api.openai.com/v1/images/generations'
     headers = {
@@ -54,14 +54,14 @@ def generate_image(animal, personality, sport, color, action, uploaded_image_des
                         "be detailed at the end. The character is depicted {action}. Emotion: {personality}, displayed in detail on the character's face. Lighting: Flat, "
                         "Vivid, and bold, and use striking {color} to accentuate key elements. White background. Scene: The emblem is "
                         "surrounded by a pure white background, highlighted by a prominent, heavy black border. Style: Sharp, clean lines, "
-                        "bold use of {color}. The description of the character is {character} --ar 1:1").format(character=uploaded_image_description, personality=personality, sport=sport, color=color, action=action)
+                        "bold use of {color}. The description of the character is {character}.").format(character=uploaded_image_description, personality=personality, sport=sport, color=color, action=action)
     else:
         final_prompt = ("Use the generation ID TXLnYeq6rsLqVTTa, uvpARKZcAUCKOBn7 and P3PUOoDqFsKHJXAA. Medium: 2D, shield-like shaped, "
-                        "very detailed sports vector emblem only. Subject: A {animal} mascot for {sport}, depicting intricate detail in the "
-                        "{sport}'s attire and equipment. The {animal} is depicted {action}. Emotion: {personality}, displayed in detail on the "
-                        "{animal}'s face. Lighting: Flat, Vivid, and bold, and use striking {color} to accentuate key elements. White background. "
+                        "very detailed sports vector emblem only. Subject: A {hero} mascot for {sport}, depicting intricate detail in the "
+                        "{sport}'s attire and equipment. The {hero} is depicted {action}. Emotion: {personality}, displayed in detail on the "
+                        "{hero}'s face. Lighting: Flat, Vivid, and bold, and use striking {color} to accentuate key elements. White background. "
                         "Scene: The emblem is surrounded by a pure white background, highlighted by a prominent, heavy black border. Style: Sharp, "
-                        "clean lines, bold use of {color}. --ar 1:1").format(animal=animal, action=action, personality=personality, sport=sport, color=color)
+                        "clean lines, bold use of {color}. --ar 1:1").format(hero=hero, action=action, personality=personality, sport=sport, color=color)
 
     # Log the generated prompt on the server side
     logging.info(f"Generated Prompt: {final_prompt}")
@@ -90,13 +90,37 @@ def generate_image(animal, personality, sport, color, action, uploaded_image_des
 
     return response
 
+#Image to text
+def image_to_txt(uploaded_image_url):
+    payload = {
+            "model": "gpt-4-vision-preview",
+            "messages": [
+                {"role": "system", "content": [{"type": "text", "text": "You are a cool image analyst. Your goal is to describe what is in this image."}]},
+                {"role": "user", "content": [{"type": "text", "text": "Describe the attached image of a person in detail in paragraph form. To ensure that the unique characteristics that make this person unique are presented, follow the structure of the 5 items below: Gender, Subject, Expression, Clothing, and Accessories. Use 300 words.  Ensure great emphasis on the items unique to the person. There are some crucial items to ensure that the image looks like the person: clothing, accessories, gender, skin color, and ethnicity. The items to consider are: 1. Gender: a. Type. b. Scale of masculine to feminine 2. Subject: a. Hair b. Forehead c. eyebrows d. eyes e. nose f. lips g. cheeks h. teeth i. chin j. shape of face and indents k. ears l. neck m. jaw n. skin Each of the sub-sections of the subject must incorporate the following 7 further sub-sections: I. color II. size III. texture IV. symmetry V. the shape VI. nuanced positioning VII. Interesting nuances 3. Expression: a. Eye expression b. Mouth expression c. Eyebrow expression d. Microexpressions from any of the 13 subsections of the subject. 4. Clothing: a. Type b. Color. 5. Accessories: Check any of the following items and only include and break them down if visible: Glasses/Earrings/Piercings/Headgear/Facial Hair/beauty spots or freckles I. Included. II Type. III. Color. IV. Size."}, {"type": "image_url", "image_url": {"url": uploaded_image_url}}]}
+            ],
+            "max_tokens": 4096
+        }
+
+    headers = {
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.post(
+        'https://api.openai.com/v1/chat/completions',
+        headers=headers,
+        json=payload
+    )
+    
+    return response
+
 ###Vectorizing
 #Upscale
 def upscale_image(filename):
     url = "https://ai-picture-upscaler.p.rapidapi.com/supersize-image"
 
     # Read the original image
-    with open(os.path.join(app.root_path, 'static', 'raw', filename), 'rb') as f:
+    with open(os.path.join(app.root_path, 'static', 'image_original', filename), 'rb') as f:
         files = {"image": f}
         payload = {
             "sizeFactor": "2",
@@ -154,10 +178,10 @@ def remove_background_image(filename, original_image_path):
         return False, None
 
 #Vectorize
-def vectorize_image(filename, background_rm_file_path):
+def vectorize_image(filename, image_no_background_file_path):
     logging.info("Starting image vectorization...")
 
-    with open(background_rm_file_path, 'rb') as image_file:
+    with open(image_no_background_file_path, 'rb') as image_file:
         files = {'image': (filename, image_file, 'image/png')}
         data = {
             'mode': 'production',
@@ -406,9 +430,9 @@ def create_object_mask_otherbackground(image_content):
 
 ####Misc Defs#############################################################################
 #Filename Fomatting
-def formatted_filename(animal, personality, sport, color, action):
+def formatted_filename(hero, personality, sport, color, action):
     timestamp = datetime.now().strftime("%H%M%S%d%m%Y")
-    filename_parts = [animal, personality, sport, color, action, timestamp]
+    filename_parts = [hero, personality, sport, color, action, timestamp]
     filename = " - ".join([part for part in filename_parts if part]) + ".png"
     # Remove any illegal file characters if necessary
     return "".join(c for c in filename if c.isalnum() or c in " -_.")
@@ -468,8 +492,8 @@ def get_image_path_from_static_folder(filename): #line 207
         str: The full server file path within the static/processed folder.
     """
     # Assumes filename includes the 'processed' sub-directory along with the actual file name
-    # e.g., 'processed/Animal-Personality-Sport-Color-Action.png'
-    return os.path.join(app.root_path, 'static', 'raw2x', filename)
+    # e.g., 'processed/hero-Personality-Sport-Color-Action.png'
+    return os.path.join(app.root_path, 'static', 'image_hd', filename)
 
 #Extra Feature
 def add_svg_watermark(svg_path, watermark_path):
@@ -486,7 +510,7 @@ def index():
     image_url = None
     uploaded_image_description = None
     error_message = None
-    animal = ''
+    hero = ''
     personality = ''
     sport = ''
     color = ''
@@ -495,15 +519,15 @@ def index():
     
 
     if request.method == 'POST':
-        animal = request.form.get('animal-custom') if request.form.get('animal') == 'custom' else request.form.get('animal', '').strip()
+        hero = request.form.get('hero-custom') if request.form.get('hero') == 'custom' else request.form.get('hero', '').strip()
         personality = request.form.get('personality-custom') if request.form.get('personality') == 'custom' else request.form.get('personality', '').strip()
         sport = request.form.get('sport-custom') if request.form.get('sport') == 'custom' else request.form.get('sport', '').strip()
         color = request.form.get('color-custom') if request.form.get('color') == 'custom' else request.form.get('color', '').strip()
         action = request.form.get('action-custom') if request.form.get('action') == 'custom' else request.form.get('action', '').strip()
 
-        if animal.startswith('Uploaded Image'):
+        if hero.startswith('Uploaded Image'):
             # Read the contents of temp_response.txt
-            temp_dir = os.path.join(app.root_path, 'static', 'txt', 'imgtotxt')
+            temp_dir = os.path.join(app.root_path, 'static', 'text_data', 'image_to_text_data')
             temp_file_path = os.path.join(temp_dir, 'temp_response.txt')
             with open(temp_file_path, 'r', encoding='utf-8') as temp_file:
                 uploaded_image_description = temp_file.read().strip()
@@ -512,34 +536,34 @@ def index():
             uploaded_image_description = ' '.join(uploaded_image_description.split())
             
             # Call the API with the character prompt
-            response = generate_image(animal, personality, sport, color, action, uploaded_image_description)
+            response = generate_image(hero, personality, sport, color, action, uploaded_image_description)
         
         else:
             # Use the standard prompt
-            response = generate_image(animal, personality, sport, color, action)
+            response = generate_image(hero, personality, sport, color, action)
 
         logging.info(f"Generated Prompt: {final_prompt}")
 
         # Generate the unique filename for the image
-        filename = formatted_filename(animal, personality, sport, color, action)
+        filename = formatted_filename(hero, personality, sport, color, action)
 
         if response.status_code == 200:
             result = response.json()
             image_url = result['data'][0]['url']
 
-            # Save raw image fetched from OpenAI into the 'static/raw' directory
-            raw_save_directory = os.path.join(app.root_path, 'static', 'raw')
-            os.makedirs(raw_save_directory, exist_ok=True)
-            raw_file_path = os.path.join(raw_save_directory, filename)
+            # Save image_original image fetched from OpenAI into the 'static/image_original' directory
+            image_original_save_directory = os.path.join(app.root_path, 'static', 'image_original')
+            os.makedirs(image_original_save_directory, exist_ok=True)
+            image_original_file_path = os.path.join(image_original_save_directory, filename)
 
             img_response = requests.get(image_url)
             if img_response.status_code == 200:
-                with open(raw_file_path, 'wb') as raw_file:
-                    raw_file.write(img_response.content)
-                logging.info(f"Original image saved: {raw_file_path}")
+                with open(image_original_file_path, 'wb') as image_original_file:
+                    image_original_file.write(img_response.content)
+                logging.info(f"Original image saved: {image_original_file_path}")
 
                 # Make a copy of the original image for watermarking
-                watermarked_image = Image.open(raw_file_path).convert("RGBA")
+                watermarked_image = Image.open(image_original_file_path).convert("RGBA")
 
                 # Define the watermark path
                 watermark_path = os.path.join(app.root_path, 'static', 'watermark', 'watermark.png')
@@ -551,7 +575,7 @@ def index():
                 combined = combined.convert("RGB")  # Convert back to RGB if you don't need the alpha channel
 
                 # Define the path to save the watermarked image
-                watermark_save_directory = os.path.join(app.root_path, 'static', 'temp')
+                watermark_save_directory = os.path.join(app.root_path, 'static', 'watermarked_image')
                 os.makedirs(watermark_save_directory, exist_ok=True)
                 watermarked_file_path = os.path.join(watermark_save_directory, "(Watermark) " + filename)
 
@@ -559,11 +583,11 @@ def index():
                 combined.save(watermarked_file_path)
                 logging.info(f"Watermarked image saved: {watermarked_file_path}")
 
-                # The response should include a URL for the raw (unwatermarked) and watermarked images to display in the HTML container
+                # The response should include a URL for the image_original (unwatermarked) and watermarked images to display in the HTML container
                 return jsonify({
-                    'raw_url': url_for('static', filename=os.path.join('raw', filename)), # URL for the raw image
-                    'watermarked_url': url_for('static', filename=os.path.join('temp', "(Watermark) " + filename)), # URL for the watermarked image
-                    'filename': filename # The raw filename you use to fetch the raw image for vectorizing
+                    'image_original_url': url_for('static', filename=os.path.join('image_original', filename)), # URL for the image_original image
+                    'watermarked_url': url_for('static', filename=os.path.join('watermarked_image', "(Watermark) " + filename)), # URL for the watermarked image
+                    'filename': filename # The image_original filename you use to fetch the image_original image for vectorizing
                 })
 
             else:
@@ -578,7 +602,7 @@ def index():
 
     # Render the initial form template on GET or if POST fails
     return render_template('index.html', image_url=image_url, error=error_message,
-                           animal=animal, personality=personality, sport=sport, color=color, action=action)
+                           hero=hero, personality=personality, sport=sport, color=color, action=action)
 
 #Vectorize Image Route
 @app.route('/vectorize-image', methods=['POST'])
@@ -599,25 +623,25 @@ def vectorize_image_route():
         return jsonify({'error': 'Failed to upscale image.'}), 500
 
     # Upscale image saving
-    raw_folder = os.path.join(app.root_path, 'static', 'raw2x')
+    raw_folder = os.path.join(app.root_path, 'static', 'image_hd')
     os.makedirs(raw_folder, exist_ok=True)
     upscaled_image_path = os.path.join(raw_folder, filename)
-    with open(upscaled_image_path, 'wb') as raw2x_file:
-        raw2x_file.write(upscaled_content)
+    with open(upscaled_image_path, 'wb') as image_hd_file:
+        image_hd_file.write(upscaled_content)
 
     logging.info(f"Upscaled image saved at: {upscaled_image_path}")
 
     # Directory for background removed images
-    background_rm_path = os.path.join(app.root_path, 'static', 'background_rm')
-    os.makedirs(background_rm_path, exist_ok=True)
-    background_rm_file_path = os.path.join(background_rm_path, filename)
+    image_no_background_path = os.path.join(app.root_path, 'static', 'image_no_background')
+    os.makedirs(image_no_background_path, exist_ok=True)
+    image_no_background_file_path = os.path.join(image_no_background_path, filename)
 
     background_removed = False
 
     if is_background_white(upscaled_image_path):
         # Using OpenCV method for removal if the background is white
         logging.info("Background is predominantly white. Using OpenCV method for removal.")
-        background_removed = remove_background_and_preserve_white(upscaled_image_path, background_rm_file_path)
+        background_removed = remove_background_and_preserve_white(upscaled_image_path, image_no_background_file_path)
         logging.info("Background removed using OpenCV method.")
         background_removed = True
     else:
@@ -628,8 +652,8 @@ def vectorize_image_route():
             # Create object mask with smoothed edges and write to file
             final_image_content = create_object_mask_otherbackground(background_removed_content)
             if final_image_content:
-                with open(background_rm_file_path, 'wb') as background_rm_file:
-                    background_rm_file.write(final_image_content)
+                with open(image_no_background_file_path, 'wb') as image_no_background_file:
+                    image_no_background_file.write(final_image_content)
                 logging.info("Background removed using API method, mask smoothed, and image saved.")
                 background_removed = True
             else:
@@ -639,11 +663,11 @@ def vectorize_image_route():
 
     if background_removed:
         try:
-            vectorized_content = vectorize_image(filename, background_rm_file_path)
+            vectorized_content = vectorize_image(filename, image_no_background_file_path)
 
             if vectorized_content:
                 # Directory for vectorized images
-                vectorized_path = os.path.join(app.root_path, 'static', 'vector')
+                vectorized_path = os.path.join(app.root_path, 'static', 'image_vectorized')
                 os.makedirs(vectorized_path, exist_ok=True)
 
                 vectorized_filename = '(Vector) ' + filename.replace('.png', '.svg')
@@ -658,16 +682,16 @@ def vectorize_image_route():
                 convert_svg_to_png(vectorized_file_path, png_file_path)
                 logging.info("SVG to PNG conversion complete.")
 
-                # Step 8-9: Apply watermark to PNG and save in 'static/tempvector'
-                temp_vector_dir = os.path.join(app.root_path, 'static', 'tempvector')
-                os.makedirs(temp_vector_dir, exist_ok=True)
+                # Step 8-9: Apply watermark to PNG and save in 'static/watermarked_vector'
+                vector_dir = os.path.join(app.root_path, 'static', 'watermarked_vector')
+                os.makedirs(vector_dir, exist_ok=True)
 
-                watermarked_png_path = os.path.join(temp_vector_dir, f"Watermarked_{vectorized_filename.replace('.svg', '.png')}")
+                watermarked_png_path = os.path.join(vector_dir, f"Watermarked_{vectorized_filename.replace('.svg', '.png')}")
                 watermark_path = os.path.join(app.root_path, 'static', 'watermark', 'watermark.png')
                 add_png_watermark(png_file_path, watermark_path, watermarked_png_path)
                 logging.info("Watermarked PNG image saved.")
 
-                watermarked_image_url = url_for('static', filename=os.path.join('tempvector', os.path.basename(watermarked_png_path)))
+                watermarked_image_url = url_for('static', filename=os.path.join('watermarked_vector', os.path.basename(watermarked_png_path)))
                 logging.info(f"Returning watermarked PNG image URL: {watermarked_image_url}")
 
                 return jsonify({'url': watermarked_image_url, 'svg_filename': vectorized_filename})
@@ -712,24 +736,15 @@ def analyze_image():
         # Generate URL for the uploaded image
         uploaded_image_url = url_for('static', filename=os.path.join('uploads', secure_filename(standardized_filename)), _external=True)
 
-        payload = {
-            "model": "gpt-4-vision-preview",
-            "messages": [
-                {"role": "system", "content": [{"type": "text", "text": "You are a cool image analyst. Your goal is to describe what is in this image."}]},
-                {"role": "user", "content": [{"type": "text", "text": "Describe the attached image of a person in detail in paragraph form. To ensure that the unique characteristics that make this person unique are presented, follow the structure of the 5 items below: Gender, Subject, Expression, Clothing, and Accessories. Use 300 words.  Ensure great emphasis on the items unique to the person. There are some crucial items to ensure that the image looks like the person: clothing, accessories, gender, skin color, and ethnicity. The items to consider are: 1. Gender: a. Type. b. Scale of masculine to feminine 2. Subject: a. Hair b. Forehead c. eyebrows d. eyes e. nose f. lips g. cheeks h. teeth i. chin j. shape of face and indents k. ears l. neck m. jaw n. skin Each of the sub-sections of the subject must incorporate the following 7 further sub-sections: I. color II. size III. texture IV. symmetry V. the shape VI. nuanced positioning VII. Interesting nuances 3. Expression: a. Eye expression b. Mouth expression c. Eyebrow expression d. Microexpressions from any of the 13 subsections of the subject. 4. Clothing: a. Type b. Color. 5. Accessories: Check any of the following items and only include and break them down if visible: Glasses/Earrings/Piercings/Headgear/Facial Hair/beauty spots or freckles I. Included. II Type. III. Color. IV. Size."}, {"type": "image_url", "image_url": {"url": uploaded_image_url}}]}
-            ],
-            "max_tokens": 4096
-        }
+        # Call the OpenAI API
+        response = image_to_txt(uploaded_image_url)
 
-        headers = {'Authorization': f'Bearer {OPENAI_API_KEY}', "Content-Type": "application/json"}
-        response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
-        
         if response.status_code == 200:
             r = response.json()
             api_response_text = r["choices"][0]["message"]["content"]
 
             # Directory for storing temporary files
-            temp_dir = os.path.join(app.root_path, 'static', 'txt', 'imgtotxt')
+            temp_dir = os.path.join(app.root_path, 'static', 'text_data', 'image_to_text_data')
             os.makedirs(temp_dir, exist_ok=True)
 
             # Create a temporary file in the specified directory
@@ -748,6 +763,7 @@ def analyze_image():
         logging.error(f'An error occurred: {e}')
         logging.error(traceback.format_exc())  # This logs the full traceback
         return jsonify({'error': 'Server Error'}), 500
+    
 
 ####Routes###############################################################################
 

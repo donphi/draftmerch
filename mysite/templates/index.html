@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Merch Draft</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
     <img id="logo" src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
@@ -45,8 +46,8 @@
         </div>
     <form method="post" id="form">
         <div id="heroes" class="sections">Heroes
-        <select id="animal-dropdown" name="animal" onchange="checkCustom(this, 'animal-custom-input')" required></select>
-        <input type="text" id="animal-custom-input" name="animal-custom" style="display: none;" /></div>
+        <select id="hero-dropdown" name="hero" onchange="checkCustom(this, 'hero-custom-input')" required></select>
+        <input type="text" id="hero-custom-input" name="hero-custom" style="display: none;" /></div>
 
         <!-- The upload section, to start hidden -->
         <div id="upload-section" class="hidden">
@@ -92,6 +93,6 @@
             <p>Version 7.1</p>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='script/script.js') }}"></script>
 </body>
 </html>

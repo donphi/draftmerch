@@ -14,8 +14,8 @@ let vectorizedImageUrl = null;
         const fileChosen = document.getElementById('file-chosen');
         const uploadSection = document.getElementById('upload-section');
 
-        // Animal dropdown listener
-        document.getElementById('animal-dropdown').addEventListener('change', function() {
+        // Hero dropdown listener
+        document.getElementById('hero-dropdown').addEventListener('change', function() {
             var value = this.value; 
             
             if (value === 'Upload Image') {
@@ -112,18 +112,18 @@ let vectorizedImageUrl = null;
                     // Show the submit button again
                     document.getElementById("submit-button").classList.remove('hidden');
             
-                    // Update the animal dropdown
-                    const animalDropdown = document.getElementById('animal-dropdown');
+                    // Update the hero dropdown
+                    const heroDropdown = document.getElementById('hero-dropdown');
                     let fileName = uploadInput.files[0].name;
                     let fileExtension = fileName.split('.').pop();
                     let displayName = fileName.length > 23 ? fileName.substring(0, 23) + '...' + fileExtension : fileName;
                     
                     // Find and update the 'Upload File' option
-                    for (let i = 0; i < animalDropdown.options.length; i++) {
-                        if (animalDropdown.options[i].value === 'Upload Image') {
-                            animalDropdown.options[i].textContent = 'Image: ' + displayName;
-                            animalDropdown.options[i].value = 'Uploaded Image';
-                            animalDropdown.selectedIndex = i; // Set this option as selected
+                    for (let i = 0; i < heroDropdown.options.length; i++) {
+                        if (heroDropdown.options[i].value === 'Upload Image') {
+                            heroDropdown.options[i].textContent = 'Image: ' + displayName;
+                            heroDropdown.options[i].value = 'Uploaded Image';
+                            heroDropdown.selectedIndex = i; // Set this option as selected
                             break;
                         }
                     }
@@ -164,14 +164,14 @@ let vectorizedImageUrl = null;
             imageContainer.style.display = 'flex';
 
             let formData = new FormData(form);
-            formData.append('animal', getValueOrCustom('animal-dropdown', 'animal-custom-input'));
+            formData.append('hero', getValueOrCustom('hero-dropdown', 'hero-custom-input'));
             formData.append('personality', getValueOrCustom('personality-dropdown', 'personality-custom-input'));
             formData.append('sport', getValueOrCustom('sport-dropdown', 'sport-custom-input'));
             formData.append('color', getValueOrCustom('color-dropdown', 'color-custom-input'));
             formData.append('action', getValueOrCustom('action-dropdown', 'action-custom-input'));
 
             // Check if we are sending the Uploaded image correctly
-            console.log("Submitting Animal:", document.getElementById('animal-dropdown').value);
+            console.log("Submitting Hero:", document.getElementById('hero-dropdown').value);
 
             fetch(window.location.href, { method: 'POST', body: formData })
             .then(response => response.json())
@@ -241,13 +241,13 @@ let vectorizedImageUrl = null;
             }
         });
 
-    loadDropdownData('color','/static/txt/color.txt');
-    loadDropdownData('animal', '/static/txt/animal.txt');
-    loadDropdownData('personality', '/static/txt/personality.txt');
-    loadDropdownData('sport', '/static/txt/sport.txt');
-    loadDropdownData('action', '/static/txt/action.txt');
+    loadDropdownData('color','/static/text_data/dropdown_color.txt');
+    loadDropdownData('hero', '/static/text_data/dropdown_hero.txt');
+    loadDropdownData('personality', '/static/text_data/dropdown_personality.txt');
+    loadDropdownData('sport', '/static/text_data/dropdown_sport.txt');
+    loadDropdownData('action', '/static/text_data/dropdown_action.txt');
 
-    document.getElementById('animal-dropdown').addEventListener('change', checkAllDropdowns);
+    document.getElementById('hero-dropdown').addEventListener('change', checkAllDropdowns);
     document.getElementById('personality-dropdown').addEventListener('change', checkAllDropdowns);
     document.getElementById('sport-dropdown').addEventListener('change', checkAllDropdowns);
     document.getElementById('color-dropdown').addEventListener('change', checkAllDropdowns);
@@ -280,13 +280,13 @@ function getContrastingColor(color) {
 }
 
 function checkAllDropdowns() {
-    const animal = document.getElementById('animal-dropdown').value;
+    const hero = document.getElementById('hero-dropdown').value;
     const personality = document.getElementById('personality-dropdown').value;
     const sport = document.getElementById('sport-dropdown').value;
     const color = document.getElementById('color-dropdown').value;
     const submitButton = document.getElementById('submit-button'); // Get the submit button by its ID
 
-    if (animal && personality && sport && color) {
+    if (hero && personality && sport && color) {
         submitButton.classList.add('active');
         submitButton.disabled = false;
     } else {
@@ -300,16 +300,16 @@ function checkCustom(selectElement, customInputId) {
     customInput.style.display = selectElement.value === "custom" ? 'block' : 'none';
 }
 
-function updatePersonalityAndAction(selectedAnimal) {
-    if (selectedAnimal.trim() === 'custom') {
-        // Reset the dropdowns if no animal is selected or if it's set back to empty
-        loadDropdownData('personality', '/static/txt/personality.txt');
-        loadDropdownData('action', '/static/txt/action.txt');
+function updatePersonalityAndAction(selectedHero) {
+    if (selectedHero.trim() === 'custom') {
+        // Reset the dropdowns if no hero is selected or if it's set back to empty
+        loadDropdownData('personality', '/static/text_data/dropdown_personality.txt');
+        loadDropdownData('action', '/static/text_data/dropdown_action.txt');
     } else {
-        // Load personality and action for the chosen animal
-        loadDropdownData('personality', `/static/txt/personality/${selectedAnimal}_personality.txt`);
+        // Load personality and action for the chosen hero
+        loadDropdownData('personality', `/static/text_data/personality_data/${selectedHero}_dropdown_personality.txt`);
         // For action, combine options from the specific character and extra actions
-        loadDropdownData('action', `/static/txt/action/${selectedAnimal}_action.txt`, '/static/txt/extra_action.txt');
+        loadDropdownData('action', `/static/text_data/action_data/${selectedHero}_dropdown_action.txt`, '/static/text_data/extra_action.txt');
     }
     // Remember to disable the form submit button since the options have changed
     checkAllDropdowns();
@@ -328,16 +328,16 @@ function loadDropdownData(dropdownId, filePath, extraFilePath = null) {
     // Add a blank option as the first and default option
     dropdown.appendChild(new Option('', ''));
 
-    // If this is the animal dropdown, add 'Upload Image' option
-    if (dropdownId === 'animal') {
+    // If this is the hero dropdown, add 'Upload Image' option
+    if (dropdownId === 'hero') {
         dropdown.appendChild(new Option('Upload Image', 'Upload Image'));
     }
 
     // Add 'Custom' option
     dropdown.appendChild(new Option('Custom', 'custom'));
 
-    // If this is the animal dropdown, add a separator
-    if (dropdownId === 'animal') {
+    // If this is the hero dropdown, add a separator
+    if (dropdownId === 'hero') {
         const separator = new Option('──────────', '');
         separator.disabled = true;
         dropdown.appendChild(separator);
@@ -441,7 +441,7 @@ fetch('/vectorize-image', {
     if (data && data.url && data.svg_filename) {
         // URL-encode the filename to create a safe URL
         const encodedSvgFilename = encodeURIComponent(data.svg_filename);
-        const svgUrl = `/static/vector/${encodedSvgFilename}`;
+        const svgUrl = `/static/image_vectorized/${encodedSvgFilename}`;
         console.log('Encoded SVG URL:', svgUrl);
         // Clear the imageContainer and create the new vectorized image with the updated URL
         imageContainer.innerHTML = `<div class="image-wrapper checkered-background">

@@ -1,0 +1,9 @@
+Red
+Raspberry
+Orange
+Yellow
+Green
+Blue
+Navy
+Grayscale Color
+Colorful Color
