@@ -502,7 +502,7 @@ def add_svg_watermark(svg_path, watermark_path):
 
 ####Misc Defs#############################################################################
 
-
+LAMBDA_API_ENDPOINT = 'http://127.0.0.1:3000/test'
 ####Routes###############################################################################
 #Generate Image Route
 @app.route('/', methods=['GET', 'POST'])
@@ -525,6 +525,15 @@ def index():
         color = request.form.get('color-custom') if request.form.get('color') == 'custom' else request.form.get('color', '').strip()
         action = request.form.get('action-custom') if request.form.get('action') == 'custom' else request.form.get('action', '').strip()
 
+        lambda_payload = {
+                    'hero': hero,
+                    'personality': personality,
+                    'sport': sport,
+                    'color': color,
+                    'action': action,
+                    'uploaded_image_description': uploaded_image_description
+                }
+
         if hero.startswith('Uploaded Image'):
             # Read the contents of temp_response.txt
             temp_dir = os.path.join(app.root_path, 'static', 'text_data', 'image_to_text_data')
@@ -535,60 +544,93 @@ def index():
             # Clean up the description by removing extra spaces and line breaks
             uploaded_image_description = ' '.join(uploaded_image_description.split())
             
+            lambda_payload = {
+                    'hero': hero,
+                    'personality': personality,
+                    'sport': sport,
+                    'color': color,
+                    'action': action,
+                    'uploaded_image_description': uploaded_image_description
+                }
+
             # Call the API with the character prompt
-            response = generate_image(hero, personality, sport, color, action, uploaded_image_description)
+            lambda_response = requests.post(
+            LAMBDA_API_ENDPOINT,
+            json=lambda_payload  # Make sure to send a JSON payload
+            )
         
         else:
             # Use the standard prompt
-            response = generate_image(hero, personality, sport, color, action)
+            lambda_payload = {
+                    'hero': hero,
+                    'personality': personality,
+                    'sport': sport,
+                    'color': color,
+                    'action': action
+                }
+
+            lambda_response = requests.post(
+            LAMBDA_API_ENDPOINT,
+            json=lambda_payload  # Make sure to send a JSON payload
+            )
 
         logging.info(f"Generated Prompt: {final_prompt}")
 
         # Generate the unique filename for the image
         filename = formatted_filename(hero, personality, sport, color, action)
 
-        if response.status_code == 200:
-            result = response.json()
-            image_url = result['data'][0]['url']
+        if lambda_response.status_code == 200:
+            # Process the response from the Lambda function
+            result = lambda_response.json()
+            
+            # Extract image_url from the Lambda response if it's present
+            image_url = result.get('image_url')
 
-            # Save image_original image fetched from OpenAI into the 'static/image_original' directory
-            image_original_save_directory = os.path.join(app.root_path, 'static', 'image_original')
-            os.makedirs(image_original_save_directory, exist_ok=True)
-            image_original_file_path = os.path.join(image_original_save_directory, filename)
+            if image_url:
+                # Save image_original image fetched from OpenAI into the 'static/image_original' directory
+                image_original_save_directory = os.path.join(app.root_path, 'static', 'image_original')
+                os.makedirs(image_original_save_directory, exist_ok=True)
+                image_original_file_path = os.path.join(image_original_save_directory, filename)
 
-            img_response = requests.get(image_url)
-            if img_response.status_code == 200:
-                with open(image_original_file_path, 'wb') as image_original_file:
-                    image_original_file.write(img_response.content)
-                logging.info(f"Original image saved: {image_original_file_path}")
+                # Download the image from OpenAI and save it
+                img_response = requests.get(image_url)
+                if img_response.status_code == 200:
+                    with open(image_original_file_path, 'wb') as image_original_file:
+                        image_original_file.write(img_response.content)
+                    logging.info(f"Original image saved: {image_original_file_path}")
 
-                # Make a copy of the original image for watermarking
-                watermarked_image = Image.open(image_original_file_path).convert("RGBA")
+                    # Make a copy of the original image for watermarking
+                    watermarked_image = Image.open(image_original_file_path).convert("RGBA")
 
-                # Define the watermark path
-                watermark_path = os.path.join(app.root_path, 'static', 'watermark', 'watermark.png')
+                    # Define the watermark path
+                    watermark_path = os.path.join(app.root_path, 'static', 'watermark', 'watermark.png')
 
-                # Apply watermark to the copy of the image
-                watermark = Image.open(watermark_path).convert("RGBA")
-                watermark = watermark.resize(watermarked_image.size, Image.LANCZOS)
-                combined = Image.alpha_composite(watermarked_image, watermark)
-                combined = combined.convert("RGB")  # Convert back to RGB if you don't need the alpha channel
+                    #   Apply watermark to the copy of the image
+                    watermark = Image.open(watermark_path).convert("RGBA")
+                    watermark = watermark.resize(watermarked_image.size, Image.LANCZOS)
+                    combined = Image.alpha_composite(watermarked_image, watermark)
+                    combined = combined.convert("RGB")  # Convert back to RGB if you don't need the alpha channel
 
-                # Define the path to save the watermarked image
-                watermark_save_directory = os.path.join(app.root_path, 'static', 'watermarked_image')
-                os.makedirs(watermark_save_directory, exist_ok=True)
-                watermarked_file_path = os.path.join(watermark_save_directory, "(Watermark) " + filename)
+                    # Define the path to save the watermarked image
+                    watermark_save_directory = os.path.join(app.root_path, 'static', 'watermarked_image')
+                    os.makedirs(watermark_save_directory, exist_ok=True)
+                    watermarked_file_path = os.path.join(watermark_save_directory, "(Watermark) " + filename)
 
-                # Save the watermarked image as a separate file
-                combined.save(watermarked_file_path)
-                logging.info(f"Watermarked image saved: {watermarked_file_path}")
+                    # Save the watermarked image as a separate file
+                    combined.save(watermarked_file_path)
+                    logging.info(f"Watermarked image saved: {watermarked_file_path}")
 
-                # The response should include a URL for the image_original (unwatermarked) and watermarked images to display in the HTML container
-                return jsonify({
-                    'image_original_url': url_for('static', filename=os.path.join('image_original', filename)), # URL for the image_original image
-                    'watermarked_url': url_for('static', filename=os.path.join('watermarked_image', "(Watermark) " + filename)), # URL for the watermarked image
-                    'filename': filename # The image_original filename you use to fetch the image_original image for vectorizing
-                })
+                    # The response should include a URL for the image_original (unwatermarked) and watermarked images to display in the HTML container
+                    return jsonify({
+                        'image_original_url': url_for('static', filename=os.path.join('image_original', filename)), # URL for the image_original image
+                        'watermarked_url': url_for('static', filename=os.path.join('watermarked_image', "(Watermark) " + filename)), # URL for the watermarked image
+                        'filename': filename # The image_original filename you use to fetch the image_original image for vectorizing
+                    })
+
+                else:
+                    error_message = "Failed to download the image from OpenAI."
+                    logging.error(error_message)
+                    return jsonify({'error': error_message}), img_response.status_code
 
             else:
                 error_message = "Failed to download the image from OpenAI."
@@ -596,12 +638,13 @@ def index():
                 return jsonify({'error': error_message}), img_response.status_code
 
         else:
-            error_message = f"Error generating image: {response.status_code}, {response.text}"
-            logging.error(f"{error_message}")
-            return jsonify({'error': error_message}), response.status_code
+            error_message = f"Error invoking Lambda function: {lambda_response.status_code}, {lambda_response.text}"
+            logging.error(error_message)
+            return jsonify({'error': error_message}), lambda_response.status_code
 
     # Render the initial form template on GET or if POST fails
-    return render_template('index.html', image_url=image_url, error=error_message,
+    return render_template('index.html', image
+                           =image_url, error=error_message,
                            hero=hero, personality=personality, sport=sport, color=color, action=action)
 
 #Vectorize Image Route

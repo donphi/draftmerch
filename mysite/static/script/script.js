@@ -176,7 +176,7 @@ let vectorizedImageUrl = null;
             fetch(window.location.href, { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
-                if (data.watermarked_url && data.filename) {
+                if (data.watermarked_url && data.image_original_url && data.filename) {
                     // Create a new .image-wrapper div to contain the image
                     const newImageWrapper = document.createElement('div');
                     newImageWrapper.className = 'image-wrapper checkered-background';
