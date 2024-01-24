@@ -3,33 +3,20 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 10
+      python: 3.10  # Adjust the Python version as needed
     commands:
       - echo Installing source dependencies...
-      - pip install -r draftmerch/mysite/lambda_function_for_def_generate_image/requirements.txt -t /tmp/dependencies
-
-  pre_build:
-    commands:
-      - echo Pre-build phase...
+      - pip install --upgrade pip
+      - pip install requests  # Example dependency
 
   build:
     commands:
       - echo Build started on `date`
-      - cd draftmerch/mysite/lambda_function_for_def_generate_image
-      - zip -r /tmp/function.zip handler.py
-      - cd /tmp/dependencies
-      - zip -ur /tmp/function.zip .
+      - echo "Creating a test file for upload..."
+      - echo "This is a test file." > testfile.txt
 
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Uploading the build artifacts...
-      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/usPmovo
-
-artifacts:
-  files:
-    - /tmp/function.zip
-
-cache:
-  paths:
-    - '/root/.cache/pip/**/*'
+      - echo Uploading the test file...
+      - aws s3 cp testfile.txt s3://codepipeline-us-east-1-72537565188/testfile.txt
