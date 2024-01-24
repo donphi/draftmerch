@@ -1,0 +1,34 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 10
+    commands:
+      - echo Installing source dependencies...
+      - pip install -r draftmerch/mysite/lambda_function_for_def_generate_image/requirements.txt -t /tmp/dependencies
+
+  pre_build:
+    commands:
+      - echo Pre-build phase...
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - cd draftmerch/mysite/lambda_function_for_def_generate_image
+      - zip -r /tmp/function.zip handler.py
+      - cd /tmp/dependencies
+      - zip -ur /tmp/function.zip .
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Uploading the build artifacts...
+
+artifacts:
+  files:
+    - /tmp/function.zip
+
+cache:
+  paths:
+    - '/root/.cache/pip/**/*'
