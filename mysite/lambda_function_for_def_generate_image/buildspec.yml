@@ -24,6 +24,7 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Uploading the build artifacts...
+      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/usPmovo
 
 artifacts:
   files:
