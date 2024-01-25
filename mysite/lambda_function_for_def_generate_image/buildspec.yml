@@ -15,7 +15,7 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      - cd draftmerch/mysite/lambda_function_for_def_generate_image
+      - cd mysite/lambda_function_for_def_generate_image
       - zip -r /tmp/function.zip handler.py
       - cd /tmp/dependencies
       - zip -ur /tmp/function.zip .
