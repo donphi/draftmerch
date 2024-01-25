@@ -3,13 +3,15 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.8  # Specify the Python version supported by AWS Lambda.
+      python: 3.10
     commands:
       - echo Installing source dependencies...
       - pip install -r mysite/lambda_function_for_def_generate_image/requirements.txt -t /tmp/dependencies
 
   pre_build:
     commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
       - echo Pre-build phase...
 
   build:
@@ -24,11 +26,11 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Uploading build artifacts...
-      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/function.zip  # Make sure to use your specific bucket and path.
+      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/function.zip
 
 artifacts:
   files:
-    - /tmp/function.zip  # Define the output artifacts.
+    - /tmp/function.zip
 
 cache:
   paths:
