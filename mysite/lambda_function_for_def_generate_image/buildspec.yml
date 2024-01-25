@@ -20,15 +20,12 @@ phases:
       - cd /tmp/dependencies
       - zip -ur /tmp/function.zip .
 
-artifacts:
-  files: /tmp/function.zip  # Specify the location of the artifact
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Uploading the build artifacts...
+      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/function.zip
 
-post_build:
-  commands:
-    - echo Build completed on `date`
-    - echo Uploading the build artifacts...
-    - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/function.zip
-
-cache:
-  paths:
-    - '/root/.cache/pip/**/*'
+  cache:
+    paths:
+      - '/root/.cache/pip/**/*'
