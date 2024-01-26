@@ -1,30 +1,32 @@
 version: 0.2
+
 phases:
   install:
     runtime-versions:
-      python: 3.10 # Specify the Python version supported by AWS Lambda.
+      python: 3.10
     commands:
       - echo Installing source dependencies...
-      - pip install -r mysite/lambda_function_for_def_generate_image/requirements.txt -t /tmp/dependencies
+      - pip install -r requirements.txt -t /tmp/dependencies
   pre_build:
     commands:
       - echo Pre-build phase...
   build:
     commands:
       - echo Build started on `date`
-      - cd mysite/lambda_function_for_def_generate_image
-      - zip -r9 /tmp/function.zip .  # Include all files in the current directory in the zip.
+      - zip -r9 /tmp/function.zip lambda_function.py # Include your lambda_function.py in the zip.
       - cd /tmp/dependencies
       - zip -ur /tmp/function.zip .  # Add dependencies to the zip.
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Uploading build artifacts...
-      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/function.zip  # Make sure to use your specific bucket and path.
+      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/function.zip
 
 artifacts:
   files:
-    - /tmp/function.zip  # Define the output artifacts.
+    - /tmp/function.zip
+    - deploy.yaml
+
 cache:
   paths:
     - '/root/.cache/pip/**/*'
