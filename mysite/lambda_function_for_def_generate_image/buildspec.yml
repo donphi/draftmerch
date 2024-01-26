@@ -21,7 +21,7 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Uploading build artifacts...
-      - aws s3 cp /tmp/function.zip s3://codepipeline-us-east-1-72537565188/lambda_function_for_/BuildArtif/function.zip
+      - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/generate_image/function.zip
 
 artifacts:
   files:

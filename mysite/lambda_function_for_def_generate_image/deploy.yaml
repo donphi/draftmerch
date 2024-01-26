@@ -9,8 +9,8 @@ Resources:
       Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
-        S3Bucket: codepipeline-us-east-1-72537565188
-        S3Key: lambda_function_for_/BuildArtif/function.zip
+        S3Bucket: draft-lambda-functions
+        S3Key: generate_image/function.zip
       Runtime: python3.10
       Timeout: 60
       MemorySize: 128
