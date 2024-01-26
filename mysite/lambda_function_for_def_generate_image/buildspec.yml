@@ -26,7 +26,7 @@ phases:
 artifacts:
   files:
     - /tmp/function.zip
-    - deploy.yaml
+    - mysite/lambda_function_for_def_generate_image/deploy.yaml
 
 cache:
   paths:
