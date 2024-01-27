@@ -11,6 +11,7 @@ Resources:
       Code:
         S3Bucket: draft-lambda-functions
         S3Key: generate_image/function.zip
+        S3ObjectVersion: !Ref FunctionCodeS3Version
       Runtime: python3.10
       Timeout: 60
       MemorySize: 128
