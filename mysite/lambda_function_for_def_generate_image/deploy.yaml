@@ -1,8 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: An AWS CloudFormation template to deploy Lambda function.
 
-Metadata:
-  BuildTimestamp: "<PLACEHOLDER_FOR_TIMESTAMP>"
+Parameters:
+  LambdaFunctionDescription:
+    Type: String
+    Default: Generates initial image
 
 Resources:
   LambdaFunction:
@@ -17,7 +19,7 @@ Resources:
       Runtime: python3.10
       Timeout: 60
       MemorySize: 128
-      Description: "Generates initial image"
+      Description: !Ref LambdaFunctionDescription
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
