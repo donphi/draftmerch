@@ -6,14 +6,18 @@ phases:
       python: 3.10
     commands:
       - echo Installing source dependencies...
-      - pip install -r mysite/lambda_function_for_def_generate_image/requirements.txt -t /tmp/dependencies
+      - pip install -r requirements.txt -t /tmp/dependencies
   pre_build:
     commands:
       - echo Pre-build phase...
   build:
     commands:
       - echo Build started on `date`
-      - cd mysite/lambda_function_for_def_generate_image
+      - echo Listing contents of the root directory...
+      - ls -la
+      - echo Listing contents of the cloned repository...
+      - ls -la $CODEBUILD_SRC_DIR
+      - cd lambda_function_for_def_generate_image
       - zip -r9 /tmp/function.zip lambda_function.py  # Only include the lambda_function.py in the zip.
       - cd /tmp/dependencies
       - zip -ur /tmp/function.zip .  # Add dependencies to the zip.
@@ -22,21 +26,13 @@ phases:
       - echo Build completed on `date`
       - echo Uploading build artifacts...
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/generate_image/function.zip
-      - echo Grabbing version ID of the newly uploaded zip file...
       - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix generate_image/function.zip --query 'Versions[0].VersionId' --output text)
       - echo Latest version ID of the function.zip is $version_id
-      # Debugging: List the files to verify the presence of deploy.yaml
-      - echo Listing the files in the current directory...
-      - ls -la
-      - echo Listing the files in the mysite directory...
-      - ls -la mysite
-      # Use an absolute path to reference deploy.yaml. Adjust the path as necessary based on the ls output.
-      - aws cloudformation update-stack --stack-name imagegenerate --template-body file://$(pwd)/mysite/lambda_function_for_def_generate_image/deploy.yaml --parameters ParameterKey=FunctionCodeS3Version,ParameterValue=$version_id --capabilities CAPABILITY_IAM
+      - aws cloudformation update-stack --stack-name imagegenerate --template-body file://$CODEBUILD_SRC_DIR/lambda_function_for_def_generate_image/deploy.yaml --parameters ParameterKey=FunctionCodeS3Version,ParameterValue=$version_id --capabilities CAPABILITY_IAM
 
 artifacts:
   files:
     - /tmp/function.zip
-    - mysite/lambda_function_for_def_generate_image/deploy.yaml
 
 cache:
   paths:
