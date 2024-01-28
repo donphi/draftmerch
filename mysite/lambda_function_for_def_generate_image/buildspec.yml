@@ -15,20 +15,18 @@ phases:
       - echo Build started on `date`
       - cd $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image
       - zip -r9 /tmp/function.zip lambda_function.py  # Only include the lambda_function.py in the zip
-      - cd /tmp
-      - zip -ur /tmp/function.zip dependencies/  # Add the contents of the dependencies directory to the zip
+      - cd /tmp/dependencies
+      - zip -ur /tmp/function.zip .  # Add the contents of the dependencies directory to the zip
   post_build:
     commands:
       - echo Build completed on `date`
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/generate_image/function.zip
-      - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "generate_image/function.zip" --query 'Versions[0].VersionId' --output text)
-      - echo Latest version ID of the function.zip is $version_id
-      # Note that this aws cloudformation command is no longer needed here if the CodePipeline deploy stage is used
+
 artifacts:
   files:
-    - function.zip  # This file will be located at the root of the build's output directory
-  base-directory: $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/
-  discard-paths: no
+    - mysite/lambda_function_for_def_generate_image/lambda_function.py
+    - mysite/lambda_function_for_def_generate_image/deploy.yaml
+    - /tmp/function.zip
 
 cache:
   paths:
