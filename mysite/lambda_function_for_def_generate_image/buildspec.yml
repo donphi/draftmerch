@@ -20,8 +20,12 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
+      - echo "Checking directory structure..."
+      - find $CODEBUILD_SRC_DIR -type d
+      - echo "Looking for deploy.yaml..."
+      - find $CODEBUILD_SRC_DIR -type f -name deploy.yaml
       - timestamp=$(date +%Y%m%d%H%M%S)
-      - sed -i "s/UNIQUE_ID_PLACEHOLDER/$timestamp/" $CODEBUILD_SRC_DIR/lambda_function_for_def_generate_image/deploy.yaml
+      - sed -i "s/UNIQUE_ID_PLACEHOLDER/$timestamp/" $CODEBUILD_SRC_DIR/lambda_function_for_def_generate_image/deploy.yaml || (echo "Failed to update deploy.yaml"; exit 1)
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/generate_image/function.zip
       - aws cloudformation deploy --stack-name imagegenerate --template-file $CODEBUILD_SRC_DIR/lambda_function_for_def_generate_image/deploy.yaml --capabilities CAPABILITY_IAM
 artifacts:
