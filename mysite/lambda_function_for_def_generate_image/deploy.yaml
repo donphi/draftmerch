@@ -4,7 +4,7 @@ Description: An AWS CloudFormation template to deploy Lambda function.
 Parameters:
   LambdaFunctionDescription:
     Type: String
-    Default: Generates initial image
+    Default: "Generates initial image - Deployment ID: UNIQUE_ID_PLACEHOLDER"
 
 Resources:
   LambdaFunction:
