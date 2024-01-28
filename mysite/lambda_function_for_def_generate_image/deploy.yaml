@@ -5,6 +5,9 @@ Parameters:
   LambdaFunctionDescription:
     Type: String
     Default: "Generates initial image - Deployment ID: UNIQUE_ID_PLACEHOLDER"
+  FunctionCodeS3ObjectVersion:
+    Description: S3 object version of the Lambda function code
+    Type: String
 
 Resources:
   LambdaFunction:
@@ -16,6 +19,7 @@ Resources:
       Code:
         S3Bucket: draft-lambda-functions
         S3Key: generate_image/function.zip
+        S3ObjectVersion: !Ref FunctionCodeS3ObjectVersion
       Runtime: python3.10
       Timeout: 60
       MemorySize: 128
