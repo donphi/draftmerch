@@ -24,11 +24,7 @@ phases:
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/generate_image/function.zip
       - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix generate_image/function.zip --query 'Versions[0].VersionId' --output text)
       - echo "Latest version ID of the function.zip is $version_id"
-      - |
-        aws cloudformation update-stack --stack-name imagegenerate \ 
-          --template-body file://deploy.yaml \
-          --parameters ParameterKey=FunctionCodeS3Version,ParameterValue=$version_id \
-          --capabilities CAPABILITY_IAM
+      - aws cloudformation update-stack --stack-name imagegenerate --template-body file://deploy.yaml --parameters ParameterKey=FunctionCodeS3Version,ParameterValue=$version_id --capabilities CAPABILITY_IAM
 
 artifacts:
   files:
