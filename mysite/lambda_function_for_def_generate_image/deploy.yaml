@@ -1,12 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: An AWS CloudFormation template to deploy Lambda function.
 
-Parameters:
-  FunctionCodeS3Version:
-    Type: String
-    Default: ""
-    Description: S3 object version of the Lambda code package
-
 Resources:
   LambdaFunction:
     Type: AWS::Lambda::Function
