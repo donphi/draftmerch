@@ -19,27 +19,26 @@ phases:
       - ls -la $CODEBUILD_SRC_DIR
       - echo Building the Lambda function package...
       - cd $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image
-      - zip -r9 /tmp/lambda_function.zip lambda_function.py  # Only include the lambda_function.py in the zip
+      - zip -r9 /tmp/function.zip lambda_function.py  # Only include the lambda_function.py in the zip
       - echo Adding dependencies to the lambda function package...
       - cd /tmp/dependencies
-      - zip -ur /tmp/lambda_function.zip .  # Add only the dependencies to the zip
+      - zip -ur /tmp/function.zip .  # Add only the dependencies to the zip
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Updating timestamp in deploy.yaml...
       - timestamp=$(date +%Y%m%d%H%M%S)
       - sed -i "s/UNIQUE_ID_PLACEHOLDER/$timestamp/" $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/deploy.yaml
-      - echo Copying lambda_function.zip to the root directory of the build...
-      - cp /tmp/lambda_function.zip $CODEBUILD_SRC_DIR/lambda_function.zip
+      - echo Copying function.zip to the root directory of the build...
+      - cp /tmp/function.zip $CODEBUILD_SRC_DIR/function.zip
       - echo Uploading the Lambda function package to S3...
-      - aws s3 cp $CODEBUILD_SRC_DIR/lambda_function.zip s3://draft-lambda-functions/generate_image/lambda_function.zip
-      - echo Deploying the CloudFormation stack...
-      - aws cloudformation deploy --stack-name imagegenerate --template-file $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/deploy.yaml --capabilities CAPABILITY_IAM
+      - aws s3 cp $CODEBUILD_SRC_DIR/function.zip s3://draft-lambda-functions/generate_image/function.zip
+
 artifacts:
   files:
     - mysite/lambda_function_for_def_generate_image/lambda_function.py
     - mysite/lambda_function_for_def_generate_image/deploy.yaml
-    - lambda_function.zip
+    - function.zip
   discard-paths: no
 
 cache:
