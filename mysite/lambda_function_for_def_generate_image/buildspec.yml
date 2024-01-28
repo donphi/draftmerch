@@ -28,16 +28,19 @@ phases:
       - echo Build completed on `date`
       - echo Updating timestamp in deploy.yaml...
       - timestamp=$(date +%Y%m%d%H%M%S)
-      - sed -i "s/UNIQUE_ID_PLACEHOLDER/$timestamp/" $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/deploy.yaml 
+      - sed -i "s/UNIQUE_ID_PLACEHOLDER/$timestamp/" $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/deploy.yaml
+      - echo Copying lambda_function.zip to the root directory of the build...
+      - cp /tmp/lambda_function.zip $CODEBUILD_SRC_DIR/lambda_function.zip
       - echo Uploading the Lambda function package to S3...
-      - aws s3 cp /tmp/lambda_function.zip s3://draft-lambda-functions/generate_image/lambda_function.zip
+      - aws s3 cp $CODEBUILD_SRC_DIR/lambda_function.zip s3://draft-lambda-functions/generate_image/lambda_function.zip
       - echo Deploying the CloudFormation stack...
       - aws cloudformation deploy --stack-name imagegenerate --template-file $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/deploy.yaml --capabilities CAPABILITY_IAM
 artifacts:
   files:
-    - $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/lambda_function.py
-    - $CODEBUILD_SRC_DIR/mysite/lambda_function_for_def_generate_image/deploy.yaml
-    - /tmp/lambda_function.zip
+    - mysite/lambda_function_for_def_generate_image/lambda_function.py
+    - mysite/lambda_function_for_def_generate_image/deploy.yaml
+    - lambda_function.zip
+  discard-paths: no
 
 cache:
   paths:
