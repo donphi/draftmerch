@@ -15,16 +15,20 @@ def get_secret(secret_name):
     try:
         response = secretsmanager_client.get_secret_value(SecretId=secret_name)
         secret_dict = json.loads(response['SecretString'])  # Parse the secret string as JSON
-        return secret_dict['apiKey']  # Access the API key using the 'apiKey' key
+        return secret_dict  # Return the whole secret dictionary
     except Exception as e:
-        logger.error(f"Error fetching secret: {e}")
+        logger.error(f"Error fetching secret: '{secret_name}' - {e}")
         raise e
 
 def lambda_handler(event, context):
-    # Fetch the API key from Secrets Manager
-    api_key = get_secret('Generator')
-    template_with_photo = get_secret('PromptTemplateWithPhoto')['promptTemplate']
-    template_without_photo = get_secret('PromptTemplateWithoutPhoto')['promptTemplate']
+    try:
+        # Fetch the API key from Secrets Manager
+        secrets_generator = get_secret('Generator')
+        api_key = secrets_generator['apiKey']  # Access the API key using the 'apiKey' key
+
+        # Fetch the templates from Secrets Manager
+        template_with_photo = get_secret('PromptTemplateWithPhoto')['promptTemplate']
+        template_without_photo = get_secret('PromptTemplateWithoutPhoto')['promptTemplate']
     
     # Extract parameters from the event object, assuming it's a JSON payload
     # You may need to change this part to match the structure of the incoming event
