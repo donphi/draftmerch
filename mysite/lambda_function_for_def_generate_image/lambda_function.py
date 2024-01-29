@@ -21,6 +21,7 @@ def get_secret(secret_name):
         raise e
 
 def lambda_handler(event, context):
+    def lambda_handler(event, context):
     try:
         # Fetch the API key from Secrets Manager
         secrets_generator = get_secret('Generator')
@@ -29,6 +30,13 @@ def lambda_handler(event, context):
         # Fetch the templates from Secrets Manager
         template_with_photo = get_secret('PromptTemplateWithPhoto')['promptTemplate']
         template_without_photo = get_secret('PromptTemplateWithoutPhoto')['promptTemplate']
+    except Exception as e:
+        logger.error(f"An error occurred while fetching secrets: {e}")
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'An unexpected error occurred while fetching secrets'})
+        }
     
     # Extract parameters from the event object, assuming it's a JSON payload
     # You may need to change this part to match the structure of the incoming event
