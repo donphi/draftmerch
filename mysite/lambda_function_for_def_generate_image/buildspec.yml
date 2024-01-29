@@ -28,7 +28,7 @@ artifacts:
   files:
     - mysite/lambda_function_for_def_generate_image/lambda_function.py
     - mysite/lambda_function_for_def_generate_image/deploy.yaml
-    - version_id.properties
+    - $CODEBUILD_SRC_DIR/version_id.properties
 
 cache:
   paths:
