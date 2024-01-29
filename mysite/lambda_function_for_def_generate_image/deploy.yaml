@@ -8,6 +8,7 @@ Parameters:
   FunctionCodeS3ObjectVersion:
     Description: S3 object version of the Lambda function code
     Type: String
+    Default: "VERSION_ID_PLACEHOLDER"
 
 Resources:
   LambdaFunction:

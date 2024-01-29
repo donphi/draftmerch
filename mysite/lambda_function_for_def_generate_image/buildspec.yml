@@ -22,10 +22,13 @@ phases:
       - echo Build completed on `date`
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/generate_image/function.zip
       - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "generate_image/function.zip" --query 'Versions[0].VersionId' --output text)
-      - cd $CODEBUILD_SRC_DIR
       - echo "FunctionCodeS3ObjectVersion=$version_id" > version_id.properties
       - echo Checking the contents of version_id.properties...
       - cat version_id.properties
+      - sed -i 's/VERSION_ID_PLACEHOLDER/'"$version_id"'/' mysite/lambda_function_for_def_generate_image/deploy.yaml
+      - echo "Updated deploy.yaml with actual version_id:"
+      - cat mysite/lambda_function_for_def_generate_image/deploy.yaml
+      - aws s3 cp mysite/lambda_function_for_def_generate_image/deploy.yaml s3://draft-lambda-functions/generate_image/deploy.yaml
 
 artifacts:
   files:
