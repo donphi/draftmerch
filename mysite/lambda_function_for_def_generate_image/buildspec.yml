@@ -22,7 +22,7 @@ phases:
       - echo Build completed on `date`
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/generate_image/function.zip
       - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "generate_image/function.zip" --query 'Versions[0].VersionId' --output text)
-      - echo "export VERSION_ID=$version_id" > $CODEBUILD_SRC_DIR/version_id.properties
+      - echo "VERSION_ID=$version_id" > version_id.properties
 
 artifacts:
   files:
