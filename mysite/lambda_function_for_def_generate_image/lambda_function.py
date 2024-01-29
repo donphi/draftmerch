@@ -21,7 +21,6 @@ def get_secret(secret_name):
         raise e
 
 def lambda_handler(event, context):
-    def lambda_handler(event, context):
     try:
         # Fetch the API key from Secrets Manager
         secrets_generator = get_secret('Generator')
