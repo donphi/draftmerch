@@ -23,8 +23,6 @@ phases:
        - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "generate_image/function.zip" --query 'Versions[0].VersionId' --output text)
        - cd $CODEBUILD_SRC_DIR
        - echo "FunctionCodeS3ObjectVersion=$version_id" > version_id.properties
-       - echo Checking the contents of version_id.properties...
-       - cat version_id.properties
 
  artifacts:
    files:
