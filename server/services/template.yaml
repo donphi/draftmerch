@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 120
+
+Resources:
+  RouteGenerateImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri: lambda_function_for_route_generate_image/
+      Events:
+        GenEndpoint:
+          Type: Api
+          Properties:
+            Path: /gen
+            Method: post
+
+  DefGenerateImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri: lambda_function_for_def_generate_image/
+      Events:
+        GenImaEndpoint:
+          Type: Api
+          Properties:
+            Path: /gen_ima
+            Method: post
+
