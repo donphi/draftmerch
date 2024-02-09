@@ -1,120 +1,131 @@
 import json
-import boto3
-import requests
+import logging
 from datetime import datetime
 from PIL import Image
 from io import BytesIO
+import boto3
+import requests
 
-# Initialize AWS clients for Lambda and S3
-s3_client = boto3.client('s3')
+# Set up logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Initialize AWS Lambda client and S3 client
 lambda_client = boto3.client('lambda')
+s3_client = boto3.client('s3')
 
-# Environment Variables or hardcoded values
-WATERMARK_BUCKET_NAME = "draft-images-bucket"
-WATERMARK_KEY = "watermark/watermark.png"
-IMAGE_BUCKET_NAME = "draft-images-bucket"
+# Bucket name
+bucket_name = 'draft-images-bucket'
+
+def upload_to_s3(bucket, key, image):
+    # Save image in BytesIO
+    buffer = BytesIO()
+    image.save(buffer, format='PNG')
+    buffer.seek(0)  # Move the cursor to the beginning of the file
+
+    # Upload to S3
+    s3_client.upload_fileobj(buffer, bucket, key, ExtraArgs={'ContentType': 'image/png'})
+
+    # Return the URL for the uploaded image
+    return f"https://{bucket}.s3.amazonaws.com/{key}"
 
 def lambda_handler(event, context):
-    if event['httpMethod'] != 'POST':
-        return {
-            'statusCode': 405,
-            'headers': {'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'Method not allowed'})
-        }
+    logger.info(f'Event: {event}')
+
+    # Initializing response headers
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Accept'
+    }
 
     try:
-        body = json.loads(event['body'])
-
-        # Invoke the gen_ima Lambda function to generate the image
-        response = lambda_client.invoke(
-            FunctionName='GenImaFunctionName', # Replace with the actual name of the gen_ima Lambda function
-            InvocationType='RequestResponse',
-            Payload=json.dumps(body)
-        )
-
-        # Parse the response payload
-        gen_ima_result = json.load(response['Payload'])
-
-        if gen_ima_result['statusCode'] == 200:
-            image_url = gen_ima_result['body']['image_url']  # Assuming this is how the URL is returned
-            
-            # Download the original image using the URL
-            response = requests.get(image_url)
-            response.raise_for_status()  # Raises an HTTPError if the status is 4xx, 5xx
-            original_image = Image.open(BytesIO(response.content)).convert('RGBA')
-
-            # Generate filenames
-            filename = formatted_filename(body['hero'], body['personality'], body['sport'], body['color'], body['action'])
-
-            # Save the original image in S3
-            original_image_buffer = BytesIO()
-            original_image.save(original_image_buffer, format='PNG')
-            original_image_key = f"original_image/{filename}.png"
-            s3_client.put_object(
-                Bucket=IMAGE_BUCKET_NAME,
-                Key=original_image_key,
-                Body=original_image_buffer.getvalue(),
-                ContentType='image/png'
-            )
-
-            # Get the watermark image from S3
-            watermark_object = s3_client.get_object(Bucket=WATERMARK_BUCKET_NAME, Key=WATERMARK_KEY)
-            watermark_image = Image.open(BytesIO(watermark_object['Body'].read())).convert('RGBA')
-            
-            watermark_image = watermark_image.resize(original_image.size, Image.ANTIALIAS)
-            watermarked_image = Image.alpha_composite(original_image, watermark_image).convert('RGB')
-
-            # Save the watermarked image in S3
-            watermarked_imag_buffer = BytesIO()
-            watermarked_image.save(watermarked_imag_buffer, format='PNG')
-            watermarked_image_key = f"watermarked_image/(watermark){filename}.png"
-            s3_client.put_object(
-                Bucket=IMAGE_BUCKET_NAME,
-                Key=watermarked_image_key,
-                Body=watermarked_imag_buffer.getvalue(),
-                ContentType='image/png'
-            )
-
-            # Construct URLs for the images in S3
-            watermarked_image_url = f"""https://{IMAGE_BUCKET_NAME}.s3.amazonaws.com/{watermarked_image_key}"""
-
-            # Return success response
+        if event['httpMethod'] == 'OPTIONS':
             return {
                 'statusCode': 200,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({
-                    'watermarked_image_url': watermarked_image_url
-                })
+                'headers': headers,
+                'body': json.dumps({'message': 'CORS preflight response'})
             }
 
-        else:
-            # Handle error from gen_ima function
+        if event['httpMethod'] != 'POST':
             return {
-                'statusCode': gen_ima_result['statusCode'],
-                'body': json.dumps({'error': 'Error calling gen_ima Lambda function'}),
-                'headers': {'Content-Type': 'application/json'}
+                'statusCode': 405,
+                'headers': headers,
+                'body': json.dumps({'error': 'Method not allowed'})
             }
 
-    except requests.RequestException as e:
-        # Handle image download failure
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': str(e)}),
-            'headers': {'Content-Type': 'application/json'}
+        body = json.loads(event['body'])
+        logger.info(f'Body after JSON deserialization: {body}')
+
+        # Wrap the payload in a dictionary under the 'body' key and serialize it to string
+        gen_ima_event = {
+            'body': json.dumps(body)
         }
 
+        response = lambda_client.invoke(
+            FunctionName='gen_ima',
+            InvocationType='RequestResponse',
+            Payload=json.dumps(gen_ima_event)  # Pass the wrapped event object
+        )
+
+        response_payload = json.loads(response['Payload'].read().decode("utf-8"))
+        logger.info(f'gen_ima response payload: {response_payload}')
+
+        if 'statusCode' in response_payload and response_payload['statusCode'] == 200:
+            gen_ima_result = json.loads(response_payload['body'])
+            image_url = gen_ima_result.get('image_url')
+            logger.info(f'Image URL: {image_url}')
+
+            response = requests.get(image_url)
+            response.raise_for_status()
+
+            original_image = Image.open(BytesIO(response.content)).convert('RGBA')
+            filename = formatted_filename(body['hero'], body['personality'], body['sport'], body['color'], body['action'])
+            original_image_key = f"image_original/{filename}"
+            watermarked_image_key = f"watermarked_image/(Watermark) {filename}"
+
+            # Upload the original image to S3
+            original_image_url = upload_to_s3(bucket_name, original_image_key, original_image)
+
+            # Get the watermark image from S3
+            watermark_image_key = "watermark/watermark.png"
+            watermark_response = s3_client.get_object(Bucket=bucket_name, Key=watermark_image_key)
+            watermark_image = Image.open(watermark_response['Body']).convert('RGBA')
+            watermark_image = watermark_image.resize(original_image.size, Image.LANCZOS)
+
+            # Apply the watermark to the original image and upload to S3
+            watermarked_image = Image.alpha_composite(original_image, watermark_image).convert('RGB')
+            watermarked_image_url = upload_to_s3(bucket_name, watermarked_image_key, watermarked_image)
+
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps({
+                    'original_image_url': original_image_url,
+                    'watermarked_image_url': watermarked_image_url,
+                    'filename': filename
+                })
+            }
+        else:
+            logger.error(f"Error calling gen_ima Lambda function: {response_payload}")
+            return {
+                'statusCode': response_payload.get('statusCode', 500),
+                'headers': headers,
+                'body': json.dumps({'error': 'Error calling gen_ima Lambda function'})
+            }
+
     except Exception as e:
-        # Handle general errors
+        logger.exception(f"Exception occurred: {e}")
         return {
             'statusCode': 500,
-            'body': json.dumps({'error': str(e)}),
-            'headers': {'Content-Type': 'application/json'}
+            'headers': headers,
+            'body': json.dumps({'error': str(e)})
         }
 
 def formatted_filename(hero, personality, sport, color, action):
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     filename_parts = [hero, personality, sport, color, action, timestamp]
     filename = "_".join(filter(None, filename_parts)) + ".png"
-    # Remove any illegal file characters if necessary
     filename = "".join(c for c in filename if c.isalnum() or c in " _-.")
     return filename
