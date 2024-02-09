@@ -5,16 +5,26 @@ Globals:
     Timeout: 120
 
 Resources:
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Cors:
+        AllowMethods: "'POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
   RouteGenerateImageFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.10
-      CodeUri: lambda_function_for_route_generate_image/
+      CodeUri: lambda_function_for_route_generate_image/Local/
       Events:
         GenEndpoint:
           Type: Api
           Properties:
+            RestApiId: !Ref MyApi
             Path: /gen
             Method: post
 
@@ -23,11 +33,11 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python3.10
-      CodeUri: lambda_function_for_def_generate_image/
+      CodeUri: lambda_function_for_def_generate_image/Local/
       Events:
         GenImaEndpoint:
           Type: Api
           Properties:
+            RestApiId: !Ref MyApi
             Path: /gen_ima
             Method: post
-
