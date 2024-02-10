@@ -17,6 +17,17 @@ s3_client = boto3.client('s3')
 # Bucket name
 bucket_name = 'draft-images-bucket'
 
+def generate_presigned_url(bucket, key, expiration=3600):
+    # Generate a pre-signed URL to share an S3 object.
+    try:
+        url = s3_client.generate_presigned_url('get_object',
+                                               Params={'Bucket': bucket, 'Key': key},
+                                               ExpiresIn=expiration)
+    except Exception as e:
+        logger.error(f"Error generating pre-signed URL: {e}")
+        return None
+    return url
+
 def upload_to_s3(bucket, key, image):
     buffer = BytesIO()
     image.save(buffer, format='PNG')
@@ -24,7 +35,9 @@ def upload_to_s3(bucket, key, image):
 
     # Upload to S3
     s3_client.upload_fileobj(buffer, bucket, key, ExtraArgs={'ContentType': 'image/png'})
-    return f"https://{bucket}.s3.amazonaws.com/{key}"
+    
+    # Generate a pre-signed URL for the uploaded image
+    return generate_presigned_url(bucket, key)
 
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
