@@ -143,13 +143,10 @@ let vectorizedImageUrl = null;
             });
         });
 
-        // Set up API endpoints
-        const localApiEndpoint = 'http://127.0.0.1:3000/gen'; // The endpoint when running SAM locally
-        const productionApiEndpoint = 'https://api.draftmerch.com/gen'; // The production API endpoint
+        // Set up the production API endpoint
+        const apiEndpoint = 'https://api.draftmerch.com/gen'; // The production API endpoint
+        const apiKey = 'x4ISPCpxA2ZXNqd7awV5a2SF7YlN5gu9OpVbIVA0'; // The API key for authorization
 
-        // Determine whether to use the local or production endpoint
-        // You can check 'window.location.hostname' or use another condition to determine the environment
-        const apiEndpoint = window.location.hostname === 'localhost' ? localApiEndpoint : productionApiEndpoint;
         console.log("API Endpoint: ", apiEndpoint);
 
         form.addEventListener('submit', function(event) {
@@ -185,7 +182,8 @@ let vectorizedImageUrl = null;
             fetch(apiEndpoint, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey // Add the API key to the request headers for authorization
                 },
                 body: JSON.stringify(bodyData)
             })

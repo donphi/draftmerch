@@ -58,15 +58,10 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
         logger.info(f'Body after JSON deserialization: {body}')
 
-        # Wrap the payload in a dictionary under the 'body' key and serialize it to string
-        gen_ima_event = {
-            'body': json.dumps(body)
-        }
-
         response = lambda_client.invoke(
             FunctionName='gen_ima',
             InvocationType='RequestResponse',
-            Payload=json.dumps(gen_ima_event)  # Pass the wrapped event object
+            Payload=json.dumps(body)
         )
 
         response_payload = json.loads(response['Payload'].read().decode("utf-8"))
