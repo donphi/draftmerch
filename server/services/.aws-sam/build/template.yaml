@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 120
+Resources:
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      Cors:
+        AllowMethods: '''POST,OPTIONS'''
+        AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+        AllowOrigin: '''*'''
+  RouteGenerateImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri: RouteGenerateImageFunction
+      Events:
+        GenEndpoint:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: MyApi
+            Path: /gen
+            Method: post
+    Metadata:
+      SamResourceId: RouteGenerateImageFunction
+  DefGenerateImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri: DefGenerateImageFunction
+      Events:
+        GenImaEndpoint:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: MyApi
+            Path: /gen_ima
+            Method: post
+    Metadata:
+      SamResourceId: DefGenerateImageFunction

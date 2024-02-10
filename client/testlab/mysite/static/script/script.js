@@ -143,12 +143,6 @@ let vectorizedImageUrl = null;
             });
         });
 
-        // Set up the production API endpoint
-        const apiEndpoint = 'https://api.draftmerch.com/gen'; // The production API endpoint
-        const apiKey = 'x4ISPCpxA2ZXNqd7awV5a2SF7YlN5gu9OpVbIVA0'; // The API key for authorization
-
-        console.log("API Endpoint: ", apiEndpoint);
-
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -162,56 +156,36 @@ let vectorizedImageUrl = null;
             downloadContainer.classList.add('hidden');
             form.classList.add('hidden');
 
+
             // Show loading state and message in the image container
             imageContainer.innerHTML = '<p>Generating image, please wait...</p>';
             loading.classList.remove('hidden');
             waitingMessage.classList.remove('hidden');
             imageContainer.style.display = 'flex';
 
-            let bodyData = {
-                'hero': getValueOrCustom('hero-dropdown', 'hero-custom-input'),
-                'personality': getValueOrCustom('personality-dropdown', 'personality-custom-input'),
-                'sport': getValueOrCustom('sport-dropdown', 'sport-custom-input'),
-                'color': getValueOrCustom('color-dropdown', 'color-custom-input'),
-                'action': getValueOrCustom('action-dropdown', 'action-custom-input')
-            };
+            let formData = new FormData(form);
+            formData.append('hero', getValueOrCustom('hero-dropdown', 'hero-custom-input'));
+            formData.append('personality', getValueOrCustom('personality-dropdown', 'personality-custom-input'));
+            formData.append('sport', getValueOrCustom('sport-dropdown', 'sport-custom-input'));
+            formData.append('color', getValueOrCustom('color-dropdown', 'color-custom-input'));
+            formData.append('action', getValueOrCustom('action-dropdown', 'action-custom-input'));
 
-            // Log the submitted data to the console (For debugging purposes)
-            console.log("Submitting data:", bodyData);
+            // Check if we are sending the Uploaded image correctly
+            console.log("Submitting Hero:", document.getElementById('hero-dropdown').value);
 
-            fetch(apiEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey // Add the API key to the request headers for authorization
-                },
-                body: JSON.stringify(bodyData)
-            })
-            .then(response => {
-                console.log("Response received: ", response);
-                if (!response.ok) {
-                    // Not a 2xx response. Log and throw an error.
-                    console.error("Response status was not OK: ", response.status);
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json(); // Assuming the server always responds with JSON
-            })
+            fetch(window.location.href, { method: 'POST', body: formData })
+            .then(response => response.json())
             .then(data => {
-                console.log("Data received from Lambda:", data);
-                if (data.watermarked_image_url && data.original_image_url && data.filename) {
-                    console.log("Original image URL:", data.original_image_url);
-                    console.log("Watermarked image URL:", data.watermarked_image_url);
-                    console.log("Filename:", data.filename);
-
+                if (data.watermarked_url && data.image_original_url && data.filename) {
                     // Create a new .image-wrapper div to contain the image
                     const newImageWrapper = document.createElement('div');
                     newImageWrapper.className = 'image-wrapper checkered-background';
-                    newImageWrapper.innerHTML = `<a href="${data.watermarked_image_url}" target="_blank">
-                                                    <img src="${data.watermarked_image_url}" alt="Generated Image" id="resultImage" data-filename="${data.filename}">
-                                                </a>`;
+                    newImageWrapper.innerHTML = `<a href="${data.watermarked_url}" target="_blank">
+                                                    <img src="${data.watermarked_url}" alt="Generated Image" id="resultImage" data-filename="${data.filename}">
+                                                 </a>`;
 
                     // Save Original Image
-                    originalImageUrl = data.watermarked_image_url;
+                    originalImageUrl = data.watermarked_url;
                     console.log("Original image URL:", originalImageUrl); // Check URL
 
                     // Clear the imageContainer and append the new .image-wrapper
@@ -219,9 +193,12 @@ let vectorizedImageUrl = null;
                     imageContainer.appendChild(newImageWrapper);
 
                     // Show and enable the vectorize switch
+                    const vectorizeSwitchContainer = document.getElementById('vectorizeSwitchContainer');
+                    const vectorizeSwitch = document.getElementById('vectorizeSwitch');
+
                     vectorizeSwitchContainer.classList.remove('hidden'); // Show the switch container
                     vectorizeSwitch.disabled = false; // Enable the switch
-                    form.classList.remove('hidden'); // Show the form
+                    form.classList.remove('hidden'); // Show the switch container
 
                     // Hide the waiting message as the image is now displayed
                     waitingMessage.classList.add('hidden');
@@ -230,7 +207,7 @@ let vectorizedImageUrl = null;
                     throw new Error(data.error || 'Unknown error occurred.');
                 }
             })
-            .catch(error => {
+                            .catch(error => {
                 console.error('Error:', error);
                 imageContainer.innerHTML = `<p>Error occurred: ${error.message}. Please try again.</p>`;
             })
