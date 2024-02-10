@@ -49,10 +49,12 @@ def lambda_handler(event, context):
         body = event if not http_method else json.loads(event['body'])
         
         response = lambda_client.invoke(
-            FunctionName='gen_ima',
-            InvocationType='RequestResponse',
-            Payload=json.dumps(body)
-        )
+	    FunctionName='gen_ima',
+	    InvocationType='RequestResponse',
+	    Payload=json.dumps({
+		'body': json.dumps(body)
+	    })
+	)
 
         response_payload = json.loads(response['Payload'].read().decode("utf-8"))
         logger.info(f'gen_ima response payload: {response_payload}')
