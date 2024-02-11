@@ -39,4 +39,3 @@ artifacts:
 cache:
   paths:
     - '/root/.cache/pip/**/*'
-    
