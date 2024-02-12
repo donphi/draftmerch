@@ -13,6 +13,7 @@ logger.setLevel(logging.INFO)
 secretsmanager_client = boto3.client('secretsmanager')
 s3_client = boto3.client('s3')
 dynamodb_client = boto3.resource('dynamodb')
+stepfunctions_client = boto3.client('stepfunctions')  # Added this line to initialize the Step Functions client
 
 # DynamoDB table name
 TABLE_NAME = os.environ.get('TABLE_NAME', 'ImageProcessingQueue')
@@ -22,7 +23,7 @@ BUCKET_NAME = os.environ.get('BUCKET_NAME', 'draft-images-bucket')
 TARGET_FOLDER = os.environ.get('TARGET_FOLDER', 'image_2x')
 
 # Step Functions state machine ARN
-STATE_MACHINE_ARN = os.environ.get('arn:aws:states:us-east-1:905418180959:stateMachine:MyStateMachine-nsbofpjm5')
+STATE_MACHINE_ARN = os.environ.get('STATE_MACHINE_ARN')  # Corrected this line to use an environment variable
 
 # Function to get the API key from AWS Secrets Manager
 def get_secret():
@@ -75,7 +76,7 @@ def start_step_function_execution(job_id, upscaled_key):
         input=input_payload
     )
     return response
-
+    
 def lambda_handler(event, context):
     # Retrieve the API key from AWS Secrets Manager
     api_key = get_secret()
@@ -127,7 +128,7 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'body': json.dumps({
                 'message': f"Upscaled image saved to {upscaled_key} successfully",
-                'jobId': job_id  # Return the jobId for tracking
+                'jobId': job_id,  # Return the jobId for tracking
                 'stepFunctionExecutionArn': sf_response['executionArn']
             })
         }
