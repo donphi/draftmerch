@@ -15,15 +15,15 @@ s3_client = boto3.client('s3')
 dynamodb_client = boto3.resource('dynamodb')
 
 # DynamoDB table name
-TABLE_NAME = 'ImageProcessingQueue'
+TABLE_NAME = os.environ.get('TABLE_NAME', 'ImageProcessingQueue')
 
 # S3 bucket name and target folder
-BUCKET_NAME = 'draft-images-bucket'
-TARGET_FOLDER = 'image_2x'
+BUCKET_NAME = os.environ.get('BUCKET_NAME', 'draft-images-bucket')
+TARGET_FOLDER = os.environ.get('TARGET_FOLDER', 'image_2x')
 
 # Function to get the API key from AWS Secrets Manager
 def get_secret():
-    secret_name = 'Upscaler'
+    secret_name = os.environ.get('UPSCALER_SECRET_NAME', 'Upscaler')
     try:
         response = secretsmanager_client.get_secret_value(SecretId=secret_name)
         secret_dict = json.loads(response['SecretString'])
@@ -44,6 +44,21 @@ def update_dynamodb(job_id, update_info):
         ExpressionAttributeValues={f":{k}": v for k, v in update_info.items()},
         ReturnValues="UPDATED_NEW"
     )
+
+def upscale_image(api_key, image_url):
+    url = "https://ai-picture-upscaler.p.rapidapi.com/supersize-image"
+    headers = {
+        "X-RapidAPI-Key": api_key,
+        "X-RapidAPI-Host": "ai-picture-upscaler.p.rapidapi.com"
+    }
+    payload = {
+        "sizeFactor": "2",
+        "imageStyle": "default",
+        "noiseCancellationFactor": "0"
+    }
+    files = {'image': requests.get(image_url).content}
+    response = requests.post(url, data=payload, files=files, headers=headers)
+    return response
 
 def lambda_handler(event, context):
     # Retrieve the API key from AWS Secrets Manager
@@ -77,7 +92,8 @@ def lambda_handler(event, context):
         }
     )
 
-    response = requests.get(image_url)
+    # Call the upscaling API
+    response = upscale_image(api_key, image_url)
     if response.status_code == 200:
         # The content could be saved back to S3 or processed further as needed
         upload_to_s3(BUCKET_NAME, upscaled_key, response.content)
@@ -100,8 +116,8 @@ def lambda_handler(event, context):
         }
     else:
         # Log the error and return a 500 error response
-        logger.error(f"Failed to download image from {image_url}")
+        logger.error(f"Failed to upscale image. Status code: {response.status_code}, Response: {response.text}")
         return {
             'statusCode': 500,
-            'body': json.dumps({'error': 'Failed to download image'})
+            'body': json.dumps({'error': 'Failed to upscale image'})
         }
