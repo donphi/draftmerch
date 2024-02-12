@@ -21,6 +21,9 @@ TABLE_NAME = os.environ.get('TABLE_NAME', 'ImageProcessingQueue')
 BUCKET_NAME = os.environ.get('BUCKET_NAME', 'draft-images-bucket')
 TARGET_FOLDER = os.environ.get('TARGET_FOLDER', 'image_2x')
 
+# Step Functions state machine ARN
+STATE_MACHINE_ARN = os.environ.get('arn:aws:states:us-east-1:905418180959:stateMachine:MyStateMachine-nsbofpjm5')
+
 # Function to get the API key from AWS Secrets Manager
 def get_secret():
     secret_name = os.environ.get('UPSCALER_SECRET_NAME', 'Upscaler')
@@ -58,6 +61,19 @@ def upscale_image(api_key, image_url):
     }
     files = {'image': requests.get(image_url).content}
     response = requests.post(url, data=payload, files=files, headers=headers)
+    return response
+
+def start_step_function_execution(job_id, upscaled_key):
+    # Start a new execution of the Step Functions state machine
+    input_payload = json.dumps({
+        'jobId': job_id,
+        'upscaledImageKey': upscaled_key
+    })
+    response = stepfunctions_client.start_execution(
+        stateMachineArn=STATE_MACHINE_ARN,
+        name=job_id,  # Using the job ID as the execution name
+        input=input_payload
+    )
     return response
 
 def lambda_handler(event, context):
@@ -112,6 +128,7 @@ def lambda_handler(event, context):
             'body': json.dumps({
                 'message': f"Upscaled image saved to {upscaled_key} successfully",
                 'jobId': job_id  # Return the jobId for tracking
+                'stepFunctionExecutionArn': sf_response['executionArn']
             })
         }
     else:
