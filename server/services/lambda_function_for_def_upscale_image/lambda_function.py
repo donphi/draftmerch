@@ -23,7 +23,7 @@ BUCKET_NAME = os.environ.get('BUCKET_NAME', 'draft-images-bucket')
 TARGET_FOLDER = os.environ.get('TARGET_FOLDER', 'image_2x')
 
 # Step Functions state machine ARN
-STATE_MACHINE_ARN = 'arn:aws:states:us-east-1:905418180959:stateMachine:MyStateMachine-nsbofpjm5'  # Corrected this line to use an environment variable
+STATE_MACHINE_ARN = os.environ.get('STATE_MACHINE_ARN')  # Corrected this line to use an environment variable
 
 # Function to get the API key from AWS Secrets Manager
 def get_secret():
@@ -70,6 +70,7 @@ def start_step_function_execution(job_id, upscaled_key):
         'jobId': job_id,
         'upscaledImageKey': upscaled_key
     })
+    print(f"Starting execution of state machine with ARN: {STATE_MACHINE_ARN}")
     response = stepfunctions_client.start_execution(
         stateMachineArn=STATE_MACHINE_ARN,
         name=job_id,  # Using the job ID as the execution name
