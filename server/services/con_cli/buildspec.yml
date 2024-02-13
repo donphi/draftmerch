@@ -13,18 +13,18 @@ phases:
   build:
     commands:
       - echo Build started on `date` for con_cli
-      - cd $CODEBUILD_SRC_DIR/con_cli
-      - zip -r9 /tmp/con_cli.zip lambda_function.py  # Replace with your actual Lambda file name
+      - cd $CODEBUILD_SRC_DIR/server/services/con_cli
+      - zip -r9 /tmp/function.zip lambda_function.py  # Replace with your actual Lambda file name
       - cd /tmp/dependencies_con_cli
-      - zip -ur /tmp/con_cli.zip .  # Add the contents of the dependencies directory to the zip
+      - zip -ur /tmp/function.zip .  # Add the contents of the dependencies directory to the zip
   post_build:
     commands:
-      - echo Build completed on `date` for con_cli
-      - aws s3 cp /tmp/con_cli.zip s3://draft-lambda-functions/con_cli/function.zip
+      - echo Build completed on `date`
+      - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/con_cli/function.zip
       - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "con_cli/function.zip" --query 'Versions[0].VersionId' --output text)
       - echo "FunctionCodeS3ObjectVersion=$version_id" > con_cli_version_id.properties
-      - sed -i 's/VERSION_ID_PLACEHOLDER/'"$version_id"'/' $CODEBUILD_SRC_DIR/con_cli/deploy.yaml
-      - aws s3 cp $CODEBUILD_SRC_DIR/con_cli/deploy.yaml s3://draft-lambda-functions/con_cli/deploy.yaml
+      - sed -i 's/VERSION_ID_PLACEHOLDER/'"$version_id"'/' $CODEBUILD_SRC_DIR/server/services/con_cli/deploy.yaml
+      - aws s3 cp $CODEBUILD_SRC_DIR/server/services/con_cli/deploy.yaml s3://draft-lambda-functions/con_cli/deploy.yaml
 artifacts:
   files:
     - con_cli/lambda_function.py
