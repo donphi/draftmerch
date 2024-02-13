@@ -9,13 +9,13 @@ phases:
       - pip install -r server/services/dis_cli/requirements.txt -t /tmp/dependencies_dis_cli
   pre_build:
     commands:
-      - echo Pre-build phase for dis_cli...
+      - echo Pre-build phase...
   build:
     commands:
-      - echo Build started on `date` for dis_cli
+      - echo Build started on `date`
       - cd $CODEBUILD_SRC_DIR/server/services/dis_cli
       - zip -r9 /tmp/function.zip lambda_function.py  # Replace with your actual Lambda file name
-      - cd /tmp/dependencies_dis_cli
+      - cd /tmp/dependencies
       - zip -ur /tmp/function.zip .  # Add the contents of the dependencies directory to the zip
   post_build:
     commands:
@@ -23,14 +23,18 @@ phases:
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/dis_cli/function.zip
       - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "dis_cli/function.zip" --query 'Versions[0].VersionId' --output text)
       - echo "FunctionCodeS3ObjectVersion=$version_id" > dis_cli_version_id.properties
+      - echo Checking the contents of version_id.properties...
+      - cat $CODEBUILD_SRC_DIR/version_id.properties
       - sed -i 's/VERSION_ID_PLACEHOLDER/'"$version_id"'/' $CODEBUILD_SRC_DIR/server/services/dis_cli/deploy.yaml
+      - echo "Updated deploy.yaml with actual version_id:"
+      - cat $CODEBUILD_SRC_DIR/server/services/dis_cli/deploy.yaml
       - aws s3 cp $CODEBUILD_SRC_DIR/server/services/dis_cli/deploy.yaml s3://draft-lambda-functions/dis_cli/deploy.yaml
 artifacts:
   files:
-    - dis_cli/lambda_function.py
-    - dis_cli/deploy.yaml
-    - dis_cli_version_id.properties
-  name: dis_cli_package  # This is the output artifact name that will be used in CodePipeline
+    - server/services/dis_cli/lambda_function.py
+    - server/services/dis_cli/deploy.yaml
+    - version_id.properties
+  name: disconnect_client  # This is the output artifact name that will be used in CodePipeline
 
 cache:
   paths:
