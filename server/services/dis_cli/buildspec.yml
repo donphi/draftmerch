@@ -5,8 +5,7 @@ phases:
     runtime-versions:
       python: 3.10
     commands:
-      - echo Installing source dependencies for dis_cli...
-      - pip install -r server/services/dis_cli/requirements.txt -t /tmp/dependencies
+      - echo Skipping dependency installation...
   pre_build:
     commands:
       - echo Pre-build phase...
@@ -15,8 +14,6 @@ phases:
       - echo Build started on `date`
       - cd $CODEBUILD_SRC_DIR/server/services/dis_cli
       - zip -r9 /tmp/function.zip lambda_function.py  # Replace with your actual Lambda file name
-      - cd /tmp/dependencies
-      - zip -ur /tmp/function.zip .  # Add the contents of the dependencies directory to the zip
   post_build:
     commands:
       - echo Build completed on `date`
