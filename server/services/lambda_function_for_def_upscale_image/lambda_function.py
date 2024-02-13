@@ -118,20 +118,29 @@ def lambda_handler(event, context):
                 }
             )
 
-            sf_response = start_step_function_execution(job_id, upscaled_key)
+            #sf_response = start_step_function_execution(job_id, upscaled_key)
 
             return {
                 'statusCode': 200,
                 'body': json.dumps({
-                    'message': f"Upscaled image saved to {upscaled_key} successfully",
+                    'message': "Upscaled image saved to S3 successfully",
                     'jobId': job_id,
-                    'filename': original_filename,  # Include the filename in the response
-                    'upscaledImageUrl': f"s3://{BUCKET_NAME}/{upscaled_key}"  # Include the upscaled image URL in the response
+                    'filename': original_filename,
+                    'upscaledImageUrl': f"https://{BUCKET_NAME}.s3.amazonaws.com/{upscaled_key}"
                 })
             }
         else:
+            # Log the error and return a 500 error response
             logger.error(f"Failed to upscale image. Status code: {response.status_code}, Response: {response.text}")
             return {
                 'statusCode': 500,
                 'body': json.dumps({'error': 'Failed to upscale image'})
             }
+
+    else:
+        # Log an error if the event doesn't contain 'filename' and 'image_url'
+        logger.error("Event object does not contain 'filename' or 'image_url'.")
+        return {
+            'statusCode': 400,
+            'body': json.dumps({'error': "Event object does not contain 'filename' or 'image_url'."})
+        }
