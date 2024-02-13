@@ -42,10 +42,14 @@ def upload_to_s3(bucket, key, image_content):
 
 def update_dynamodb(job_id, update_info):
     table = dynamodb_client.Table(TABLE_NAME)
+    expression_attribute_names = {f"#{k}": k for k in update_info.keys()}
+    update_expression = 'SET ' + ', '.join(f"#{k} = :{k}" for k in update_info)
+    expression_attribute_values = {f":{k}": v for k, v in update_info.items()}
     table.update_item(
         Key={'jobId': job_id},
-        UpdateExpression='SET ' + ', '.join(f"{k} = :{k}" for k in update_info),
-        ExpressionAttributeValues={f":{k}": v for k, v in update_info.items()},
+        UpdateExpression=update_expression,
+        ExpressionAttributeNames=expression_attribute_names,
+        ExpressionAttributeValues=expression_attribute_values,
         ReturnValues="UPDATED_NEW"
     )
 
