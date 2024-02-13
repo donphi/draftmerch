@@ -6,7 +6,7 @@ phases:
       python: 3.10
     commands:
       - echo Installing source dependencies for con_cli...
-      - pip install -r server/services/con_cli/requirements.txt -t /tmp/dependencies_con_cli
+      - pip install -r server/services/con_cli/requirements.txt -t /tmp/dependencies
   pre_build:
     commands:
       - echo Pre-build phase...
