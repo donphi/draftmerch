@@ -22,7 +22,7 @@ phases:
       - echo Build completed on `date`
       - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/dis_cli/function.zip
       - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "dis_cli/function.zip" --query 'Versions[0].VersionId' --output text)
-      - echo "FunctionCodeS3ObjectVersion=$version_id" > dis_cli_version_id.properties
+      - echo "FunctionCodeS3ObjectVersion=$version_id" > $CODEBUILD_SRC_DIR/version_id.properties
       - echo Checking the contents of version_id.properties...
       - cat $CODEBUILD_SRC_DIR/version_id.properties
       - sed -i 's/VERSION_ID_PLACEHOLDER/'"$version_id"'/' $CODEBUILD_SRC_DIR/server/services/dis_cli/deploy.yaml
