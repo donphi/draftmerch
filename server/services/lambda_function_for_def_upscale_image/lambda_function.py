@@ -80,6 +80,20 @@ def start_step_function_execution(job_id, upscaled_key):
     return response
 
 def lambda_handler(event, context):
+    # Log the received event to see what data is being passed in
+    logger.info("Received event: " + json.dumps(event))
+
+    try:
+        # Attempt to retrieve the 'filename' from the event
+        original_filename = event['filename']
+    except KeyError as e:
+        # Log the error and return a response indicating the missing 'filename'
+        logger.error(f"Missing key in event object: {e}")
+        return {
+            'statusCode': 400,
+            'body': json.dumps({'error': f'Missing key in event object: {e}'})
+        }
+    
     api_key = get_secret()
     job_id = str(uuid4())
     original_filename = event['filename']
