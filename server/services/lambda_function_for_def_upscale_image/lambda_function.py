@@ -83,63 +83,55 @@ def lambda_handler(event, context):
     # Log the received event to see what data is being passed in
     logger.info("Received event: " + json.dumps(event))
 
-    try:
-        # Attempt to retrieve the 'filename' from the event
+    # Check if this is the initial upscaling event
+    if 'filename' in event and 'image_url' in event:
+        api_key = get_secret()
+        job_id = str(uuid4())
         original_filename = event['filename']
-    except KeyError as e:
-        # Log the error and return a response indicating the missing 'filename'
-        logger.error(f"Missing key in event object: {e}")
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'error': f'Missing key in event object: {e}'})
-        }
-    
-    api_key = get_secret()
-    job_id = str(uuid4())
-    original_filename = event['filename']
-    base_filename, file_extension = os.path.splitext(original_filename)
-    upscaled_filename = f"{base_filename}2x{file_extension}"
-    upscaled_key = os.path.join(TARGET_FOLDER, upscaled_filename)
-    image_url = event['image_url']
+        base_filename, file_extension = os.path.splitext(original_filename)
+        upscaled_filename = f"{base_filename}2x{file_extension}"
+        upscaled_key = os.path.join(TARGET_FOLDER, upscaled_filename)
+        image_url = event['image_url']
 
-    dynamodb_client.Table(TABLE_NAME).put_item(
-        Item={
-            'jobId': job_id,
-            'filename': original_filename,
-            'status': 'UPSCALING',
-            'originalImageUrl': image_url,
-            'upscaledImageUrl': '',
-            'processedImageUrl': ''
-        }
-    )
-
-    response = upscale_image(api_key, image_url)
-    if response.status_code == 200:
-        data = response.json()
-        upscaled_image_content = base64.b64decode(data["artifacts"][0]["base64"])
-        upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content)
-
-        update_dynamodb(
-            job_id,
-            {
-                'upscaledImageUrl': f"s3://{BUCKET_NAME}/{upscaled_key}",
-                'status': 'UPSCALED'
+        dynamodb_client.Table(TABLE_NAME).put_item(
+            Item={
+                'jobId': job_id,
+                'filename': original_filename,
+                'status': 'UPSCALING',
+                'originalImageUrl': image_url,
+                'upscaledImageUrl': '',
+                'processedImageUrl': ''
             }
         )
 
-        sf_response = start_step_function_execution(job_id, upscaled_key)
+        response = upscale_image(api_key, image_url)
+        if response.status_code == 200:
+            data = response.json()
+            upscaled_image_content = base64.b64decode(data["artifacts"][0]["base64"])
+            upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content)
 
-        return {
-            'statusCode': 200,
-            'body': json.dumps({
-                'message': f"Upscaled image saved to {upscaled_key} successfully",
-                'jobId': job_id,
-                'stepFunctionExecutionArn': sf_response['executionArn']
-            })
-        }
-    else:
-        logger.error(f"Failed to upscale image. Status code: {response.status_code}, Response: {response.text}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': 'Failed to upscale image'})
-        }
+            update_dynamodb(
+                job_id,
+                {
+                    'upscaledImageUrl': f"s3://{BUCKET_NAME}/{upscaled_key}",
+                    'status': 'UPSCALED'
+                }
+            )
+
+            sf_response = start_step_function_execution(job_id, upscaled_key)
+
+            return {
+                'statusCode': 200,
+                'body': json.dumps({
+                    'message': f"Upscaled image saved to {upscaled_key} successfully",
+                    'jobId': job_id,
+                    'filename': original_filename,  # Include the filename in the response
+                    'upscaledImageUrl': f"s3://{BUCKET_NAME}/{upscaled_key}"  # Include the upscaled image URL in the response
+                })
+            }
+        else:
+            logger.error(f"Failed to upscale image. Status code: {response.status_code}, Response: {response.text}")
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'error': 'Failed to upscale image'})
+            }
