@@ -6,7 +6,7 @@ phases:
       python: 3.10
     commands:
       - echo Installing source dependencies for dis_cli...
-      - pip install -r dis_cli/requirements.txt -t /tmp/dependencies_dis_cli
+      - pip install -r server/services/dis_cli/requirements.txt -t /tmp/dependencies_dis_cli
   pre_build:
     commands:
       - echo Pre-build phase for dis_cli...
