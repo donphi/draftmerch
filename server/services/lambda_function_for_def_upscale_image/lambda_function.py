@@ -3,6 +3,7 @@ import logging
 import os
 import requests
 import boto3
+import base64
 from uuid import uuid4
 
 # Set up logging
@@ -13,7 +14,7 @@ logger.setLevel(logging.INFO)
 secretsmanager_client = boto3.client('secretsmanager')
 s3_client = boto3.client('s3')
 dynamodb_client = boto3.resource('dynamodb')
-stepfunctions_client = boto3.client('stepfunctions')  # Added this line to initialize the Step Functions client
+stepfunctions_client = boto3.client('stepfunctions')
 
 # DynamoDB table name
 TABLE_NAME = os.environ.get('TABLE_NAME', 'ImageProcessingQueue')
@@ -23,7 +24,7 @@ BUCKET_NAME = os.environ.get('BUCKET_NAME', 'draft-images-bucket')
 TARGET_FOLDER = os.environ.get('TARGET_FOLDER', 'image_2x')
 
 # Step Functions state machine ARN
-STATE_MACHINE_ARN = os.environ.get('STATE_MACHINE_ARN')  # Corrected this line to use an environment variable
+STATE_MACHINE_ARN = os.environ.get('STATE_MACHINE_ARN')
 
 # Function to get the API key from AWS Secrets Manager
 def get_secret():
@@ -31,13 +32,12 @@ def get_secret():
     try:
         response = secretsmanager_client.get_secret_value(SecretId=secret_name)
         secret_dict = json.loads(response['SecretString'])
-        return secret_dict['apiKey']  # Return the API key
+        return secret_dict['apiKey']
     except Exception as e:
         logger.error(f"Error fetching secret: {secret_name} - {e}")
         raise e
 
 def upload_to_s3(bucket, key, image_content):
-    # Upload image to S3
     s3_client.put_object(Body=image_content, Bucket=bucket, Key=key, ContentType='image/png')
 
 def update_dynamodb(job_id, update_info):
@@ -50,22 +50,19 @@ def update_dynamodb(job_id, update_info):
     )
 
 def upscale_image(api_key, image_url):
-    url = "https://ai-picture-upscaler.p.rapidapi.com/supersize-image"
+    url = "https://api.stability.ai/v1/generation/esrgan-v1-x2plus/image-to-image/upscale"
     headers = {
-        "X-RapidAPI-Key": api_key,
-        "X-RapidAPI-Host": "ai-picture-upscaler.p.rapidapi.com"
-    }
-    payload = {
-        "sizeFactor": "2",
-        "imageStyle": "default",
-        "noiseCancellationFactor": "0"
+        "Accept": "application/json",
+        "Authorization": f"Bearer {api_key}"
     }
     files = {'image': requests.get(image_url).content}
-    response = requests.post(url, data=payload, files=files, headers=headers)
+    data = {
+        "height": 0  # Assuming you want to keep the same height as the original image
+    }
+    response = requests.post(url, headers=headers, files=files, data=data)
     return response
 
 def start_step_function_execution(job_id, upscaled_key):
-    # Start a new execution of the Step Functions state machine
     input_payload = json.dumps({
         'jobId': job_id,
         'upscaledImageKey': upscaled_key
@@ -73,50 +70,37 @@ def start_step_function_execution(job_id, upscaled_key):
     print(f"Starting execution of state machine with ARN: {STATE_MACHINE_ARN}")
     response = stepfunctions_client.start_execution(
         stateMachineArn=STATE_MACHINE_ARN,
-        name=job_id,  # Using the job ID as the execution name
+        name=job_id,
         input=input_payload
     )
     return response
-    
+
 def lambda_handler(event, context):
-    # Retrieve the API key from AWS Secrets Manager
     api_key = get_secret()
-
-    # Generate a unique jobId
     job_id = str(uuid4())
-
-    # Assuming the 'filename' is passed in the event, which includes the original extension
     original_filename = event['filename']
-    
-    # Add "2x" suffix to the original filename (before the extension)
     base_filename, file_extension = os.path.splitext(original_filename)
     upscaled_filename = f"{base_filename}2x{file_extension}"
-
-    # Define the key for the upscaled image in the S3 bucket
     upscaled_key = os.path.join(TARGET_FOLDER, upscaled_filename)
-
-    # Assuming the image URL is passed in the event
     image_url = event['image_url']
 
-    # Insert a new item into the DynamoDB table with the initial job status
     dynamodb_client.Table(TABLE_NAME).put_item(
         Item={
             'jobId': job_id,
             'filename': original_filename,
             'status': 'UPSCALING',
             'originalImageUrl': image_url,
-            'upscaledImageUrl': '',  # Will be updated after upscaling
-            'processedImageUrl': ''  # Will be updated after background removal
+            'upscaledImageUrl': '',
+            'processedImageUrl': ''
         }
     )
 
-    # Call the upscaling API
     response = upscale_image(api_key, image_url)
     if response.status_code == 200:
-        # The content could be saved back to S3 or processed further as needed
-        upload_to_s3(BUCKET_NAME, upscaled_key, response.content)
+        data = response.json()
+        upscaled_image_content = base64.b64decode(data["artifacts"][0]["base64"])
+        upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content)
 
-        # Update the DynamoDB table with the upscaled image URL and status
         update_dynamodb(
             job_id,
             {
@@ -125,16 +109,17 @@ def lambda_handler(event, context):
             }
         )
 
+        sf_response = start_step_function_execution(job_id, upscaled_key)
+
         return {
             'statusCode': 200,
             'body': json.dumps({
                 'message': f"Upscaled image saved to {upscaled_key} successfully",
-                'jobId': job_id,  # Return the jobId for tracking
+                'jobId': job_id,
                 'stepFunctionExecutionArn': sf_response['executionArn']
             })
         }
     else:
-        # Log the error and return a 500 error response
         logger.error(f"Failed to upscale image. Status code: {response.status_code}, Response: {response.text}")
         return {
             'statusCode': 500,
