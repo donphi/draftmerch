@@ -57,7 +57,7 @@ def upscale_image(api_key, image_url):
     }
     files = {'image': requests.get(image_url).content}
     data = {
-        "height": 0  # Assuming you want to keep the same height as the original image
+        "height": 2048  # Assuming you want to keep the same height as the original image
     }
     response = requests.post(url, headers=headers, files=files, data=data)
     return response
