@@ -3,6 +3,7 @@ import logging
 import os
 import requests
 import boto3
+from botocore.exceptions import ClientError
 
 # Set up logging
 logger = logging.getLogger()
@@ -11,13 +12,20 @@ logger.setLevel(logging.INFO)
 # Initialize a Secrets Manager client
 secretsmanager_client = boto3.client('secretsmanager')
 
+# Initialize a DynamoDB client
+dynamodb_client = boto3.client('dynamodb')
+
+# DynamoDB table names
+render_table_name = 'render'
+user_sessions_table_name = 'UserSessions'
+
 def get_secret(secret_name):
     try:
         response = secretsmanager_client.get_secret_value(SecretId=secret_name)
         secret_dict = json.loads(response['SecretString'])  # Parse the secret string as JSON
         return secret_dict  # Return the whole secret dictionary
     except Exception as e:
-        logger.error(f"Error fetching secret: '{secret_name}' - {e}")
+        logger.error(f"Error fetching secret: {secret_name} - {e}")
         raise e
 
 def lambda_handler(event, context):
@@ -38,7 +46,6 @@ def lambda_handler(event, context):
         }
     
     # Extract parameters from the event object, assuming it's a JSON payload
-    # You may need to change this part to match the structure of the incoming event
     body = json.loads(event['body'])
     hero = body['hero']
     personality = body['personality']
@@ -46,6 +53,36 @@ def lambda_handler(event, context):
     color = body['color']
     action = body['action']
     uploaded_image_description = body.get('uploaded_image_description')
+    connection_id = body['userId']  # The userId is the connectionId
+
+    # Generate a unique renderId for this request
+    renderId = context.aws_request_id  # Using the Lambda request ID as a unique identifier
+
+    # Insert the renderId and options into the DynamoDB table
+    try:
+        dynamodb_client.put_item(
+            TableName=render_table_name,
+            Item={
+                'renderId': {'S': renderId},
+                'options': {'M': {
+                    'hero': {'S': hero},
+                    'personality': {'S': personality},
+                    'sport': {'S': sport},
+                    'color': {'S': color},
+                    'action': {'S': action}  # Assuming action is a dictionary that needs to be converted to a JSON string
+                }},
+                'status': {'S': 'pending'},  # Initial status
+                'connectionId': {'S': connection_id}  # Store the connectionId
+            }
+        )
+        logger.info(f"Inserted item with renderId={renderId} into DynamoDB table {render_table_name}")
+    except ClientError as e:
+        logger.error(f"Failed to insert item into DynamoDB: {e}")
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Failed to insert item into DynamoDB'})
+        }
 
     api_url = 'https://api.openai.com/v1/images/generations'
     headers = {
@@ -81,6 +118,21 @@ def lambda_handler(event, context):
         response_json = response.json()
         # Safely access the image URL
         image_url = response_json.get('data', [{}])[0].get('url', '')  # Provide defaults to avoid KeyError or TypeError
+
+        # Update the status in the DynamoDB table to 'completed'
+        try:
+            dynamodb_client.update_item(
+                TableName=render_table_name,
+                Key={'renderId': {'S': renderId}},
+                UpdateExpression='SET status = :status',
+                ExpressionAttributeValues={
+                    ':status': {'S': 'completed'}
+                }
+            )
+            logger.info(f"Updated item status in DynamoDB: renderId={renderId}")
+        except ClientError as e:
+            logger.error(f"Failed to update item status in DynamoDB: {e}")
+            # Handle error as needed
 
         # Return the correct response
         return {

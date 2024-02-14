@@ -10,15 +10,21 @@ import requests
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# Initialize AWS Lambda client and S3 client
+# Initialize AWS Lambda client, S3 client, and DynamoDB client
 lambda_client = boto3.client('lambda')
 s3_client = boto3.client('s3')
+dynamodb_client = boto3.client('dynamodb')
 
 # Bucket name
 bucket_name = 'draft-images-bucket'
 
+# DynamoDB table names
+user_sessions_table_name = 'UserSessions'
+render_requests_table_name = 'RenderRequests'
+render_table_name = 'Render'  # Name of the table where renderId and options are stored
+
 def generate_presigned_url(bucket, key, expiration=3600):
-    # Generate a pre-signed URL to share an S3 object.
+    # Generate a pre-signed URL to share an S3 object
     try:
         url = s3_client.generate_presigned_url('get_object',
                                                Params={'Bucket': bucket, 'Key': key},
@@ -38,6 +44,23 @@ def upload_to_s3(bucket, key, image):
     
     # Generate a pre-signed URL for the uploaded image
     return generate_presigned_url(bucket, key)
+
+def get_render_data(render_id):
+    try:
+        response = dynamodb_client.get_item(
+            TableName=render_table_name,  # Use the correct Render table name
+            Key={'renderId': {'S': render_id}}
+        )
+        item = response.get('Item')
+        if not item:
+            logger.error(f"No item found with renderId: {render_id}")
+            return None, None
+        options = json.loads(item['options']['S'])
+        return render_id, options
+        
+    except Exception as e:
+        logger.error(f"Failed to get render data for renderId {render_id}: {e}")
+        return None, None
 
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
@@ -61,13 +84,36 @@ def lambda_handler(event, context):
         # Direct Lambda invocation adaptation
         body = event if not http_method else json.loads(event['body'])
         
+        # Extract the connectionId from the WebSocket connection event
+        connection_id = event['requestContext']['connectionId']
+
+        # Generate unique renderId
+        if 'renderId' not in body:
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Missing renderId'})}
+        
+        render_id, options = get_render_data(body['renderId'])
+        if render_id is None or options is None:
+            return {'statusCode': 404, 'headers': headers, 'body': json.dumps({'error': 'RenderId not found or failed to fetch options'})}
+
+        # Insert initial record into DynamoDB
+        dynamodb_client.put_item(
+            TableName=render_requests_table_name,
+            Item={
+                'renderId': {'S': render_id},
+                'connectionId': {'S': connection_id},
+                'options': {'S': json.dumps(body['options'])},  # Assuming options is a dictionary
+                'originalImageUrl': {'S': ''},  # To be updated after image processing
+                'watermarkedImageUrl': {'S': ''},  # To be updated after image processing
+                'status': {'S': 'pending'}
+            }
+        )
+        
+        # Invoke the image generation Lambda function
         response = lambda_client.invoke(
-	    FunctionName='gen_ima',
-	    InvocationType='RequestResponse',
-	    Payload=json.dumps({
-		'body': json.dumps(body)
-	    })
-	)
+            FunctionName='gen_ima',
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'body': json.dumps(body)})
+        )
 
         response_payload = json.loads(response['Payload'].read().decode("utf-8"))
         logger.info(f'gen_ima response payload: {response_payload}')
@@ -80,7 +126,7 @@ def lambda_handler(event, context):
             response.raise_for_status()
 
             original_image = Image.open(BytesIO(response.content)).convert('RGBA')
-            filename = formatted_filename(body['hero'], body['personality'], body['sport'], body['color'], body['action'])
+            filename = f"{render_id}.png"
             original_image_key = f"image_original/{filename}"
             watermarked_image_key = f"watermarked_image/(Watermark) {filename}"
 
@@ -94,6 +140,19 @@ def lambda_handler(event, context):
             watermarked_image = Image.alpha_composite(original_image, watermark_image).convert('RGB')
             watermarked_image_url = upload_to_s3(bucket_name, watermarked_image_key, watermarked_image)
 
+            # After processing and uploading the original and watermarked images, update the DynamoDB table
+            dynamodb_client.update_item(
+                TableName=render_requests_table_name,
+                Key={'renderId': {'S': render_id}},
+                UpdateExpression='SET originalImageUrl = :origUrl, watermarkedImageUrl = :waterUrl, status = :status',
+                ExpressionAttributeValues={
+                    ':origUrl': {'S': original_image_url},
+                    ':waterUrl': {'S': watermarked_image_url},
+                    ':status': {'S': 'completed'}
+                }
+            )
+
+            # Return a successful response
             return {
                 'statusCode': 200,
                 'headers': headers,
@@ -113,11 +172,13 @@ def lambda_handler(event, context):
 
     except Exception as e:
         logger.exception(f"Exception occurred: {e}")
+        # Update DynamoDB table with error status
+        dynamodb_client.update_item(
+            TableName=render_requests_table_name,
+            Key={'renderId': {'S': render_id}},
+            UpdateExpression='SET status = :status',
+            ExpressionAttributeValues={
+                ':status': {'S': 'error'}
+            }
+        )
         return {'statusCode': 500, 'headers': headers, 'body': json.dumps({'error': str(e)})}
-
-def formatted_filename(hero, personality, sport, color, action):
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    filename_parts = [hero, personality, sport, color, action, timestamp]
-    filename = "_".join(filter(None, filename_parts)) + ".png"
-    filename = "".join(c for c in filename if c.isalnum() or c in " _-.")
-    return filename
