@@ -1,7 +1,7 @@
 import boto3
 
 # Replace 'YourDynamoDBTableName' with your actual DynamoDB table name
-TABLE_NAME = 'ClientInformation'
+TABLE_NAME = 'UserSessions'
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(TABLE_NAME)
 
