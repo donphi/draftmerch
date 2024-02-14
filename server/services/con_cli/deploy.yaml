@@ -15,7 +15,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: con_cli
-      Handler: con_cli.lambda_handler
+      Handler: lambda_function.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
         S3Bucket: draft-lambda-functions
