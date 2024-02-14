@@ -5,7 +5,7 @@ TABLE_NAME = 'UserSessions'
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(TABLE_NAME)
 
-def con_cli(event, context):
+def lambda_handler(event, context):
     connection_id = event['requestContext']['connectionId']
     
     # Store the connection ID in DynamoDB
