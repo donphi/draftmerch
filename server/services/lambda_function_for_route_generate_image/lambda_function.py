@@ -47,7 +47,10 @@ def upload_to_s3(bucket, key, image):
 
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
-
+    
+    # Initialize render_id as None or a default value at the start
+    render_id = None
+    
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
