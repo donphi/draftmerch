@@ -18,6 +18,7 @@ dynamodb_client = boto3.client('dynamodb')
 # DynamoDB table names
 render_table_name = 'render'
 user_sessions_table_name = 'UserSessions'
+render_requests_table_name = 'RenderRequests'
 
 def get_secret(secret_name):
     try:
@@ -33,6 +34,33 @@ def lambda_handler(event, context):
         # Fetch the API key from Secrets Manager
         secrets_generator = get_secret('Generator')
         api_key = secrets_generator['apiKey']  # Access the API key using the 'apiKey' key
+        
+        # Assuming 'renderId' is a direct part of the Lambda function's triggering event now
+        render_id = event.get('renderId')
+        
+        if not render_id:
+            logger.error("No 'renderId' found in the event")
+            return {'statusCode': 400, 'body': json.dumps({'error': 'No renderId provided'})}
+        
+        try:
+            response = dynamodb_client.get_item(
+                TableName=render_requests_table_name,
+                Key={'renderId': {'S': render_id}}
+            )
+            item = response.get('Item')
+            if not item:
+                logger.error(f"No item found with renderId: {render_id} in RenderRequests table")
+                return {'statusCode': 404, 'body': json.dumps({'error': 'renderId not found in RenderRequests'})}
+            
+            # Assuming you now have the details from RenderRequests, perform your next operations here.
+            # Example: use 'item' details for further processing.
+        except ClientError as e:
+            logger.error(f"Failed to fetch item from DynamoDB: {e}")
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'error': 'Failed to fetch item from RenderRequests'})
+            }
+
 
         # Fetch the templates from Secrets Manager
         template_with_photo = get_secret('PromptTemplateWithPhoto')['promptTemplate']
@@ -55,15 +83,12 @@ def lambda_handler(event, context):
     uploaded_image_description = body.get('uploaded_image_description')
     connection_id = body['userId']  # The userId is the connectionId
 
-    # Generate a unique renderId for this request
-    renderId = context.aws_request_id  # Using the Lambda request ID as a unique identifier
-
     # Insert the renderId and options into the DynamoDB table
     try:
         dynamodb_client.put_item(
             TableName=render_table_name,
             Item={
-                'renderId': {'S': renderId},
+                'renderId': {'S': render_id},
                 'options': {'M': {
                     'hero': {'S': hero},
                     'personality': {'S': personality},
@@ -75,7 +100,7 @@ def lambda_handler(event, context):
                 'connectionId': {'S': connection_id}  # Store the connectionId
             }
         )
-        logger.info(f"Inserted item with renderId={renderId} into DynamoDB table {render_table_name}")
+        logger.info(f"Inserted item with renderId={render_id} into DynamoDB table {render_table_name}")
     except ClientError as e:
         logger.error(f"Failed to insert item into DynamoDB: {e}")
         return {

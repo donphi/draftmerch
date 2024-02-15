@@ -45,23 +45,6 @@ def upload_to_s3(bucket, key, image):
     # Generate a pre-signed URL for the uploaded image
     return generate_presigned_url(bucket, key)
 
-def get_render_data(render_id):
-    try:
-        response = dynamodb_client.get_item(
-            TableName=render_table_name,  # Use the correct Render table name
-            Key={'renderId': {'S': render_id}}
-        )
-        item = response.get('Item')
-        if not item:
-            logger.error(f"No item found with renderId: {render_id}")
-            return None, None
-        options = json.loads(item['options']['S'])
-        return render_id, options
-        
-    except Exception as e:
-        logger.error(f"Failed to get render data for renderId {render_id}: {e}")
-        return None, None
-
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
 
@@ -88,12 +71,7 @@ def lambda_handler(event, context):
         connection_id = event['requestContext']['connectionId']
 
         # Generate unique renderId
-        if 'renderId' not in body:
-            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Missing renderId'})}
-        
-        render_id, options = get_render_data(body['renderId'])
-        if render_id is None or options is None:
-            return {'statusCode': 404, 'headers': headers, 'body': json.dumps({'error': 'RenderId not found or failed to fetch options'})}
+        render_id = str(datetime.utcnow().timestamp()).replace('.', '')
 
         # Insert initial record into DynamoDB
         dynamodb_client.put_item(
@@ -101,7 +79,6 @@ def lambda_handler(event, context):
             Item={
                 'renderId': {'S': render_id},
                 'connectionId': {'S': connection_id},
-                'options': {'S': json.dumps(body['options'])},  # Assuming options is a dictionary
                 'originalImageUrl': {'S': ''},  # To be updated after image processing
                 'watermarkedImageUrl': {'S': ''},  # To be updated after image processing
                 'status': {'S': 'pending'}
