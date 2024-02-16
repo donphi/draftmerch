@@ -84,16 +84,14 @@ def lambda_handler(event, context):
         user_identifier = body.get('userIdentifier')
 
         logger.info(f"Extracted userIdentifier: {user_identifier}")
-        
+
         # Query the UserSession for connectionId using user_identifier
         try:
-            response = dynamodb_client.query(
-                TableName=user_sessions_table_name,
-                IndexName='userIdentifier-index',  # Assuming you have this index; adjust as necessary
-                KeyConditionExpression='userIdentifier = :userIdentifier',
-                ExpressionAttributeValues={':userIdentifier': {'S': user_identifier}}
-            )
-            connection_id = response['Items'][0]['connectionId']['S']  # Assuming at least one match; handle appropriately
+            # Extract the connectionId from the event body
+            body = json.loads(event['body'])
+            connection_id = body.get('connectionId')
+            if not connection_id:
+                return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'connectionId not provided'})}
         except Exception as e:
             logger.error(f"Error fetching connectionId for userIdentifier {user_identifier}: {e}")
             return {'statusCode': 500, 'headers': headers, 'body': json.dumps({'error': 'Error fetching connection information'})}
