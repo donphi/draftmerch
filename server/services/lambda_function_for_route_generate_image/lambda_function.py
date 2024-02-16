@@ -34,6 +34,20 @@ def generate_presigned_url(bucket, key, expiration=3600):
         return None
     return url
 
+def fetch_connection_id(session_identifier):
+    try:
+        response = dynamodb_client.get_item(
+            TableName=user_sessions_table_name,
+            Key={'sessionIdentifier': {'S': session_identifier}}
+        )
+        return response['Item']['connectionId']['S']
+    except KeyError:
+        logger.error("No connectionId found for sessionIdentifier: {}".format(session_identifier))
+        return None
+    except Exception as e:
+        logger.error("Exception fetching connectionId: {}".format(e))
+        return None
+
 def upload_to_s3(bucket, key, image):
     buffer = BytesIO()
     image.save(buffer, format='PNG')
@@ -56,6 +70,9 @@ def lambda_handler(event, context):
     }
 
     try:
+        # Log the entire event object for debugging
+        logger.info(f"Received event: {event}")
+
         http_method = event.get('httpMethod')
         if http_method == 'OPTIONS':
             return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'message': 'CORS preflight response'})}
@@ -66,6 +83,8 @@ def lambda_handler(event, context):
         body = json.loads(event['body']) if http_method else event
         user_identifier = body.get('userIdentifier')
 
+        logger.info(f"Extracted userIdentifier: {user_identifier}")
+        
         # Query the UserSession for connectionId using user_identifier
         try:
             response = dynamodb_client.query(
