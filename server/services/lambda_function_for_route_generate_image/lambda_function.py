@@ -19,9 +19,7 @@ dynamodb_client = boto3.client('dynamodb')
 bucket_name = 'draft-images-bucket'
 
 # DynamoDB table names
-user_sessions_table_name = 'UserSessions'
 render_requests_table_name = 'RenderRequests'
-render_table_name = 'Render'  # Name of the table where renderId and options are stored
 
 def generate_presigned_url(bucket, key, expiration=3600):
     # Generate a pre-signed URL to share an S3 object
@@ -33,20 +31,6 @@ def generate_presigned_url(bucket, key, expiration=3600):
         logger.error(f"Error generating pre-signed URL: {e}")
         return None
     return url
-
-def fetch_connection_id(session_identifier):
-    try:
-        response = dynamodb_client.get_item(
-            TableName=user_sessions_table_name,
-            Key={'sessionIdentifier': {'S': session_identifier}}
-        )
-        return response['Item']['connectionId']['S']
-    except KeyError:
-        logger.error("No connectionId found for sessionIdentifier: {}".format(session_identifier))
-        return None
-    except Exception as e:
-        logger.error("Exception fetching connectionId: {}".format(e))
-        return None
 
 def upload_to_s3(bucket, key, image):
     buffer = BytesIO()
@@ -79,22 +63,11 @@ def lambda_handler(event, context):
         if http_method and http_method != 'POST':
             return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'error': 'Method not allowed'})}
         
-        # Assuming session or user identifier to query UserSessions is in the body; adjust as needed
-        body = json.loads(event['body']) if http_method else event
-        user_identifier = body.get('userIdentifier')
-
-        logger.info(f"Extracted userIdentifier: {user_identifier}")
-
-        # Query the UserSession for connectionId using user_identifier
-        try:
-            # Extract the connectionId from the event body
-            body = json.loads(event['body'])
-            connection_id = body.get('connectionId')
-            if not connection_id:
-                return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'connectionId not provided'})}
-        except Exception as e:
-            logger.error(f"Error fetching connectionId for userIdentifier {user_identifier}: {e}")
-            return {'statusCode': 500, 'headers': headers, 'body': json.dumps({'error': 'Error fetching connection information'})}
+        # Extract the connectionId from the event body
+        body = json.loads(event['body'])
+        connection_id = body.get('connectionId')
+        if not connection_id:
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'connectionId not provided'})}
 
         render_id = str(datetime.utcnow().timestamp()).replace('.', '')
 
