@@ -47,8 +47,7 @@ def upload_to_s3(bucket, key, image):
 
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
-
-    # Initialize headers for HTTP responses
+    
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -58,20 +57,27 @@ def lambda_handler(event, context):
 
     try:
         http_method = event.get('httpMethod')
-
         if http_method == 'OPTIONS':
             return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'message': 'CORS preflight response'})}
-
         if http_method and http_method != 'POST':
             return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'error': 'Method not allowed'})}
-
+        
+        # Assuming session or user identifier to query UserSessions is in the body; adjust as needed
         body = json.loads(event['body']) if http_method else event
+        user_identifier = body.get('userIdentifier')
 
-        if 'requestContext' in event and 'connectionId' in event['requestContext']:
-            connection_id = event['requestContext']['connectionId']
-        else:
-            logger.error("requestContext or connectionId not found in event")
-            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'requestContext or connectionId not found'})}
+        # Query the UserSession for connectionId using user_identifier
+        try:
+            response = dynamodb_client.query(
+                TableName=user_sessions_table_name,
+                IndexName='userIdentifier-index',  # Assuming you have this index; adjust as necessary
+                KeyConditionExpression='userIdentifier = :userIdentifier',
+                ExpressionAttributeValues={':userIdentifier': {'S': user_identifier}}
+            )
+            connection_id = response['Items'][0]['connectionId']['S']  # Assuming at least one match; handle appropriately
+        except Exception as e:
+            logger.error(f"Error fetching connectionId for userIdentifier {user_identifier}: {e}")
+            return {'statusCode': 500, 'headers': headers, 'body': json.dumps({'error': 'Error fetching connection information'})}
 
         render_id = str(datetime.utcnow().timestamp()).replace('.', '')
 
