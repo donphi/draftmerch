@@ -70,8 +70,14 @@ def lambda_handler(event, context):
         # Direct Lambda invocation adaptation
         body = event if not http_method else json.loads(event['body'])
         
-        # Extract the connectionId from the WebSocket connection event
-        connection_id = event['requestContext']['connectionId']
+        # Check if 'requestContext' exists in the event, before extracting connectionId
+        if 'requestContext' in event:
+            connection_id = event['requestContext'].get('connectionId')
+        else:
+            # Handle the case where requestContext is not available
+            logger.error("requestContext not found in event")
+            # Decide on how to handle this error; you might want to stop execution or set a default value
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'requestContext not found'})}
 
         # Generate unique renderId
         render_id = str(datetime.utcnow().timestamp()).replace('.', '')
