@@ -47,10 +47,8 @@ def upload_to_s3(bucket, key, image):
 
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
-    
-    # Initialize render_id as None or a default value at the start
-    render_id = None
-    
+
+    # Initialize headers for HTTP responses
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -59,42 +57,35 @@ def lambda_handler(event, context):
     }
 
     try:
-        # Adjusted to check for 'httpMethod' in event
         http_method = event.get('httpMethod')
+
         if http_method == 'OPTIONS':
             return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'message': 'CORS preflight response'})}
 
         if http_method and http_method != 'POST':
             return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'error': 'Method not allowed'})}
 
-        # Direct Lambda invocation adaptation
-        body = event if not http_method else json.loads(event['body'])
-        
-        # Check if 'requestContext' exists in the event, before extracting connectionId
-        if 'requestContext' in event:
-            connection_id = event['requestContext'].get('connectionId')
-        else:
-            # Handle the case where requestContext is not available
-            logger.error("requestContext not found in event")
-            # Decide on how to handle this error; you might want to stop execution or set a default value
-            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'requestContext not found'})}
+        body = json.loads(event['body']) if http_method else event
 
-        # Generate unique renderId
+        if 'requestContext' in event and 'connectionId' in event['requestContext']:
+            connection_id = event['requestContext']['connectionId']
+        else:
+            logger.error("requestContext or connectionId not found in event")
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'requestContext or connectionId not found'})}
+
         render_id = str(datetime.utcnow().timestamp()).replace('.', '')
 
-        # Insert initial record into DynamoDB
         dynamodb_client.put_item(
             TableName=render_requests_table_name,
             Item={
                 'renderId': {'S': render_id},
                 'connectionId': {'S': connection_id},
-                'originalImageUrl': {'S': ''},  # To be updated after image processing
-                'watermarkedImageUrl': {'S': ''},  # To be updated after image processing
+                'originalImageUrl': {'S': ''},
+                'watermarkedImageUrl': {'S': ''},
                 'status': {'S': 'pending'}
             }
         )
-        
-        # Invoke the image generation Lambda function
+
         response = lambda_client.invoke(
             FunctionName='gen_ima',
             InvocationType='RequestResponse',
@@ -107,7 +98,7 @@ def lambda_handler(event, context):
         if 'statusCode' in response_payload and response_payload['statusCode'] == 200:
             gen_ima_result = json.loads(response_payload['body'])
             image_url = gen_ima_result.get('image_url')
-            
+
             response = requests.get(image_url)
             response.raise_for_status()
 
@@ -126,7 +117,6 @@ def lambda_handler(event, context):
             watermarked_image = Image.alpha_composite(original_image, watermark_image).convert('RGB')
             watermarked_image_url = upload_to_s3(bucket_name, watermarked_image_key, watermarked_image)
 
-            # After processing and uploading the original and watermarked images, update the DynamoDB table
             dynamodb_client.update_item(
                 TableName=render_requests_table_name,
                 Key={'renderId': {'S': render_id}},
@@ -138,7 +128,6 @@ def lambda_handler(event, context):
                 }
             )
 
-            # Return a successful response
             return {
                 'statusCode': 200,
                 'headers': headers,
@@ -150,21 +139,14 @@ def lambda_handler(event, context):
             }
         else:
             logger.error(f"Error calling gen_ima Lambda function: {response_payload}")
-            return {
-                'statusCode': response_payload.get('statusCode', 500),
-                'headers': headers,
-                'body': json.dumps({'error': 'Error calling gen_ima Lambda function'})
-            }
+            return {'statusCode': response_payload.get('statusCode', 500), 'headers': headers, 'body': json.dumps({'error': 'Error calling gen_ima Lambda function'})}
 
     except Exception as e:
         logger.exception(f"Exception occurred: {e}")
-        # Update DynamoDB table with error status
         dynamodb_client.update_item(
             TableName=render_requests_table_name,
             Key={'renderId': {'S': render_id}},
             UpdateExpression='SET status = :status',
-            ExpressionAttributeValues={
-                ':status': {'S': 'error'}
-            }
+            ExpressionAttributeValues={':status': {'S': 'error'}}
         )
         return {'statusCode': 500, 'headers': headers, 'body': json.dumps({'error': str(e)})}
