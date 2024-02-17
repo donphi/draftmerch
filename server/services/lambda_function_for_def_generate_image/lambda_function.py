@@ -35,12 +35,23 @@ def lambda_handler(event, context):
         secrets_generator = get_secret('Generator')
         api_key = secrets_generator['apiKey']  # Access the API key using the 'apiKey' key
         
-        # Assuming 'renderId' is a direct part of the Lambda function's triggering event now
+        if 'body' in event:
+            event = json.loads(event['body'])
         render_id = event.get('renderId')
         
         if not render_id:
             logger.error("No 'renderId' found in the event")
             return {'statusCode': 400, 'body': json.dumps({'error': 'No renderId provided'})}
+        
+        response = dynamodb_client.get_item(
+            TableName=render_requests_table_name,
+            Key={'renderId': {'S': render_id}}
+        )
+        
+        item = response.get('Item')
+        if not item:
+            logger.error(f"No item found with renderId: {render_id} in RenderRequests table")
+            return {'statusCode': 404, 'body': json.dumps({'error': 'renderId not found in RenderRequests'})}
         
         try:
             response = dynamodb_client.get_item(
