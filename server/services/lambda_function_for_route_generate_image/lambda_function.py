@@ -82,7 +82,8 @@ def lambda_handler(event, context):
         response = lambda_client.invoke(
             FunctionName='gen_ima',
             InvocationType='RequestResponse',
-            Payload=json.dumps({'body': json.dumps(body)})
+            Payload=json.dumps({'body': json.dumps(body)({'connectionId': connection_id,
+                'renderId': render_id,}})
         )
 
         response_payload = json.loads(response['Payload'].read().decode("utf-8"))
