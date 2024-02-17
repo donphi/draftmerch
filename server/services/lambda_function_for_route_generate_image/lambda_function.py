@@ -52,24 +52,27 @@ def lambda_handler(event, context):
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Accept'
     }
+    
+    # Initialize render_id early to ensure it's accessible throughout the function
+    render_id = str(datetime.utcnow().timestamp()).replace('.', '')
 
     try:
-        # Log the entire event object for debugging
-        logger.info(f"Received event: {event}")
-
-        http_method = event.get('httpMethod')
-        if http_method == 'OPTIONS':
-            return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'message': 'CORS preflight response'})}
-        if http_method and http_method != 'POST':
-            return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'error': 'Method not allowed'})}
+        if 'httpMethod' in event:
+            http_method = event.get('httpMethod')
+            if http_method == 'OPTIONS':
+                return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'message': 'CORS preflight response'})}
+            if http_method and http_method != 'POST':
+                return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'error': 'Method not allowed'})}
         
-        # Extract the connectionId from the event body
+        # Check if 'body' is present in event
+        if 'body' not in event:
+            logger.error("Received event does not contain 'body'")
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': "Event body is missing"})}
+        
         body = json.loads(event['body'])
         connection_id = body.get('connectionId')
         if not connection_id:
             return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'connectionId not provided'})}
-
-        render_id = str(datetime.utcnow().timestamp()).replace('.', '')
 
         dynamodb_client.put_item(
             TableName=render_requests_table_name,
