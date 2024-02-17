@@ -22,7 +22,6 @@ bucket_name = 'draft-images-bucket'
 render_requests_table_name = 'RenderRequests'
 
 def generate_presigned_url(bucket, key, expiration=3600):
-    # Generate a pre-signed URL to share an S3 object
     try:
         url = s3_client.generate_presigned_url('get_object',
                                                Params={'Bucket': bucket, 'Key': key},
@@ -57,21 +56,16 @@ def lambda_handler(event, context):
     render_id = str(datetime.utcnow().timestamp()).replace('.', '')
 
     try:
-        if 'httpMethod' in event:
-            http_method = event.get('httpMethod')
-            if http_method == 'OPTIONS':
-                return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'message': 'CORS preflight response'})}
-            if http_method and http_method != 'POST':
-                return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'error': 'Method not allowed'})}
-        
-        # Check if 'body' is present in event
-        if 'body' not in event:
-            logger.error("Received event does not contain 'body'")
-            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': "Event body is missing"})}
-        
-        body = json.loads(event['body'])
+        # Body extraction, handling both API Gateway and direct invocations
+        if 'body' in event:
+            body = json.loads(event['body'])
+        else:
+            body = event  # Assuming direct invocation provides necessary data directly
+            
         connection_id = body.get('connectionId')
+        
         if not connection_id:
+            logger.error("connectionId not provided")
             return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'connectionId not provided'})}
 
         dynamodb_client.put_item(
