@@ -75,7 +75,17 @@ def lambda_handler(event, context):
                 'connectionId': {'S': connection_id},
                 'originalImageUrl': {'S': ''},
                 'watermarkedImageUrl': {'S': ''},
-                'status': {'S': 'pending'}
+                'status': {'S': 'pending'},
+                'options': {  # Including nested fields right from the start.
+                    'M': {
+                        'hero': {'S': body.get('hero', 'N/A')},
+                        'personality': {'S': body.get('personality', 'N/A')},
+                        'sport': {'S': body.get('sport', 'N/A')},
+                        'color': {'S': body.get('color', 'N/A')},
+                        'action': {'S': body.get('action', 'N/A')},
+                        'uploaded_image_description': {'S': body.get('uploaded_image_description', 'N/A')}
+                    }
+                }
             }
         )
 
@@ -133,14 +143,7 @@ def lambda_handler(event, context):
                 ExpressionAttributeValues={
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
-                    ':statusVal': {'S': 'completed'},
-                    ':options': {'M': {
-                        'hero': {'S': body.get('hero')},
-                        'personality': {'S': body.get('personality')},
-                        'sport': {'S': body.get('sport')},
-                        'color': {'S': body.get('color')},
-                        'action': {'S': body.get('action')}  # Assuming action is a dictionary that needs to be converted to a JSON string
-                }},
+                    ':statusVal': {'S': 'completed'}
                 },
                 ExpressionAttributeNames={
                     '#status': 'status'
