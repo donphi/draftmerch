@@ -129,11 +129,14 @@ def lambda_handler(event, context):
             dynamodb_client.update_item(
                 TableName=render_requests_table_name,
                 Key={'renderId': {'S': render_id}},
-                UpdateExpression='SET originalImageUrl = :origUrl, watermarkedImageUrl = :waterUrl, status = :status',
+                UpdateExpression='SET originalImageUrl = :origUrl, watermarkedImageUrl = :waterUrl, #status = :statusVal',
                 ExpressionAttributeValues={
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
-                    ':status': {'S': 'completed'}
+                    ':statusVal': {'S': 'completed'}
+                },
+                ExpressionAttributeNames={
+                    '#status': 'status'
                 }
             )
 
@@ -155,7 +158,12 @@ def lambda_handler(event, context):
         dynamodb_client.update_item(
             TableName=render_requests_table_name,
             Key={'renderId': {'S': render_id}},
-            UpdateExpression='SET status = :status',
-            ExpressionAttributeValues={':status': {'S': 'error'}}
+            UpdateExpression='SET #status = :statusVal',
+            ExpressionAttributeValues={
+                ':statusVal': {'S': 'error'}
+            },
+            ExpressionAttributeNames={
+                '#status': 'status'
+            }
         )
         return {'statusCode': 500, 'headers': headers, 'body': json.dumps({'error': str(e)})}
