@@ -144,7 +144,10 @@ def lambda_handler(event, context):
             dynamodb_client.update_item(
                 TableName=render_table_name,
                 Key={'renderId': {'S': render_id}},
-                UpdateExpression='SET status = :status',
+                UpdateExpression='SET #status_alias = :status',  # Use an alias
+                ExpressionAttributeNames={
+                    '#status_alias': 'status'  # Alias mapping
+                },
                 ExpressionAttributeValues={
                     ':status': {'S': 'completed'}
                 }
