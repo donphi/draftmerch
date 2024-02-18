@@ -183,4 +183,4 @@ def formatted_filename(hero, personality, sport, color, action):
     filename_parts = [hero, personality, sport, color, action, timestamp]
     filename = "_".join(filter(None, filename_parts)) + ".png"
     filename = "".join(c for c in filename if c.isalnum() or c in " _-.")
-    return filename
+    return filename 
