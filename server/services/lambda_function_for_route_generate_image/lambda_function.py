@@ -90,6 +90,13 @@ def lambda_handler(event, context):
                 'body': json.dumps({
                     'connectionId': connection_id,
                     'renderId': render_id,
+                    # Including other expected fields
+                    'hero': body.get('hero'),
+                    'personality': body.get('personality'),
+                    'sport': body.get('sport'),
+                    'color': body.get('color'),
+                    'action': body.get('action'),
+                    'uploaded_image_description': body.get('uploaded_image_description'),
                 })
             })
         )
