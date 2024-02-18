@@ -76,7 +76,7 @@ def lambda_handler(event, context):
     color = body['color']
     action = body['action']
     uploaded_image_description = body.get('uploaded_image_description')
-    connection_id = body['userId']  # The userId is the connectionId
+    connection_id = body['connectionId']  # The userId is the connectionId
 
     # Insert the renderId and options into the DynamoDB table
     try:
