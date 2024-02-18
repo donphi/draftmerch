@@ -143,13 +143,13 @@ def lambda_handler(event, context):
         try:
             dynamodb_client.update_item(
                 TableName=render_table_name,
-                Key={'renderId': {'S': renderId}},
+                Key={'renderId': {'S': render_id}},
                 UpdateExpression='SET status = :status',
                 ExpressionAttributeValues={
                     ':status': {'S': 'completed'}
                 }
             )
-            logger.info(f"Updated item status in DynamoDB: renderId={renderId}")
+            logger.info(f"Updated item status in DynamoDB: renderId={render_id}")
         except ClientError as e:
             logger.error(f"Failed to update item status in DynamoDB: {e}")
             # Handle error as needed
