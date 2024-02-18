@@ -133,7 +133,14 @@ def lambda_handler(event, context):
                 ExpressionAttributeValues={
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
-                    ':statusVal': {'S': 'completed'}
+                    ':statusVal': {'S': 'completed'},
+                    'options': {'M': {
+                        'hero': {'S': body.get('hero')},
+                        'personality': {'S': body.get('personality')},
+                        'sport': {'S': body.get('sport')},
+                        'color': {'S': body.get('color')},
+                        'action': {'S': body.get('action')}  # Assuming action is a dictionary that needs to be converted to a JSON string
+                }},
                 },
                 ExpressionAttributeNames={
                     '#status': 'status'
