@@ -134,7 +134,7 @@ def lambda_handler(event, context):
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
                     ':statusVal': {'S': 'completed'},
-                    'options': {'M': {
+                    ':options': {'M': {
                         'hero': {'S': body.get('hero')},
                         'personality': {'S': body.get('personality')},
                         'sport': {'S': body.get('sport')},
