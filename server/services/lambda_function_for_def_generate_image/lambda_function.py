@@ -16,7 +16,7 @@ secretsmanager_client = boto3.client('secretsmanager')
 dynamodb_client = boto3.client('dynamodb')
 
 # DynamoDB table names
-render_table_name = 'render'
+render_table_name = 'Render'
 user_sessions_table_name = 'UserSessions'
 render_requests_table_name = 'RenderRequests'
 
