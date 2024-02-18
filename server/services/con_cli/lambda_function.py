@@ -18,12 +18,11 @@ def lambda_handler(event, context):
     # Log the received connectionId
     logger.info(f"Received connectionId: {connection_id}")
     
-    # Optionally store the connection ID in DynamoDB
-    response = table.put_item(Item={'connectionId': connection_id})
+    # Store the connection ID in DynamoDB and mark it as active
+    response = table.put_item(Item={'connectionId': connection_id, 'isActive': True})
     
     # Log the response from DynamoDB
     logger.info(f"DynamoDB response: {response}")
     
     return {'statusCode': 200}
-
 

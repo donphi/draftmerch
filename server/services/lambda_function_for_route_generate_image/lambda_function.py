@@ -122,7 +122,7 @@ def lambda_handler(event, context):
             response.raise_for_status()
 
             original_image = Image.open(BytesIO(response.content)).convert('RGBA')
-            filename = f"{render_id}.png"
+            filename = formatted_filename(body['hero'], body['personality'], body['sport'], body['color'], body['action'])
             original_image_key = f"image_original/{filename}"
             watermarked_image_key = f"watermarked_image/(Watermark) {filename}"
 
@@ -177,3 +177,10 @@ def lambda_handler(event, context):
             }
         )
         return {'statusCode': 500, 'headers': headers, 'body': json.dumps({'error': str(e)})}
+
+def formatted_filename(hero, personality, sport, color, action):
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename_parts = [hero, personality, sport, color, action, timestamp]
+    filename = "_".join(filter(None, filename_parts)) + ".png"
+    filename = "".join(c for c in filename if c.isalnum() or c in " _-.")
+    return filename
