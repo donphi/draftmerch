@@ -204,7 +204,7 @@ def send_ws_message(connection_id):
     try:
         api_gw_client.post_to_connection(
             ConnectionId=connection_id,
-            Data=json.dumps(message).encode('utf-8')
+            Data=json.dumps(message)
         )
         logger.info(f"Processing complete message sent to {connection_id}")
     except Exception as e:
