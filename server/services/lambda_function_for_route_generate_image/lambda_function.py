@@ -24,7 +24,7 @@ render_requests_table_name = 'RenderRequests'
 # Set up the endpoint URL for the 'ApiGatewayManagementApi' client
 api_gw_client = boto3.client(
     'apigatewaymanagementapi',
-    endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod'  # Use your actual API Gateway endpoint for WebSocket
+    endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/'  # Use your actual API Gateway endpoint for WebSocket
 )
 
 def generate_presigned_url(bucket, key, expiration=3600):
