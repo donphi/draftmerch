@@ -143,7 +143,8 @@ def lambda_handler(event, context):
                 ExpressionAttributeValues={
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
-                    ':statusVal': {'S': 'completed'}
+                    ':statusVal': {'S': 'completed'},
+                    ':filename': {'S': filename}
                 },
                 ExpressionAttributeNames={
                     '#status': 'status'
