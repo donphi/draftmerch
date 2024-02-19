@@ -191,15 +191,21 @@ def formatted_filename(hero, personality, sport, color, action):
     filename = "".join(c for c in filename if c.isalnum() or c in " _-.")
     return filename
 
-def send_ws_message(connection_id, data):
-    """
-    Send a message to a client via WebSocket using the connection ID.
-    """
+def send_ws_message(connection_id):
+
+    #Send a message to a client via WebSocket using the connection ID,
+    #indicating that processing is complete and data is ready to be fetched.
+
+    message = {
+        'status': 'ProcessingComplete',  # Indicating processing is complete
+        'message': 'Processing complete. Please check api.draftmerch.com/rcv_ima'
+    }
+    
     try:
         api_gw_client.post_to_connection(
             ConnectionId=connection_id,
-            Data=json.dumps(data).encode('utf-8')
+            Data=json.dumps(message).encode('utf-8')
         )
+        logger.info(f"Processing complete message sent to {connection_id}")
     except Exception as e:
         logger.error(f"Failed to send message via WebSocket: {e}")
-        # Handle the failure accordingly (e.g., log the error, attempt a retry, send an alert, etc.)
