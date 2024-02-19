@@ -22,10 +22,7 @@ bucket_name = 'draft-images-bucket'
 render_requests_table_name = 'RenderRequests'
 
 # Set up the endpoint URL for the 'ApiGatewayManagementApi' client
-api_gw_client = boto3.client(
-    'apigatewaymanagementapi',
-    endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/'  # Use your actual API Gateway endpoint for WebSocket
-)
+api_gw_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/')
 
 def generate_presigned_url(bucket, key, expiration=3600):
     try:
@@ -197,8 +194,9 @@ def send_ws_message(connection_id):
     #indicating that processing is complete and data is ready to be fetched.
 
     message = {
-        'status': 'ProcessingComplete',  # Indicating processing is complete
-        'message': 'Processing complete. Please check api.draftmerch.com/rcv_ima'
+        'message': 'Processing complete. Please check api.draftmerch.com/rcv_ima',
+        'connectionId': connection_id,
+        'status': 'ProcessingComplete'  # Indicating processing is complete
     }
     
     try:
@@ -209,3 +207,6 @@ def send_ws_message(connection_id):
         logger.info(f"Processing complete message sent to {connection_id}")
     except Exception as e:
         logger.error(f"Failed to send message via WebSocket: {e}")
+        raise e
+
+    return {'statusCode':200}
