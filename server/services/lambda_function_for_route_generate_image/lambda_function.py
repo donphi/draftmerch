@@ -139,7 +139,7 @@ def lambda_handler(event, context):
             dynamodb_client.update_item(
                 TableName=render_requests_table_name,
                 Key={'renderId': {'S': render_id}},
-                UpdateExpression='SET originalImageUrl = :origUrl, watermarkedImageUrl = :waterUrl, #status = :statusVal',
+                UpdateExpression='SET originalImageUrl = :origUrl, watermarkedImageUrl = :waterUrl, #status = :statusVal, filename = :filename',
                 ExpressionAttributeValues={
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
