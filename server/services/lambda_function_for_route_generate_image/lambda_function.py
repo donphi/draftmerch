@@ -158,7 +158,7 @@ def lambda_handler(event, context):
             )
 
             # Instead of returning the response, notify the client via WebSocket
-            send_ws_message(connection_id, {'message': 'Processing complete. Please check api.draftmerch.com/rcv_ima'})
+            send_ws_message(connection_id)
 
             return {
             'statusCode': 202,
