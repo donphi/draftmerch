@@ -26,8 +26,8 @@ def lambda_handler(event, context):
         return {
             'statusCode': 200,
             'body': json.dumps({
-                'original_image_url': item.get('originalImageurl', ''),
-                'watermarked_image_url': item.get('watermarkedImageurl', ''),
+                'original_image_url': item.get('originalimageurl', ''),
+                'watermarked_image_url': item.get('watermarkedimageurl', ''),
                 'filename': item.get('filename', '')
             })
         }

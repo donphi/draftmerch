@@ -21,6 +21,12 @@ bucket_name = 'draft-images-bucket'
 # DynamoDB table names
 render_requests_table_name = 'RenderRequests'
 
+# Set up the endpoint URL for the 'ApiGatewayManagementApi' client
+api_gw_client = boto3.client(
+    'apigatewaymanagementapi',
+    endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod'  # Use your actual API Gateway endpoint for WebSocket
+)
+
 def generate_presigned_url(bucket, key, expiration=3600):
     try:
         url = s3_client.generate_presigned_url('get_object',
@@ -151,15 +157,14 @@ def lambda_handler(event, context):
                 }
             )
 
+            # Instead of returning the response, notify the client via WebSocket
+            send_ws_message(connection_id, {'message': 'Processing complete. Please check api.draftmerch.com/rcv_ima'})
+
             return {
-                'statusCode': 200,
-                'headers': headers,
-                'body': json.dumps({
-                    'original_image_url': original_image_url,
-                    'watermarked_image_url': watermarked_image_url,
-                    'filename': filename
-                })
-            }
+            'statusCode': 202,
+            'headers': headers,
+            'body': json.dumps({'message': 'Processing initiated. Please wait for WebSocket notification.'})
+        }
         else:
             logger.error(f"Error calling gen_ima Lambda function: {response_payload}")
             return {'statusCode': response_payload.get('statusCode', 500), 'headers': headers, 'body': json.dumps({'error': 'Error calling gen_ima Lambda function'})}
@@ -185,3 +190,16 @@ def formatted_filename(hero, personality, sport, color, action):
     filename = "_".join(filter(None, filename_parts)) + ".png"
     filename = "".join(c for c in filename if c.isalnum() or c in " _-.")
     return filename
+
+def send_ws_message(connection_id, data):
+    """
+    Send a message to a client via WebSocket using the connection ID.
+    """
+    try:
+        api_gw_client.post_to_connection(
+            ConnectionId=connection_id,
+            Data=json.dumps(data).encode('utf-8')
+        )
+    except Exception as e:
+        logger.error(f"Failed to send message via WebSocket: {e}")
+        # Handle the failure accordingly (e.g., log the error, attempt a retry, send an alert, etc.)
