@@ -25,19 +25,22 @@ def lambda_handler(event, context):
     # Log the response from DynamoDB
     logger.info(f"DynamoDB response: {response}")
     
-    # Send a welcome message back to the client
-    try:
-        welcome_message = {
-            'message': 'Welcome! Connection established successfully.',
-            'connectionId': connection_id
+    # Prepare the payload for invoking Lambda A
+    payload = {
+        "requestContext": {
+            "connectionId": connection_id
         }
-        api_gateway_client.post_to_connection(
-            ConnectionId=connection_id,
-            Data=json.dumps(welcome_message)
+    }
+    
+    try:
+        response = lambda_client.invoke(
+            FunctionName='arn:aws:lambda:us-east-1:905418180959:function:sen_msg', 
+            InvocationType='Event', # Use 'Event' for asynchronous execution
+            Payload=json.dumps(payload),
         )
-        logger.info(f"Welcome message sent to {connection_id}")
+        logger.info(f"Invoked Lambda A for connectionId {connection_id} with response: {response}")
     except Exception as e:
-        logger.error(f"Error sending welcome message to {connection_id}: {str(e)}")
+        logger.error(f"Error invoking Lambda A for connectionId {connection_id}: {str(e)}")
         raise e
     
     return {'statusCode': 200}
