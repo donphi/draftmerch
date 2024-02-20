@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: An AWS CloudFormation template to deploy sen_msg Lambda function.
+
+Parameters:
+  LambdaFunctionDescription:
+    Type: String
+    Default: "Handles WebSocket client connection - Deployment ID: UNIQUE_ID_PLACEHOLDER"
+  FunctionCodeS3ObjectVersion:
+    Description: S3 object version of the Lambda function code
+    Type: String
+    Default: "VERSION_ID_PLACEHOLDER"
+
+Resources:
+  conCliLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: sen_ima
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: draft-lambda-functions
+        S3Key: sen_ima/function.zip
+        S3ObjectVersion: !Ref FunctionCodeS3ObjectVersion
+      Runtime: python3.10
+      Timeout: 60
+      MemorySize: 128
+      Description: !Ref LambdaFunctionDescription
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: LambdaExecutionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:*'
+                Resource: 'arn:aws:logs:*:*:*'
