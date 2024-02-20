@@ -37,7 +37,7 @@ def lambda_handler(event, context):
         )
         logger.info(f"Welcome message sent to {connection_id}")
     except Exception as e:
-        logger.error(f"Error sending welcome message to {connectionId}: {str(e)}")
+        logger.error(f"Error sending welcome message to {connection_id}: {str(e)}")
         raise e
     
     return {'statusCode': 200}
