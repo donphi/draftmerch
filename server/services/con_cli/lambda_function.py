@@ -9,6 +9,7 @@ logger.setLevel(logging.INFO)
 # Initialize the boto3 clients for DynamoDB and API Gateway Management API
 dynamodb = boto3.resource('dynamodb')
 api_gateway_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/')
+lambda_client = boto3.client('lambda')
 
 TABLE_NAME = 'UserSessions'
 
