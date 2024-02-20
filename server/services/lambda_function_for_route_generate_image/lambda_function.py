@@ -154,14 +154,29 @@ def lambda_handler(event, context):
                 }
             )
 
-            # Instead of returning the response, notify the client via WebSocket
-            send_ws_message(connection_id)
+            # Prepare the payload for invoking Lambda C with the required information
+            payload = json.dumps({
+                'connectionId': connection_id,
+                'renderId': render_id,
+            })
 
+            try:
+                response = lambda_client.invoke(
+                    FunctionName='arn:aws:lambda:us-east-1:905418180959:function:sen_ima',  # Update this with Lambda C's ARN
+                    InvocationType='Event',  # Asynchronous invocation to continue without waiting for a response
+                    Payload=payload,
+                )
+                logger.info(f"Successfully invoked Lambda C for connectionId {connection_id}")
+            except Exception as e:
+                logger.error(f"Error invoking Lambda C for connectionId {connection_id}: {str(e)}")
+                # Decide how to handle the error. Options include retrying, logging the error, or updating a database to indicate failure.
+                raise e
+
+            # Continue with any additional processing, or return a response indicating the invocation was successful
             return {
-            'statusCode': 202,
-            'headers': headers,
-            'body': json.dumps({'message': 'Processing initiated. Please wait for WebSocket notification.'})
-        }
+                'statusCode': 200,
+                'body': json.dumps({'message': 'Invocation of Lambda C initiated successfully'})
+            }
         else:
             logger.error(f"Error calling gen_ima Lambda function: {response_payload}")
             return {'statusCode': response_payload.get('statusCode', 500), 'headers': headers, 'body': json.dumps({'error': 'Error calling gen_ima Lambda function'})}
@@ -187,26 +202,3 @@ def formatted_filename(hero, personality, sport, color, action):
     filename = "_".join(filter(None, filename_parts)) + ".png"
     filename = "".join(c for c in filename if c.isalnum() or c in " _-.")
     return filename
-
-def send_ws_message(connection_id):
-
-    #Send a message to a client via WebSocket using the connection ID,
-    #indicating that processing is complete and data is ready to be fetched.
-
-    message = {
-        'message': 'Processing complete. Please check api.draftmerch.com/rcv_ima',
-        'connectionId': connection_id,
-        'status': 'ProcessingComplete'  # Indicating processing is complete
-    }
-    
-    try:
-        api_gw_client.post_to_connection(
-            ConnectionId=connection_id,
-            Data=json.dumps(message)
-        )
-        logger.info(f"Processing complete message sent to {connection_id}")
-    except Exception as e:
-        logger.error(f"Failed to send message via WebSocket: {e}")
-        raise e
-
-    return {'statusCode':200}

@@ -6,14 +6,19 @@ api_gw_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://0p
 
 def lambda_handler(event, context):
     connection_id = event.get('connectionId')
+    render_id = event.get('renderId')
 
     if not connection_id:
         return {'statusCode': 400, 'body': json.dumps({'error': 'Missing connectionId'})}
+    if not render_id:
+        return {'statusCode': 400, 'body': json.dumps({'error': 'Missing renderId'})}
 
     # Compose your message logic here, possibly varying based on event content
     message = {
         'message': 'Your custom message or command to the client',
-        'status': 'ProcessingComplete'
+        'status': 'ProcessingComplete',
+        'renderId': render_id,
+        'connectionId': connection_id
     }
 
     try:
