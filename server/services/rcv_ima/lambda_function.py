@@ -8,17 +8,17 @@ table_name = os.getenv('RenderRequests')  # Ensure this environment variable is 
 table = dynamodb.Table(table_name)
 
 def lambda_handler(event, context):
-    # Extract 'connectionId' from the query string parameters
-    connection_id = event['queryStringParameters']['connectionId']
+    # Extract 'renderId' from the query string parameters
+    render_id = event.get('queryStringParameters', {}).get('renderId')
+    
+    if not render_id:
+        return {'statusCode': 400, 'body': json.dumps({'message': 'Missing renderId'})}
     
     try:
-        # Fetch item from DynamoDB
-        response = table.get_item(
-            Key={'connectionId': connection_id}
-        )
+        # Fetch item from DynamoDB using renderId
+        response = table.get_item(Key={'renderId': render_id})
         item = response.get('Item', {})
         
-        # Check if item is found
         if not item:
             return {'statusCode': 404, 'body': json.dumps({'message': 'Data not found'})}
         
