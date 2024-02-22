@@ -1,5 +1,6 @@
 import boto3
 import os
+import json
 from PIL import Image
 from io import BytesIO
 
@@ -31,6 +32,9 @@ def lambda_handler(event, context):
     # Extract information from the event
     print(f"Received event: {event}")
     bucket_name = os.environ['bucketName']
+    payload_body = event['Payload']['body']
+    decoded_body = json.loads(payload_body)
+    render_id = decoded_body['renderId']
     render_id = event['renderId']
     table_name = os.environ['RenderRequests']
 
