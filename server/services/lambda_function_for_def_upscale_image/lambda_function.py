@@ -63,6 +63,9 @@ def lambda_handler(event, context):
         render_id = event['renderId']
         item = get_item_from_dynamodb(render_id)
 
+        # Log that the renderId was received and what its value is
+        logger.info(f"Received renderId: {render_id}")
+
         if item and 'originalImageUrl' in item and 'filename' in item:
             original_image_url = item['originalImageUrl']
             original_filename = item['filename']
