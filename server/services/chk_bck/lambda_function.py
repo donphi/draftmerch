@@ -35,7 +35,6 @@ def lambda_handler(event, context):
     payload_body = event['Payload']['body']
     decoded_body = json.loads(payload_body)
     render_id = decoded_body['renderId']
-    render_id = event['renderId']
     table_name = os.environ['RenderRequests']
 
     # Fetch the image from S3
