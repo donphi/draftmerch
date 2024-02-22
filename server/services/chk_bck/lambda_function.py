@@ -29,7 +29,7 @@ def is_background_white(image_bytes, threshold=0.9):
 
 def lambda_handler(event, context):
     # Extract information from the event
-    bucket_name = os.environ['draft-images-bucket']
+    bucket_name = os.environ['bucketName']
     render_id = event['renderId']
     table_name = os.environ['RenderRequests']
 
