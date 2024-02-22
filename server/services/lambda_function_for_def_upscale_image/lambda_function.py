@@ -17,7 +17,7 @@ dynamodb_client = boto3.resource('dynamodb')
 stepfunctions_client = boto3.client('stepfunctions')
 
 # DynamoDB table name
-TABLE_NAME = os.environ.get('TABLE_NAME', 'RenderRequest')
+TABLE_NAME = os.environ.get('TABLE_NAME', 'RenderRequests')
 
 # S3 bucket name and target folder
 BUCKET_NAME = os.environ.get('BUCKET_NAME', 'draft-images-bucket')
