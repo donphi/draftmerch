@@ -29,9 +29,9 @@ def is_background_white(image_bytes, threshold=0.9):
 
 def lambda_handler(event, context):
     # Extract information from the event
-    bucket_name = os.environ['BUCKET_NAME']
+    bucket_name = os.environ['draft-images-bucket']
     render_id = event['renderId']
-    table_name = os.environ['TABLE_NAME']
+    table_name = os.environ['RenderRequests']
 
     # Fetch the image from S3
     try:
