@@ -17,7 +17,7 @@ dynamodb_client = boto3.resource('dynamodb')
 stepfunctions_client = boto3.client('stepfunctions')
 
 # DynamoDB table name
-TABLE_NAME = os.environ.get('TABLE_NAME', 'ImageProcessingQueue')
+TABLE_NAME = os.environ.get('TABLE_NAME', 'RenderRequest')
 
 # S3 bucket name and target folder
 BUCKET_NAME = os.environ.get('BUCKET_NAME', 'draft-images-bucket')
@@ -40,13 +40,13 @@ def get_secret():
 def upload_to_s3(bucket, key, image_content):
     s3_client.put_object(Body=image_content, Bucket=bucket, Key=key, ContentType='image/png')
 
-def update_dynamodb(job_id, update_info):
+def update_dynamodb(render_id, update_info):
     table = dynamodb_client.Table(TABLE_NAME)
     expression_attribute_names = {f"#{k}": k for k in update_info.keys()}
     update_expression = 'SET ' + ', '.join(f"#{k} = :{k}" for k in update_info)
     expression_attribute_values = {f":{k}": v for k, v in update_info.items()}
     table.update_item(
-        Key={'jobId': job_id},
+        Key={'renderId': render_id},
         UpdateExpression=update_expression,
         ExpressionAttributeNames=expression_attribute_names,
         ExpressionAttributeValues=expression_attribute_values,
@@ -66,15 +66,15 @@ def upscale_image(api_key, image_url):
     response = requests.post(url, headers=headers, files=files, data=data)
     return response
 
-def start_step_function_execution(job_id, upscaled_key):
+def start_step_function_execution(render_id, upscaled_key):
     input_payload = json.dumps({
-        'jobId': job_id,
+        'renderId': render_id,
         'upscaledImageKey': upscaled_key
     })
     print(f"Starting execution of state machine with ARN: {STATE_MACHINE_ARN}")
     response = stepfunctions_client.start_execution(
         stateMachineArn=STATE_MACHINE_ARN,
-        name=job_id,
+        name=render_id,
         input=input_payload
     )
     return response
@@ -86,7 +86,7 @@ def lambda_handler(event, context):
     # Check if this is the initial upscaling event
     if 'filename' in event and 'image_url' in event:
         api_key = get_secret()
-        job_id = str(uuid4())
+        render_id = str(uuid4())
         original_filename = event['filename']
         base_filename, file_extension = os.path.splitext(original_filename)
         upscaled_filename = f"{base_filename}2x{file_extension}"
@@ -95,7 +95,7 @@ def lambda_handler(event, context):
 
         dynamodb_client.Table(TABLE_NAME).put_item(
             Item={
-                'jobId': job_id,
+                'renderId': render_id,
                 'filename': original_filename,
                 'status': 'UPSCALING',
                 'originalImageUrl': image_url,
@@ -111,20 +111,20 @@ def lambda_handler(event, context):
             upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content)
 
             update_dynamodb(
-                job_id,
+                render_id,
                 {
                     'upscaledImageUrl': f"s3://{BUCKET_NAME}/{upscaled_key}",
                     'status': 'UPSCALED'
                 }
             )
 
-            #sf_response = start_step_function_execution(job_id, upscaled_key)
+            #sf_response = start_step_function_execution(render_id, upscaled_key)
 
             return {
                 'statusCode': 200,
                 'body': json.dumps({
                     'message': "Upscaled image saved to S3 successfully",
-                    'jobId': job_id,
+                    'renderId': render_id,
                     'filename': original_filename,
                     'upscaledImageUrl': f"https://{BUCKET_NAME}.s3.amazonaws.com/{upscaled_key}"
                 })
