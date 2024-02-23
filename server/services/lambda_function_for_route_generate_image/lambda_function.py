@@ -24,16 +24,6 @@ render_requests_table_name = 'RenderRequests'
 # Set up the endpoint URL for the 'ApiGatewayManagementApi' client
 api_gw_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/')
 
-def generate_presigned_url(bucket, key, expiration=3600):
-    try:
-        url = s3_client.generate_presigned_url('get_object',
-                                               Params={'Bucket': bucket, 'Key': key},
-                                               ExpiresIn=expiration)
-    except Exception as e:
-        logger.error(f"Error generating pre-signed URL: {e}")
-        return None
-    return url
-
 def upload_to_s3(bucket, key, image):
     buffer = BytesIO()
     image.save(buffer, format='PNG')
@@ -43,7 +33,7 @@ def upload_to_s3(bucket, key, image):
     s3_client.upload_fileobj(buffer, bucket, key, ExtraArgs={'ContentType': 'image/png'})
     
     # Generate a pre-signed URL for the uploaded image
-    return generate_presigned_url(bucket, key)
+    return f"s3://{bucket}/{key}"
 
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
