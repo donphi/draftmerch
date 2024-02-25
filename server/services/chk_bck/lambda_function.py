@@ -7,6 +7,7 @@ import os
 # Initialize AWS clients
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
+table_name = 'RenderRequests'
 
 def is_background_white(image_bytes, threshold=0.9):
     ##Check if the image has a predominantly white background.
