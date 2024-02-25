@@ -33,7 +33,12 @@ def is_background_white(image_bytes, threshold=0.9):
         total_border_pixels = (width * border_width * 2) + ((height - 2 * border_width) * border_width * 2)
         white_proportion = white_pixels / total_border_pixels
 
-        return white_proportion >= threshold
+        is_white = white_proportion >= threshold
+    
+        # Log the computed white proportion and the decision
+        logger.info(f"Computed white proportion: {white_proportion}, Is background white? {is_white}")
+
+        return is_white
 
 def get_image_location_from_dynamodb(render_id, table_name):
     ##Fetch the image location from the DynamoDB table."""
