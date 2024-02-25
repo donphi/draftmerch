@@ -3,6 +3,11 @@ import json
 from PIL import Image
 from io import BytesIO
 import os
+import logging
+
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  # You can adjust this to DEBUG for more detailed output
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
@@ -41,7 +46,7 @@ def get_image_location_from_dynamodb(render_id, table_name):
         return None
 
 def lambda_handler(event, context):
-    print(f"Received event: {event}")
+    logger.info(f"Received event: {event}")
     table_name = os.environ['TABLE_NAME']
 
     if 'renderId' in event:
@@ -62,12 +67,12 @@ def lambda_handler(event, context):
                 white_background = is_background_white(image_content)
 
                 # Log before updating DynamoDB
-                print(f"Updating DynamoDB for renderId: {render_id} with whiteBackground: {white_background}")
+                logger.info(f"Updating DynamoDB for renderId: {render_id} with whiteBackground: {white_background}")
                 
                 # Update the DynamoDB table
                 try:
                     table = dynamodb.Table(table_name)
-                    table.update_item(
+                    update_response = table.update_item(
                         Key={'renderId': render_id},
                         UpdateExpression='SET whiteBackground = :val',
                         ExpressionAttributeValues={
@@ -76,8 +81,8 @@ def lambda_handler(event, context):
                         ReturnValues="UPDATED_NEW"
                     )
 
-                # Log after updating DynamoDB successfully
-                    print(f"DynamoDB update successful for renderId: {render_id}, response: {update_response}")
+                    # Log after updating DynamoDB successfully
+                    logger.info(f"DynamoDB update successful for renderId: {render_id}, response: {update_response}")
                 
                 except Exception as e:
                     print(f"Error updating DynamoDB: {str(e)}")
