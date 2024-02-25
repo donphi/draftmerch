@@ -60,6 +60,9 @@ def lambda_handler(event, context):
                 
                 # Check if the background is white
                 white_background = is_background_white(image_content)
+
+                # Log before updating DynamoDB
+                print(f"Updating DynamoDB for renderId: {render_id} with whiteBackground: {white_background}")
                 
                 # Update the DynamoDB table
                 try:
@@ -72,6 +75,10 @@ def lambda_handler(event, context):
                         },
                         ReturnValues="UPDATED_NEW"
                     )
+
+                # Log after updating DynamoDB successfully
+                    print(f"DynamoDB update successful for renderId: {render_id}, response: {update_response}")
+                
                 except Exception as e:
                     print(f"Error updating DynamoDB: {str(e)}")
                     raise e
