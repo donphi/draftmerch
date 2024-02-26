@@ -36,17 +36,26 @@ def get_item_from_dynamodb(render_id):
         return None
 
 def upload_to_s3(bucket, key, image_content):
-    s3_client.put_object(Body=image_content, Bucket=bucket, Key=key, ContentType='image/png')
+    try:
+        s3_client.put_object(Body=image_content, Bucket=bucket, Key=key, ContentType='image/png')
+        return True
+    except Exception as e:
+        logger.error(f"Failed to upload image to S3: {str(e)}")
+        return False
 
 def update_dynamodb(render_id, upscaled_image_url):
-    table = dynamodb.Table(TABLE_NAME)
-    response = table.update_item(
-        Key={'renderId': render_id},
-        UpdateExpression='SET upscaledImageUrl = :val',
-        ExpressionAttributeValues={':val': upscaled_image_url},
-        ReturnValues="UPDATED_NEW"
-    )
-    return response
+    try:
+        table = dynamodb.Table(TABLE_NAME)
+        response = table.update_item(
+            Key={'renderId': render_id},
+            UpdateExpression='SET upscaledImageUrl = :val',
+            ExpressionAttributeValues={':val': upscaled_image_url},
+            ReturnValues="UPDATED_NEW"
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update DynamoDB: {str(e)}")
+        return False
 
 def upscale_image(api_key, image_content):
     url = "https://api.stability.ai/v1/generation/esrgan-v1-x2plus/image-to-image/upscale"
@@ -83,27 +92,28 @@ def lambda_handler(event, context):
                 # Proceed with the upscaling using the image content
                 response = upscale_image(api_key, image_content)
 
-                if response.status_code == 200:
+                if response and response.status_code == 200:
                     upscaled_image_content = base64.b64decode(response.json()["artifacts"][0]["base64"])
-                    # Assuming original_filename is derived from 'key'
-                    base_filename, file_extension = os.path.splitext(key)
+                    base_filename, file_extension = os.path.splitext(os.path.basename(key))
                     upscaled_filename = f"{base_filename}_2x{file_extension}"
                     upscaled_key = f"{TARGET_FOLDER}/{upscaled_filename}"
-                    upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content)
-                    upscaled_image_url = f"s3://{BUCKET_NAME}/{upscaled_key}"
 
-                    update_dynamodb(render_id, upscaled_image_url)
-
-                    return {
-                        'statusCode': 200,
-                        'body': json.dumps({
-                            'message': "Image upscaled successfully",
-                            'renderId': render_id,
-                            'upscaledImageUrl': upscaled_image_url
-                        })
-                    }
+                    if upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content):
+                        upscaled_image_url = f"s3://{BUCKET_NAME}/{upscaled_key}"
+                        if update_dynamodb(render_id, upscaled_image_url):
+                            return {
+                                'statusCode': 200,
+                                'body': json.dumps({
+                                    'message': "Image upscaled successfully",
+                                    'renderId': render_id,
+                                    'upscaledImageUrl': upscaled_image_url
+                                })
+                            }
+                        else:
+                            return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to update DynamoDB'})}
+                    else:
+                        return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upload upscaled image to S3'})}
                 else:
-                    logger.error("Failed to upscale image.")
                     return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upscale image'})}
             except Exception as e:
                 logger.error(f"Error processing image: {str(e)}")
@@ -111,5 +121,5 @@ def lambda_handler(event, context):
         else:
             return {'statusCode': 404, 'body': json.dumps({'error': 'Original image URL or filename not found'})}
     else:
-        logger.error("Event object does not contain 'renderId'.")
         return {'statusCode': 400, 'body': json.dumps({'error': "Event object does not contain 'renderId'."})}
+
