@@ -190,7 +190,7 @@ def lambda_handler(event, context):
     remove_background_and_preserve_white(input_image_path, output_image_path)
     
     # Upload the processed image to S3
-    output_s3_path = f"{S3_BUCKET_NAME}/{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
+    output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
     try:
         s3_client.upload_file(output_image_path, S3_BUCKET_NAME, output_s3_path)
     except ClientError as error:
@@ -201,9 +201,9 @@ def lambda_handler(event, context):
     dynamodb_client.update_item(
         TableName=DYNAMODB_TABLE_NAME,
         Key={'renderId': {'S': renderId}},
-        UpdateExpression='SET imageNoBackground = :val1',
+        UpdateExpression='SET imageNoBackgroundUrl = :val1',
         ExpressionAttributeValues={
-            ':val1': {'S': f's3://{S3_BUCKET_NAME}/{output_s3_path}'}
+            ':val1': {'S': f'{output_s3_path}'}  # Corrected to use 'output_s3_key'
         }
     )
     
