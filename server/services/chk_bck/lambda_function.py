@@ -90,13 +90,11 @@ def lambda_handler(event, context):
                 logger.info(f"DynamoDB update successful for renderId: {render_id}, response: {update_response}")
 
                 return {
-                    'statusCode': 200,
-                    'body': json.dumps({
-                        'renderId': render_id,
-                        'message': 'Background check completed successfully',
-                        'whiteBackground': white_background
-                    })
-                }
+		    'statusCode': 200,
+		    'renderId': render_id,
+		    'message': 'Background check completed successfully',
+		    'whiteBackground': white_background  # Now directly accessible at the top level
+		}
 
             except Exception as e:
                 logger.error(f"Error fetching image from S3: {str(e)}")
