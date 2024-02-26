@@ -21,17 +21,6 @@ BUCKET_NAME = os.getenv('BUCKET_NAME', 'draft-images-bucket')
 TARGET_FOLDER = os.getenv('TARGET_FOLDER', 'image_2x')
 UPSCALER_SECRET_NAME = os.getenv('UPSCALER_SECRET_NAME', 'Upscaler')
 
-def generate_presigned_url(bucket, key, expiration=3600):
-    """Generate a pre-signed URL to share an S3 object with a specified expiration"""
-    try:
-        url = s3_client.generate_presigned_url(ClientMethod='get_object', 
-                                               Params={'Bucket': bucket, 'Key': key},
-                                               ExpiresIn=expiration)
-    except Exception as e:
-        logger.error(f"Failed to generate pre-signed URL: {str(e)}")
-        return None
-    return url
-
 def get_secret():
     response = secretsmanager_client.get_secret_value(SecretId=UPSCALER_SECRET_NAME)
     secret_dict = json.loads(response['SecretString'])
@@ -63,8 +52,16 @@ def upscale_image(api_key, image_content):
     url = "https://api.stability.ai/v1/generation/esrgan-v1-x2plus/image-to-image/upscale"
     headers = {"Authorization": f"Bearer {api_key}"}
     files = {'image': image_content}
-    response = requests.post(url, headers=headers, files=files)
-    return response
+    try:
+        response = requests.post(url, headers=headers, files=files)
+        if response.status_code == 200:
+            return response
+        else:
+            logger.error(f"Failed to upscale image. Status Code: {response.status_code}, Response: {response.text}")
+            return None
+    except Exception as e:
+        logger.error(f"Exception occurred during image upscaling: {str(e)}")
+        return None
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
