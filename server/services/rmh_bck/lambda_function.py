@@ -177,6 +177,8 @@ def lambda_handler(event, context):
     if not extracted_key:
         extracted_key = s3_key  # fallback to using s3_key directly
 
+    print(f"Attempting to download from Bucket: {S3_BUCKET_NAME}, Key: {extracted_key}")
+
     # Perform the S3 download operation using the S3 key
     try:
         s3_client.download_file(S3_BUCKET_NAME, extracted_key, input_image_path)
