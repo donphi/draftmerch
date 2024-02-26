@@ -1,5 +1,6 @@
 import boto3
 import requests
+import json
 from urllib.parse import urlparse
 
 dynamodb = boto3.resource('dynamodb')
