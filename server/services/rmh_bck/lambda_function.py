@@ -158,18 +158,17 @@ def lambda_handler(event, context):
         TableName=DYNAMODB_TABLE_NAME,
         Key={'renderId': {'S': renderId}}
     )
-    upscaled_image_url = response['Item']['upscaledImageUrl']['S']
-    filename = response['Item']['filename']['S']  # Retrieve the filename from the DynamoDB response
+    # Assuming 'upscaledImageUrl' directly stores the S3 key
+    s3_key = response['Item']['upscaledImageUrl']['S']
+    filename = response['Item']['filename']['S']
     
     # Define local file paths for input and output images based on the filename
-    input_image_path = f'/tmp/{filename}'  # Adjusted to use the filename from DynamoDB
-    output_image_path = f'/tmp/processed_{filename}'  # Prefix or modify as needed for processed file
+    input_image_path = f'/tmp/{filename}'
+    output_image_path = f'/tmp/processed_{filename}'
     
-    # Download the image from S3
-    # Make sure to extract the object key from upscaled_image_url if it's a full S3 URL
-    key = '/'.join(upscaled_image_url.split('/')[3:])
+    # Perform the S3 download operation using the S3 key
     try:
-        s3_client.download_file(S3_BUCKET_NAME, key, input_image_path)
+        s3_client.download_file(S3_BUCKET_NAME, s3_key, input_image_path)
     except ClientError as error:
         print(f"Error downloading file from S3: {error}")
         raise
