@@ -19,7 +19,8 @@ def lambda_handler(event, context):
         credentials = json.loads(secret['SecretString'])
         
         # The API key is the value of the unique key in your secret
-        api_key = list(credentials.values())[0]  # Adjust based on your secret's structure
+        api_key = credentials.get('apiKey')
+        api_secret = credentials.get('apiSecret')
         
         # Look up in the DynamoDB table for upscaledImageUrl
         table = dynamodb.Table('RenderRequests')
@@ -76,7 +77,7 @@ def lambda_handler(event, context):
         raise e
 
 # Function to remove background - updated with Secrets Manager integration
-def remove_background_image(api_key, filename, original_image_path):
+def remove_background_image(api_key, api_secret, filename, original_image_path):
     background_removal_url = "https://api.pixian.ai/api/v2/remove-background"
     background_removal_params = {
         "test": "false",
