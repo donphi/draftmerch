@@ -166,9 +166,11 @@ def lambda_handler(event, context):
     input_image_path = f'/tmp/{filename}'
     output_image_path = f'/tmp/processed_{filename}'
     
+    extracted_key = s3_key.split("s3://draft-image-bucket/")[1]  # Assuming s3_key is a full URL
+
     # Perform the S3 download operation using the S3 key
     try:
-        s3_client.download_file(s3_key)
+        s3_client.download_file(S3_BUCKET_NAME, extracted_key, input_image_path)
     except ClientError as error:
         print(f"Error downloading file from S3: {error}")
         raise
