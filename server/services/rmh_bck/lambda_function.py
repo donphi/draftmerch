@@ -153,25 +153,37 @@ def lambda_handler(event, context):
     # Extract renderId from the event
     renderId = event['renderId']
     
-    # Get the image URL from DynamoDB
+    # Get the image URL and filename from DynamoDB
     response = dynamodb_client.get_item(
         TableName=DYNAMODB_TABLE_NAME,
         Key={'renderId': {'S': renderId}}
     )
     upscaled_image_url = response['Item']['upscaledImageUrl']['S']
-    filename = response['Item']['renderId']['S']
+    filename = response['Item']['filename']['S']  # Retrieve the filename from the DynamoDB response
+    
+    # Define local file paths for input and output images based on the filename
+    input_image_path = f'/tmp/{filename}'  # Adjusted to use the filename from DynamoDB
+    output_image_path = f'/tmp/processed_{filename}'  # Prefix or modify as needed for processed file
     
     # Download the image from S3
-    input_image_path = '/tmp/input_image.png'
-    s3_client.download_file(S3_BUCKET_NAME, upscaled_image_url, input_image_path)
-    
+    # Make sure to extract the object key from upscaled_image_url if it's a full S3 URL
+    key = '/'.join(upscaled_image_url.split('/')[3:])
+    try:
+        s3_client.download_file(S3_BUCKET_NAME, key, input_image_path)
+    except ClientError as error:
+        print(f"Error downloading file from S3: {error}")
+        raise
+
     # Process the image
-    output_image_path = '/tmp/output_image.png'
     remove_background_and_preserve_white(input_image_path, output_image_path)
     
     # Upload the processed image to S3
-    output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}.png"
-    s3_client.upload_file(output_image_path, S3_BUCKET_NAME, output_s3_path)
+    output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
+    try:
+        s3_client.upload_file(output_image_path, S3_BUCKET_NAME, output_s3_path)
+    except ClientError as error:
+        print(f"Error uploading file to S3: {error}")
+        raise
     
     # Update the DynamoDB table with the new image location
     dynamodb_client.update_item(
@@ -183,23 +195,8 @@ def lambda_handler(event, context):
         }
     )
     
-    # Pass information to the next Lambda
-    next_lambda_payload = {
-        'renderId': renderId,
-        'imageNoBackground': f's3://{S3_BUCKET_NAME}/{output_s3_path}',
-        'URL': f'https://{S3_BUCKET_NAME}.s3.amazonaws.com/{output_s3_path}',
-        'message': 'Background removed successfully'
-    }
-    
-    # Invoke the next Lambda function
-    # You need to add the ARN of the next Lambda function and ensure this Lambda has permission to invoke it
-    lambda_client = boto3.client('lambda')
-    lambda_client.invoke(
-        FunctionName='arn:aws:lambda:region:account-id:function:function-name',
-        InvocationType='Event',
-        Payload=json.dumps(next_lambda_payload)
-    )
-    
+    # Construct the response or perform additional actions as needed
+    # Note: Adjust this part based on how you want to handle the Lambda's response
     return {
         'statusCode': 200,
         'body': json.dumps('Background removal and update completed successfully')
