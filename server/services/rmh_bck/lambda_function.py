@@ -4,6 +4,7 @@ import numpy as np
 import os
 from botocore.exceptions import ClientError
 import json
+from urllib.parse import urlparse
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
@@ -166,7 +167,15 @@ def lambda_handler(event, context):
     input_image_path = f'/tmp/{filename}'
     output_image_path = f'/tmp/processed_{filename}'
     
-    extracted_key = s3_key.split("s3://draft-image-bucket/")[1]  # Assuming s3_key is a full URL
+    # Let's assume s3_key might be a full S3 URL or just an S3 key
+    s3_url = urlparse(s3_key)
+
+    # Extract the path component and remove any leading '/'
+    extracted_key = s3_url.path.lstrip('/')
+
+    # If extracted_key is empty, s3_key was likely just a key to start with (or an invalid URL)
+    if not extracted_key:
+        extracted_key = s3_key  # fallback to using s3_key directly
 
     # Perform the S3 download operation using the S3 key
     try:
