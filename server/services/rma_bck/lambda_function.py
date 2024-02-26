@@ -24,8 +24,17 @@ def lambda_handler(event, context):
         # Look up in the DynamoDB table for upscaleImageUrl
         table = dynamodb.Table('RenderRequests')
         response = table.get_item(Key={'renderId': renderId})
-        upscale_image_url = response['Item']['upscaleImageUrl']
-        filename = response['Item']['filename']
+        if 'Item' in response:
+            item = response['Item']
+            if 'upscaleImageUrl' in item and 'filename' in item:
+                upscale_image_url = item['upscaleImageUrl']
+                filename = item['filename']
+            else:
+                print(f"Missing 'upscaleImageUrl' or 'filename' for renderId: {renderId}")
+                return {"error": "Missing 'upscaleImageUrl' or 'filename'."}
+        else:
+            print(f"No item found with renderId: {renderId}")
+            return {"error": "Item not found."}
         
         # Parse the S3 bucket and object key from the S3 URL
         parsed_url = urlparse(upscale_image_url)
