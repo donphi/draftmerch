@@ -21,23 +21,23 @@ def lambda_handler(event, context):
         # The API key is the value of the unique key in your secret
         api_key = list(credentials.values())[0]  # Adjust based on your secret's structure
         
-        # Look up in the DynamoDB table for upscaleImageUrl
+        # Look up in the DynamoDB table for upscaledImageUrl
         table = dynamodb.Table('RenderRequests')
         response = table.get_item(Key={'renderId': renderId})
         if 'Item' in response:
             item = response['Item']
-            if 'upscaleImageUrl' in item and 'filename' in item:
-                upscale_image_url = item['upscaleImageUrl']
+            if 'upscaledImageUrl' in item and 'filename' in item:
+                upscaled_image_url = item['upscaledImageUrl']
                 filename = item['filename']
             else:
-                print(f"Missing 'upscaleImageUrl' or 'filename' for renderId: {renderId}")
-                return {"error": "Missing 'upscaleImageUrl' or 'filename'."}
+                print(f"Missing 'upscaledImageUrl' or 'filename' for renderId: {renderId}")
+                return {"error": "Missing 'upscaledImageUrl' or 'filename'."}
         else:
             print(f"No item found with renderId: {renderId}")
             return {"error": "Item not found."}
         
         # Parse the S3 bucket and object key from the S3 URL
-        parsed_url = urlparse(upscale_image_url)
+        parsed_url = urlparse(upscaled_image_url)
         bucket_name = parsed_url.netloc
         object_key = parsed_url.path.lstrip('/')
         
