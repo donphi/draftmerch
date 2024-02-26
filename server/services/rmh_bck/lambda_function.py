@@ -168,7 +168,7 @@ def lambda_handler(event, context):
     
     # Perform the S3 download operation using the S3 key
     try:
-        s3_client.download_file(S3_BUCKET_NAME, s3_key, input_image_path)
+        s3_client.download_file(s3_key)
     except ClientError as error:
         print(f"Error downloading file from S3: {error}")
         raise
@@ -177,7 +177,7 @@ def lambda_handler(event, context):
     remove_background_and_preserve_white(input_image_path, output_image_path)
     
     # Upload the processed image to S3
-    output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
+    output_s3_path = f"{S3_BUCKET_NAME}/{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
     try:
         s3_client.upload_file(output_image_path, S3_BUCKET_NAME, output_s3_path)
     except ClientError as error:
