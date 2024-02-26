@@ -12,7 +12,7 @@ dynamodb_client = boto3.client('dynamodb')
 
 # Define your bucket and table names
 DYNAMODB_TABLE_NAME = 'RenderRequests'
-S3_BUCKET_NAME = 'draft-image-bucket'
+S3_BUCKET_NAME = 'draft-images-bucket'
 S3_OUTPUT_FOLDER = 'image_no_background'
 
 #Pure white Background Removal: Inhouse
