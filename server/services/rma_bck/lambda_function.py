@@ -2,6 +2,7 @@ import boto3
 import requests
 import json
 from urllib.parse import urlparse
+import logging
 
 dynamodb = boto3.resource('dynamodb')
 secretsmanager = boto3.client('secretsmanager')
