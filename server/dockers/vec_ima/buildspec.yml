@@ -8,8 +8,8 @@ phases:
       - echo Logging in to Docker Hub...
       - >
         DOCKER_CREDENTIALS=$(aws secretsmanager get-secret-value --secret-id DockerHub --query SecretString --output text)
-        DOCKER_USERNAME=$(echo $DOCKER_CREDENTIALS | python -c "import sys, json; print(json.load(sys.stdin)['username'])")
-        DOCKER_PASSWORD=$(echo $DOCKER_CREDENTIALS | python -c "import sys, json; print(json.load(sys.stdin)['password'])")
+        DOCKER_USERNAME=$(echo $DOCKER_CREDENTIALS | cut -d ':' -f 1)
+        DOCKER_PASSWORD=$(echo $DOCKER_CREDENTIALS | cut -d ':' -f 2)
         echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
       - REPOSITORY_URI=905418180959.dkr.ecr.us-east-1.amazonaws.com/vec_ima
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
