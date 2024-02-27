@@ -121,10 +121,10 @@ def lambda_handler(event, context):
             dynamodb_client.update_item(
                 TableName='RenderRequests',
                 Key={'renderId': {'S': render_id}},
-                UpdateExpression='SET imageVectorUrl = :vectorUrl, imageWatermarkVectorUrl = :watermarkUrl',
+                UpdateExpression='SET imageVectorUrl = :imageVectorUrl, imageWatermarkVectorUrl = :imageWatermarkVectorUrl',
                 ExpressionAttributeValues={
-                    ':vectorUrl': {'S': f's3://{BUCKET_NAME}/{IMAGE_VECTORIZED_FOLDER}' + vectorized_filename},
-                    ':watermarkUrl': {'S': f's3://{BUCKET_NAME}/{WATERMARKED_VECTOR_FOLDER}' + vectorized_filename.replace('.svg', '.png')}
+                    ':imageVectorUrl': {'S': f's3://{BUCKET_NAME}/{IMAGE_VECTORIZED_FOLDER}' + vectorized_filename},
+                    ':imageWatermarkVectorUrl': {'S': f's3://{BUCKET_NAME}/{WATERMARKED_VECTOR_FOLDER}' + vectorized_filename.replace('.svg', '.png')}
                 }
             )
             return {
