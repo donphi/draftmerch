@@ -1,3 +1,4 @@
 pillow
 CairoSVG
 requests
+urllib3>=1.25.4,<1.27
