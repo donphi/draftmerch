@@ -19,7 +19,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
         S3Bucket: draft-lambda-functions
-        S3Key: remove_api_background/function.zip
+        S3Key: vectorize_image/function.zip
         S3ObjectVersion: !Ref FunctionCodeS3ObjectVersion
       Runtime: python3.10
       Timeout: 60
