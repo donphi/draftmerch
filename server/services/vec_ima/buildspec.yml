@@ -1,0 +1,41 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.10
+    commands:
+      - echo Installing source dependencies...
+      - pip install -r server/services/vec_ima/requirements.txt -t /tmp/dependencies
+  pre_build:
+    commands:
+      - echo Pre-build phase...
+  build:
+    commands:
+      - echo Build started on `date`
+      - cd $CODEBUILD_SRC_DIR/server/services/vec_ima
+      - zip -r9 /tmp/function.zip lambda_function.py  # Only include the lambda_function.py in the zip
+      - cd /tmp/dependencies
+      - zip -ur /tmp/function.zip .  # Add the contents of the dependencies directory to the zip
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - aws s3 cp /tmp/function.zip s3://draft-lambda-functions/vectorize_image/function.zip
+      - version_id=$(aws s3api list-object-versions --bucket draft-lambda-functions --prefix "vectorize_image/function.zip" --query 'Versions[0].VersionId' --output text)
+      - echo "FunctionCodeS3ObjectVersion=$version_id" > $CODEBUILD_SRC_DIR/version_id.properties
+      - echo Checking the contents of version_id.properties...
+      - cat $CODEBUILD_SRC_DIR/version_id.properties
+      - sed -i 's/VERSION_ID_PLACEHOLDER/'"$version_id"'/' $CODEBUILD_SRC_DIR/server/services/vec_ima/deploy.yaml
+      - echo "Updated deploy.yaml with actual version_id:"
+      - cat $CODEBUILD_SRC_DIR/server/services/vec_ima/deploy.yaml
+      - aws s3 cp $CODEBUILD_SRC_DIR/server/services/vec_ima/deploy.yaml s3://draft-lambda-functions/vectorize_image/deploy.yaml
+artifacts:
+  files:
+    - server/services/vec_ima/lambda_function.py
+    - server/services/vec_ima/deploy.yaml
+    - version_id.properties
+  name: image_generate  # This is the output artifact name that will be used in CodePipeline
+
+cache:
+  paths:
+    - '/root/.cache/pip/**/*'
