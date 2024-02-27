@@ -198,12 +198,13 @@ def lambda_handler(event, context):
         raise
     
     # Update the DynamoDB table with the new image location
+    full_s3_url = f"s3://{S3_BUCKET_NAME}/{output_s3_key}"
     dynamodb_client.update_item(
         TableName=DYNAMODB_TABLE_NAME,
         Key={'renderId': {'S': renderId}},
         UpdateExpression='SET imageNoBackgroundUrl = :val1',
         ExpressionAttributeValues={
-            ':val1': {'S': f'{output_s3_path}'}  # Corrected to use 'output_s3_key'
+            ':val1': {'S': full_s3_url}  # Corrected to use 'output_s3_key'
         }
     )
     
