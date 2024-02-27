@@ -38,7 +38,7 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python
 WORKDIR /app
 
 # Copying your application source code and requirements.txt into the Docker image
-COPY . .
+COPY requirements.txt .
 
 # Upgrade pip and install Python dependencies specified in requirements.txt
 RUN python3.10 -m pip install --upgrade pip && \
