@@ -3,7 +3,6 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - docker pull ubuntu:latest
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
       - echo Logging in to Docker Hub...
@@ -14,6 +13,7 @@ phases:
       - >
         DOCKER_PASSWORD=$(echo $DOCKER_CREDENTIALS | python -c "import sys, json; values = list(json.loads(sys.stdin.read()).values()); print(values[0])")
       - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+      - docker pull ubuntu:latest
       - REPOSITORY_URI=905418180959.dkr.ecr.us-east-1.amazonaws.com/vec_ima
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - mkdir -p ~/.docker
