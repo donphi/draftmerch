@@ -6,6 +6,8 @@ phases:
       - echo Logging in to Amazon ECR...
       # The next line is replaced with the AWS CLI v2 syntax for logging into ECR. The ecr-public is not used here.
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
+      - echo Logging in to Docker Hub...
+      - echo "<DOCKER_HUB_PASSWORD>" | docker login --username chonkie --password Dock123$docker
       - REPOSITORY_URI=905418180959.dkr.ecr.us-east-1.amazonaws.com/vec_ima
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       # Ensure Docker is configured to use credentials store for ECR if using the credential helper
