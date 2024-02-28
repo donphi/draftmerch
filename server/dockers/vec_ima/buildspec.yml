@@ -22,7 +22,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f server/dockers/vec_ima/Dockerfile .
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f server/dockers/vec_ima/Dockerfile server/dockers/vec_ima/
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
       - cd -
   post_build:
