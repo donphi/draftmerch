@@ -5,7 +5,12 @@ FROM amazonlinux:2
 RUN yum update -y && \
     yum groupinstall "Development Tools" -y && \
     yum install -y openssl-devel bzip2-devel libffi-devel zlib-devel wget tar zip \
-    cairo-devel pango-devel gdk-pixbuf2-devel python3-pip
+    cairo-devel pango-devel gdk-pixbuf2-devel
+
+# Install Python 3.10 from Amazon Linux Extras repository
+RUN amazon-linux-extras enable python3.8 && \
+    yum install -y python3.8 && \
+    alternatives --set python3 /usr/bin/python3.8
 
 # Upgrade pip and install AWS CLI for S3 interactions
 RUN pip3 install --upgrade pip && \
@@ -15,25 +20,18 @@ RUN pip3 install --upgrade pip && \
 ENV PYTHON_VERSION=3.10.4
 
 # Download and install Python, ensuring SSL support is correctly configured
-# Note: You may need to adjust the --with-openssl flag if the path is different
-RUN cd /usr/src && \
-    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
-    tar xvf Python-${PYTHON_VERSION}.tar.xz && \
-    cd Python-${PYTHON_VERSION} && \
-    ./configure --enable-optimizations --with-ensurepip=install --with-openssl=/usr/include/openssl && \
-    make altinstall
+# Note: Adjusting the approach to use a Python version available in Amazon Linux 2 extras
+RUN pip3 install virtualenv && \
+    virtualenv /opt/python3.10 && \
+    source /opt/python3.10/bin/activate && \
+    pip install --upgrade pip setuptools wheel
 
-# Cleanup to reduce image size
-RUN yum clean all && \
-    rm -rf /var/cache/yum /usr/src/Python-${PYTHON_VERSION}
-
-# Set Python 3.10 as the default python and pip version
-RUN alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.10 1 && \
-    alternatives --set python3 /usr/local/bin/python3.10 && \
-    alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
-
-# Install cairosvg
-RUN pip3.10 install cairosvg
+# Install cairosvg within the virtual environment
+RUN source /opt/python3.10/bin/activate && \
+    pip install cairosvg
 
 # Verify installation
-RUN python3.10 --version && pip3.10 --version && cairosvg --version
+RUN source /opt/python3.10/bin/activate && \
+    python --version && pip --version && cairosvg --version
+
+CMD ["/bin/bash"]
