@@ -4,32 +4,35 @@ FROM amazonlinux:2
 # Install development tools and libraries needed for Python, cairosvg, and AWS CLI
 RUN yum update -y && \
     yum groupinstall "Development Tools" -y && \
-    yum install -y openssl-devel bzip2-devel libffi-devel zlib-devel wget tar zip \
-    cairo-devel pango-devel gdk-pixbuf2-devel python3-pip
+    yum install -y openssl openssl-devel bzip2-devel libffi-devel zlib-devel wget tar zip \
+    cairo-devel pango-devel gdk-pixbuf2-devel python3-pip pkgconfig
 
 # Upgrade pip and install AWS CLI for S3 interactions
-RUN pip3 install --upgrade pip && \
+RUN python3 -m pip install --upgrade pip && \
     pip3 install awscli
 
 # Define environment variable for Python version
 ENV PYTHON_VERSION=3.10.4
 
-# Download and install Python, this time setting LDFLAGS
+# Download and install Python, setting LDFLAGS and CPPFLAGS for OpenSSL
 RUN cd /usr/src && \
     wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
     tar xvf Python-${PYTHON_VERSION}.tar.xz && \
     cd Python-${PYTHON_VERSION} && \
-    ./configure LDFLAGS="-L/usr/lib64" --enable-optimizations --with-ensurepip=install --with-openssl=/usr/include/openssl && \
+    LDFLAGS="-L/usr/lib64 -L/usr/lib/openssl-libs" CPPFLAGS="-I/usr/include/openssl" ./configure --enable-optimizations --with-ensurepip=install && \
     make altinstall
 
 # Cleanup to reduce image size
 RUN yum clean all && \
-    rm -rf /var/cache/yum /usr/src/Python-${PYTHON_VERSION}
+    rm -rf /var/cache/yum /usr/src/Python-${PYTHON_VERSION}*
 
 # Set Python 3.10 as the default python and pip version
 RUN alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.10 1 && \
     alternatives --set python3 /usr/local/bin/python3.10 && \
-    alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
+    alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 && \
+
+# Fix potential issues with pip SSL support
+    /usr/local/bin/pip3.10 install --upgrade pip
 
 # Install cairosvg
 RUN pip3.10 install cairosvg
