@@ -1,48 +1,41 @@
-# Start from Amazon Linux 2 base for AWS Lambda compatibility
-FROM amazonlinux:2 as builder
+# Use Amazon Linux 2 as the base
+FROM amazonlinux:2 as build-stage
 
-# Define Python version for easy updates
-ENV PYTHON_VERSION=3.10.4
-
-# Install build dependencies for Python and libraries for cairosvg
+# Install necessary packages
 RUN yum update -y && \
-    yum groupinstall "Development Tools" -y && \
+    yum groupinstall -y "Development Tools" && \
     yum install -y openssl-devel bzip2-devel libffi-devel zlib-devel wget tar zip \
-    cairo-devel pango-devel gdk-pixbuf2-devel libjpeg-devel openjpeg2-devel && \
-    yum clean all
+    libjpeg-devel cairo-devel pango-devel gdk-pixbuf2-devel
 
-# Download and extract Python source
-RUN cd /tmp && \
-    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
-    tar xvf Python-${PYTHON_VERSION}.tar.xz
+# Install Python 3.10 from source to ensure compatibility with OpenSSL
+RUN yum install -y gcc openssl-devel bzip2-devel libffi-devel && \
+    cd /usr/src && \
+    wget https://www.python.org/ftp/python/3.10.4/Python-3.10.4.tgz && \
+    tar xzf Python-3.10.4.tgz && \
+    cd Python-3.10.4 && \
+    ./configure --enable-optimizations && \
+    make altinstall
 
-# Compile Python with shared library support and optimize for size
-RUN cd /tmp/Python-${PYTHON_VERSION} && \
-    ./configure --enable-optimizations --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib" && \
-    make install
+# Verify Python 3.10 installation
+RUN python3.10 --version
 
-# Refresh shared library cache to ensure newly installed Python is found
-RUN ldconfig
+# Install pip for Python 3.10
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.10 get-pip.py
 
-# Upgrade pip to latest version
-RUN pip3 install --upgrade pip
+# Use pip to install cairosvg
+RUN pip3.10 install cairosvg
 
-# Install cairosvg and dependencies
-RUN pip3 install cairosvg
+# Create a directory for the lambda layer and copy necessary files
+RUN mkdir -p /lambda-layer/python
+RUN cp -r /usr/local/lib/python3.10 /lambda-layer/python/lib
+RUN cp -r /usr/local/lib64/python3.10 /lambda-layer/python/lib64
 
-# Prepare the layer packaging directory
-RUN mkdir -p /lambda-layer/python/lib/python${PYTHON_VERSION::3}/site-packages
-RUN cp -r /usr/local/lib/python${PYTHON_VERSION::3}/site-packages/* /lambda-layer/python/lib/python${PYTHON_VERSION::3}/site-packages/
-
-# Final base to minimize size
-FROM amazonlinux:2
-
-# Copy the prepared Python libs to the final image to minimize size
-COPY --from=builder /lambda-layer /lambda-layer
-
-# Any additional layer preparation steps (permissions, etc) can be added here
-
-# The instruction to package contents for AWS Lambda Layer
-# Note: AWS Lambda expects the layer contents to be in a ZIP file in /opt directory
+# Prepare the zip file containing the layer
+FROM amazonlinux:2 as final-stage
+COPY --from=build-stage /lambda-layer /lambda-layer
 WORKDIR /lambda-layer
-RUN zip -r /lambda-layer.zip .
+RUN zip -r /python310-layer.zip .
+
+# Final instructions to ensure when someone uses this image, they can easily extract the Lambda layer
+CMD ["cp", "/lambda-layer/python310-layer.zip", "/target/python310-layer.zip"]
