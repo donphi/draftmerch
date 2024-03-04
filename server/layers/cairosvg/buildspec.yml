@@ -3,42 +3,30 @@ version: 0.2
 phases:
   install:
     commands:
-      # Update system and install necessary libraries
       - yum update -y
       - yum install -y python3 python3-pip gcc cairo-devel pango-devel gdk-pixbuf2-devel zip
-      # Python 3.10 might need to be installed manually depending on the CodeBuild environment
-      # Ensure pip is upgraded
       - pip3 install --upgrade pip
 
   pre_build:
     commands:
-      # Install cairosvg in a directory structure expected by AWS Lambda
-      # Adjust the path for Python 3.10
       - pip3 install cairosvg -t /cairosvg_layer/python/lib/python3.10/site-packages/
 
   build:
     commands:
-      # Copy necessary dynamic libraries
       - mkdir -p /cairosvg_layer/lib
       - cp /usr/lib64/libcairo.so.2 /cairosvg_layer/lib/
       - cp /usr/lib64/libpango-1.0.so.0 /cairosvg_layer/lib/
       - cp /usr/lib64/libpangocairo-1.0.so.0 /cairosvg_layer/lib/
       - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /cairosvg_layer/lib/
-      # Navigate to the correct directory before creating the zip file
+      - cp /usr/lib64/libpng16.so.16 /cairosvg_layer/lib/
+      # The above lines already include necessary libraries, so duplicates are removed
       - cd /cairosvg_layer
       - zip -r cairosvg_layer.zip .
-      # Move the zip to the root to simplify the artifact path
       - mv cairosvg_layer.zip /cairosvg_layer.zip
 
   post_build:
     commands:
-      - echo "Current directory:"
-      - pwd
-      - echo "Listing current directory contents:"
-      - ls -al
-      # Debug to confirm the zip file exists
       - echo "Uploading the Lambda layer zip to S3..."
-      # Ensure the path matches where the zip file is located
       - aws s3 cp /cairosvg_layer.zip s3://draft-lambda-layers/cairosvg/
 
 artifacts:
