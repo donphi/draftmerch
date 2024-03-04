@@ -31,8 +31,9 @@ phases:
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
       
       # Debugging: Print the current directory and list its contents
-      - echo "Current directory: $(pwd)"
-      - ls -lah
+      - |
+        echo "Current directory: $(pwd)"
+        ls -lah
       
       # Debugging: Ensure we return to the expected directory
       - cd -
