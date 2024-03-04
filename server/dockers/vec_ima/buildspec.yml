@@ -1,16 +1,21 @@
+version: 0.2
+
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region us-east-1 | docker login --username
+        AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
       - echo Logging in to Docker Hub...
-      - >
-        DOCKER_CREDENTIALS=$(aws secretsmanager get-secret-value --secret-id DockerHub --query SecretString --output text)
-      - >
-        DOCKER_USERNAME=$(echo $DOCKER_CREDENTIALS | python -c "import sys, json; keys = list(json.loads(sys.stdin.read()).keys()); print(keys[0])")
-      - >
-        DOCKER_PASSWORD=$(echo $DOCKER_CREDENTIALS | python -c "import sys, json; values = list(json.loads(sys.stdin.read()).values()); print(values[0])")
-      - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+      - DOCKER_CREDENTIALS=$(aws secretsmanager get-secret-value --secret-id
+        DockerHub --query SecretString --output text)
+      - DOCKER_USERNAME=$(echo $DOCKER_CREDENTIALS | python -c "import sys,
+        json; keys = list(json.loads(sys.stdin.read()).keys()); print(keys[0])")
+      - DOCKER_PASSWORD=$(echo $DOCKER_CREDENTIALS | python -c "import sys,
+        json; values = list(json.loads(sys.stdin.read()).values());
+        print(values[0])")
+      - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME
+        --password-stdin
       - docker pull ubuntu:latest
       - REPOSITORY_URI=905418180959.dkr.ecr.us-east-1.amazonaws.com/vec_ima
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
@@ -20,7 +25,8 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f server/dockers/vec_ima/Dockerfile server/dockers/vec_ima/
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f
+        server/dockers/vec_ima/Dockerfile server/dockers/vec_ima/
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
       - cd -
   post_build:
@@ -30,7 +36,8 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
       - echo Writing image definitions file...
-      - printf '[{"name":"vec_ima","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"vec_ima","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG
+        > imagedefinitions.json
 artifacts:
-  files: 
+  files:
     - imagedefinitions.json
