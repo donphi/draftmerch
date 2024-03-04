@@ -38,6 +38,7 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
       - echo Writing image definitions file...
+      - cd $CODEBUILD_SRC_DIR
       - printf '[{"name":"vec_ima","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG
         > imagedefinitions.json
 artifacts:
