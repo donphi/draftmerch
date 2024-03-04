@@ -1,41 +1,52 @@
-# Use Amazon Linux 2 as the base
-FROM amazonlinux:2 as build-stage
+# Stage 1: Compile Python and Install Dependencies
+FROM amazonlinux:2 AS python-build
 
-# Install necessary packages
-RUN yum update -y && \
-    yum groupinstall -y "Development Tools" && \
-    yum install -y openssl-devel bzip2-devel libffi-devel zlib-devel wget tar zip \
-    libjpeg-devel cairo-devel pango-devel gdk-pixbuf2-devel
+# Install build essential tools
+RUN yum groupinstall -y "Development Tools" && yum install -y \
+  tar \
+  openssl-devel \
+  bzip2-devel \
+  libffi-devel \
+  zlib-devel \
+  wget \
+  shadow-utils.x86_64
 
-# Install Python 3.10 from source to ensure compatibility with OpenSSL
-RUN yum install -y gcc openssl-devel bzip2-devel libffi-devel && \
-    cd /usr/src && \
-    wget https://www.python.org/ftp/python/3.10.4/Python-3.10.4.tgz && \
-    tar xzf Python-3.10.4.tgz && \
-    cd Python-3.10.4 && \
-    ./configure --enable-optimizations && \
-    make altinstall
+# Install Python 3.10
+WORKDIR /opt/python
 
-# Verify Python 3.10 installation
+ENV PYTHON_VERSION=3.10.4
+RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    tar -xzf Python-${PYTHON_VERSION}.tgz && \
+    cd Python-${PYTHON_VERSION} && \
+    ./configure --enable-optimizations --enable-shared --with-ensurepip=install && \
+    make altinstall && \
+    ldconfig
+
+# Verify Python installation
 RUN python3.10 --version
+RUN pip3.10 --version
 
-# Install pip for Python 3.10
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python3.10 get-pip.py
-
-# Use pip to install cairosvg
+# Install cairosvg
 RUN pip3.10 install cairosvg
 
-# Create a directory for the lambda layer and copy necessary files
-RUN mkdir -p /lambda-layer/python
-RUN cp -r /usr/local/lib/python3.10 /lambda-layer/python/lib
-RUN cp -r /usr/local/lib64/python3.10 /lambda-layer/python/lib64
+# Stage 2: Prepare the runtime environment
+FROM amazonlinux:2
 
-# Prepare the zip file containing the layer
-FROM amazonlinux:2 as final-stage
-COPY --from=build-stage /lambda-layer /lambda-layer
+# Copy the Python installation from the python-build stage
+COPY --from=python-build /usr/local /usr/local
+
+# Confirm Python3.10 is working
+RUN python3.10 --version && pip3.10 --version
+
+# Package for AWS Lambda
 WORKDIR /lambda-layer
-RUN zip -r /python310-layer.zip .
+RUN mkdir python && \
+    cd python && \
+    cp -a /usr/local/lib/python3.10/site-packages/ . && \
+    cp -a /usr/local/lib64/python3.10/site-packages/ . && \
+    find . -name __pycache__ -exec rm -rf {} + && \
+    cd .. && \
+    zip -r9 /lambda-layer.zip .
 
-# Final instructions to ensure when someone uses this image, they can easily extract the Lambda layer
-CMD ["cp", "/lambda-layer/python310-layer.zip", "/target/python310-layer.zip"]
+# CMD to keep the container running if needed
+CMD ["tail", "-f", "/dev/null"]
