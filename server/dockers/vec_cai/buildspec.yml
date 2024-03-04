@@ -1,0 +1,46 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username
+        AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
+      - echo Logging in to Docker Hub...
+      - DOCKER_CREDENTIALS=$(aws secretsmanager get-secret-value --secret-id
+        DockerHub --query SecretString --output text)
+      - DOCKER_USERNAME=$(echo $DOCKER_CREDENTIALS | python -c "import sys,
+        json; keys = list(json.loads(sys.stdin.read()).keys()); print(keys[0])")
+      - DOCKER_PASSWORD=$(echo $DOCKER_CREDENTIALS | python -c "import sys,
+        json; values = list(json.loads(sys.stdin.read()).values());
+        print(values[0])")
+      - echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME
+        --password-stdin
+      - docker pull ubuntu:latest
+      - REPOSITORY_URI=905418180959.dkr.ecr.us-east-1.amazonaws.com/vec_cai
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - mkdir -p ~/.docker
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f
+        server/dockers/vec_cai/Dockerfile server/dockers/vec_cai/
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+      - cd -
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Refreshing Amazon ECR login credentials...
+      - aws ecr get-login-password --region us-east-1 | docker login --username
+        AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
+      - echo Pushing the Docker image...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      - cd $CODEBUILD_SRC_DIR
+      - printf '[{"name":"vec_cai","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG
+        > imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json
