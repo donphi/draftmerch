@@ -1,41 +1,48 @@
-# Start from Amazon Linux 2
-FROM amazonlinux:2
+# Start from Amazon Linux 2 base for AWS Lambda compatibility
+FROM amazonlinux:2 as builder
 
-# Install development tools and libraries needed for Python, cairosvg, and AWS CLI
-RUN yum update -y && \
-    yum groupinstall "Development Tools" -y && \
-    yum install -y openssl openssl-devel bzip2-devel libffi-devel zlib-devel wget tar zip \
-    cairo-devel pango-devel gdk-pixbuf2-devel python3-pip pkgconfig
-
-# Upgrade pip and install AWS CLI for S3 interactions
-RUN python3 -m pip install --upgrade pip && \
-    pip3 install awscli
-
-# Define environment variable for Python version
+# Define Python version for easy updates
 ENV PYTHON_VERSION=3.10.4
 
-# Download and install Python, setting LDFLAGS and CPPFLAGS for OpenSSL
-RUN cd /usr/src && \
+# Install build dependencies for Python and libraries for cairosvg
+RUN yum update -y && \
+    yum groupinstall "Development Tools" -y && \
+    yum install -y openssl-devel bzip2-devel libffi-devel zlib-devel wget tar zip \
+    cairo-devel pango-devel gdk-pixbuf2-devel libjpeg-devel openjpeg2-devel && \
+    yum clean all
+
+# Download and extract Python source
+RUN cd /tmp && \
     wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
-    tar xvf Python-${PYTHON_VERSION}.tar.xz && \
-    cd Python-${PYTHON_VERSION} && \
-    LDFLAGS="-L/usr/lib64 -L/usr/lib/openssl-libs" CPPFLAGS="-I/usr/include/openssl" ./configure --enable-optimizations --with-ensurepip=install && \
-    make altinstall
+    tar xvf Python-${PYTHON_VERSION}.tar.xz
 
-# Cleanup to reduce image size
-RUN yum clean all && \
-    rm -rf /var/cache/yum /usr/src/Python-${PYTHON_VERSION}*
+# Compile Python with shared library support and optimize for size
+RUN cd /tmp/Python-${PYTHON_VERSION} && \
+    ./configure --enable-optimizations --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib" && \
+    make install
 
-# Set Python 3.10 as the default python and pip version
-RUN alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.10 1 && \
-    alternatives --set python3 /usr/local/bin/python3.10 && \
-    alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1 && \
+# Refresh shared library cache to ensure newly installed Python is found
+RUN ldconfig
 
-# Fix potential issues with pip SSL support
-    /usr/local/bin/pip3.10 install --upgrade pip
+# Upgrade pip to latest version
+RUN pip3 install --upgrade pip
 
-# Install cairosvg
-RUN pip3.10 install cairosvg
+# Install cairosvg and dependencies
+RUN pip3 install cairosvg
 
-# Verify installation
-RUN python3.10 --version && pip3.10 --version && cairosvg --version
+# Prepare the layer packaging directory
+RUN mkdir -p /lambda-layer/python/lib/python${PYTHON_VERSION::3}/site-packages
+RUN cp -r /usr/local/lib/python${PYTHON_VERSION::3}/site-packages/* /lambda-layer/python/lib/python${PYTHON_VERSION::3}/site-packages/
+
+# Final base to minimize size
+FROM amazonlinux:2
+
+# Copy the prepared Python libs to the final image to minimize size
+COPY --from=builder /lambda-layer /lambda-layer
+
+# Any additional layer preparation steps (permissions, etc) can be added here
+
+# The instruction to package contents for AWS Lambda Layer
+# Note: AWS Lambda expects the layer contents to be in a ZIP file in /opt directory
+WORKDIR /lambda-layer
+RUN zip -r /lambda-layer.zip .
