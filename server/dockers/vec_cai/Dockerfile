@@ -14,13 +14,12 @@ RUN pip3 install --upgrade pip && \
 # Define environment variable for Python version
 ENV PYTHON_VERSION=3.10.4
 
-# Download and install Python, ensuring SSL support is correctly configured
-# Note: You may need to adjust the --with-openssl flag if the path is different
+# Download and install Python, this time setting LDFLAGS
 RUN cd /usr/src && \
     wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
     tar xvf Python-${PYTHON_VERSION}.tar.xz && \
     cd Python-${PYTHON_VERSION} && \
-    ./configure --enable-optimizations --with-ensurepip=install --with-openssl=/usr/include/openssl && \
+    ./configure LDFLAGS="-L/usr/lib64" --enable-optimizations --with-ensurepip=install --with-openssl=/usr/include/openssl && \
     make altinstall
 
 # Cleanup to reduce image size
