@@ -33,7 +33,8 @@ phases:
     commands:
       - echo Build completed on `date`
       - echo Refreshing Amazon ECR login credentials...
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region us-east-1 | docker login --username
+        AWS --password-stdin 905418180959.dkr.ecr.us-east-1.amazonaws.com
       - echo Pushing the Docker image...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
