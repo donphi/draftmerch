@@ -1,0 +1,35 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      # Update system and install necessary libraries
+      - yum update -y
+      - yum install -y python3 python3-pip gcc cairo-devel pango-devel gdk-pixbuf2-devel zip
+      # Ensure pip is upgraded
+      - pip3 install --upgrade pip
+
+  pre_build:
+    commands:
+      # Install cairosvg in a directory structure expected by AWS Lambda
+      - pip3 install cairosvg -t cairosvg_layer/python/lib/python3.8/site-packages/
+
+  build:
+    commands:
+      # Copy necessary dynamic libraries
+      - mkdir -p cairosvg_layer/lib
+      - cp /usr/lib64/libcairo.so.2 cairosvg_layer/lib/
+      - cp /usr/lib64/libpango-1.0.so.0 cairosvg_layer/lib/
+      - cp /usr/lib64/libpangocairo-1.0.so.0 cairosvg_layer/lib/
+      - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 cairosvg_layer/lib/
+      # Create the zip file containing both the Python package and libraries
+      - cd cairosvg_layer && zip -r ../cairosvg_layer.zip .
+
+  post_build:
+    commands:
+      # Upload the zip file to S3 for later use as a Lambda layer
+      - aws s3 cp cairosvg_layer.zip s3://draft-lambda-layers/cairosvg/
+
+artifacts:
+  files:
+    - cairosvg_layer.zip
