@@ -1,7 +1,7 @@
 # Start from Amazon Linux 2
 FROM amazonlinux:2
 
-# Install development tools and libraries needed for Python and cairosvg
+# Install development tools and libraries needed for Python, cairosvg, and AWS CLI
 RUN yum groupinstall "Development Tools" -y && \
     yum install -y \
     openssl-devel \
@@ -13,20 +13,26 @@ RUN yum groupinstall "Development Tools" -y && \
     zip \
     cairo-devel \
     pango-devel \
-    gdk-pixbuf2-devel
+    gdk-pixbuf2-devel \
+    python3-pip
 
-# Download Python 3.10, replace x with the minor version you need
+# Upgrade pip and install AWS CLI for S3 interactions
+RUN pip3 install --upgrade pip && \
+    pip3 install awscli
+
+# Specify the exact Python 3.10 version to install
+ENV PYTHON_VERSION=3.10.4
+
+# Download and install Python 3.10
 RUN cd /usr/src && \
-    wget https://www.python.org/ftp/python/3.10.x/Python-3.10.x.tar.xz && \
-    tar xvf Python-3.10.x.tar.xz
-
-# Compile Python 3.10
-RUN cd /usr/src/Python-3.10.x && \
+    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz && \
+    tar xvf Python-${PYTHON_VERSION}.tar.xz && \
+    cd Python-${PYTHON_VERSION} && \
     ./configure --enable-optimizations && \
     make altinstall
 
 # Cleanup
-RUN rm /usr/src/Python-3.10.x.tar.xz && \
+RUN rm -rf /usr/src/Python-${PYTHON_VERSION} /usr/src/Python-${PYTHON_VERSION}.tar.xz && \
     yum clean all
 
 # Set Python 3.10 as the default python and pip version
