@@ -20,7 +20,6 @@ phases:
       - REPOSITORY_URI=905418180959.dkr.ecr.us-east-1.amazonaws.com/vec_ima
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - mkdir -p ~/.docker
-      - echo '{"credsStore":"ecr-login"}' > ~/.docker/config.json
   build:
     commands:
       - echo Build started on `date`
