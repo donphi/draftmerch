@@ -10,7 +10,7 @@ RUN apt-get update && \
     libbz2-dev libncurses5-dev libreadline-dev libsqlite3-dev libssl-dev \
     libgdbm-dev libnss3-dev libsm6 libxrender1 libfontconfig1 libxext6 \
     tk-dev liblzma-dev libdb-dev libpcap-dev xz-utils wget curl libcairo2-dev \
-    libpango1.0-dev libgdk-pixbuf2.0-dev libxml2-dev libxslt-dev && \
+    libpango1.0-dev libgdk-pixbuf2.0-dev libxml2-dev libxslt-dev zip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
