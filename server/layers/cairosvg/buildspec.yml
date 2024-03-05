@@ -13,24 +13,23 @@ phases:
 
   build:
     commands:
-      - mkdir -p /lib
+      - mkdir -p /opt/lib
       # Copy primary libraries
-      - cp /usr/lib64/libcairo.so.2 /lib/
-      - cp /usr/lib64/libpango-1.0.so.0 /lib/
-      - cp /usr/lib64/libpangocairo-1.0.so.0 /lib/
-      - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /lib/
+      - cp /usr/lib64/libcairo.so.2 /opt/lib/
+      - cp /usr/lib64/libpango-1.0.so.0 /opt/lib/
+      - cp /usr/lib64/libpangocairo-1.0.so.0 /opt/lib/
+      - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /opt/lib/
       # Find libpng16.so.16 and copy it along with its dependencies
-      - find / -name libpng16.so.16 -exec cp {} /lib/ \;
-      - ldd /lib/libpng16.so.16 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /lib/
+      - find / -name libpng16.so.16 -exec cp {} /opt/lib/ \;
+      - ldd /opt/lib/libpng16.so.16 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /opt/lib/
       # Use ldd to find dependencies of the copied libraries and copy them as well
-      - ldd /lib/libcairo.so.2 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /lib/
-      - ldd /lib/libpango-1.0.so.0 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /lib/
-      - ldd /lib/libpangocairo-1.0.so.0 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /lib/
-      - ldd /lib/libgdk_pixbuf-2.0.so.0 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /lib/
+      - ldd /opt/lib/libcairo.so.2 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /opt/lib/
+      - ldd /opt/lib/libpango-1.0.so.0 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /opt/lib/
+      - ldd /opt/lib/libpangocairo-1.0.so.0 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /opt/lib/
+      - ldd /opt/lib/libgdk_pixbuf-2.0.so.0 | tr -s '[:space:]' '\n' | grep '^/' | xargs -I {} cp {} /opt/lib/
       # Prepare for the ZIP creation
-      - chmod -R 755 /lib /python
-      - cd /
-      - zip -r /cairosvg_layer.zip /lib /python
+      - cd /opt
+      - zip -r /cairosvg_layer.zip .
 
   post_build:
     commands:
