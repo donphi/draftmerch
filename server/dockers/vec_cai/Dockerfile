@@ -3,7 +3,7 @@ FROM amazonlinux:2 AS python-build
 
 # Prepare the build environment
 RUN yum groupinstall -y "Development Tools" && \
-    yum install -y tar openssl-devel bzip2-devel libffi-devel zlib-devel wget shadow-utils.x86_64 zip && \
+    yum install -y tar openssl11-devel bzip2-devel libffi-devel zlib-devel wget shadow-utils.x86_64 zip && \
     yum install -y libpng-devel # Ensure libpng is installed
 
 # Define the Python version
