@@ -13,17 +13,19 @@ phases:
 
   build:
     commands:
-      - mkdir -p /cairosvg_layer/lib
-      - cp /usr/lib64/libcairo.so.2 /cairosvg_layer/lib/
-      - cp /usr/lib64/libpango-1.0.so.0 /cairosvg_layer/lib/
-      - cp /usr/lib64/libpangocairo-1.0.so.0 /cairosvg_layer/lib/
-      - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /cairosvg_layer/lib/
-      # Check if libpng16.so.16 exists before attempting to copy
-      - find / -name libpng16.so.16 -exec cp {} /cairosvg_layer/lib/ \; -quit
-      - cd /cairosvg_layer
-      - zip -r cairosvg_layer.zip .
-      - mv cairosvg_layer.zip /cairosvg_layer.zip
-      
+      - mkdir -p /opt/python/lib/python3.10/site-packages/
+      - mkdir -p /opt/lib
+      - cp -r /cairosvg_layer/python/lib/python3.10/site-packages/* /opt/python/lib/python3.10/site-packages/
+      - cp /usr/lib64/libcairo.so.2 /opt/lib/
+      - cp /usr/lib64/libpango-1.0.so.0 /opt/lib/
+      - cp /usr/lib64/libpangocairo-1.0.so.0 /opt/lib/
+      - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /opt/lib/
+      # Search for libpng16.so.16 across the entire filesystem and copy it if found
+      - find / -name libpng16.so.16 -exec cp {} /opt/lib/ \; -quit
+      - cd /opt
+      - zip -r /cairosvg_layer.zip .
+      - mv /cairosvg_layer.zip /cairosvg_layer.zip
+
   post_build:
     commands:
       - echo "Uploading the Lambda layer zip to S3..."
