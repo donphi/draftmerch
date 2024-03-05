@@ -21,6 +21,7 @@ phases:
       # Ensure libpng16.so.16 is found and copied to /opt/lib
       - find / -name libpng16.so.16 -exec cp {} /opt/lib/ \; -quit
       # Navigate to the root before creating the ZIP to include the opt directory
+      - chmod -R 755 /opt
       - cd /
       - zip -r /cairosvg_layer.zip opt
       # This creates a ZIP with the opt directory at the root
