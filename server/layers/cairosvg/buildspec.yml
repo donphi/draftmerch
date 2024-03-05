@@ -18,11 +18,9 @@ phases:
       - cp /usr/lib64/libpango-1.0.so.0 /opt/lib/
       - cp /usr/lib64/libpangocairo-1.0.so.0 /opt/lib/
       - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /opt/lib/
-      # Search for libpng16.so.16 across the entire filesystem and copy it if found
       - find / -name libpng16.so.16 -exec cp {} /opt/lib/ \; -quit
-      - cd /opt
-      - zip -r /cairosvg_layer.zip .
-      # Removed the redundant mv command
+      # Correctly zip the /opt directory at the root of the ZIP file
+      - zip -r /cairosvg_layer.zip opt
 
   post_build:
     commands:
