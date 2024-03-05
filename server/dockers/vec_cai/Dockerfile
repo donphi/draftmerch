@@ -45,22 +45,22 @@ RUN yum update -y && \
 # Copy necessary files from the build stage, including compiled Python and libpng16 libraries
 COPY --from=python-build /usr/local /usr/local
 
-# Copy shared libraries to /opt/lib to ensure they are found by Lambda runtime
-# Adjusting the paths to /usr/lib64 where yum-installed libraries are located
+# Attempt to find and copy shared libraries to /opt/lib if they exist, searching the entire file system
 RUN mkdir -p /opt/lib && \
-    cp /usr/lib64/libpng16.so.16 /opt/lib/ || : && \
-    cp /usr/lib64/libcairo.so.2 /opt/lib/ || : && \
-    cp /usr/lib64/libpango-1.0.so.0 /opt/lib/ || : && \
-    cp /usr/lib64/libpangocairo-1.0.so.0 /opt/lib/ || : && \
-    cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /opt/lib/ || :
+    find / -path /proc -prune -o -name libpng16.so.16 -exec cp {} /opt/lib/ \; || : && \
+    find / -path /proc -prune -o -name libcairo.so.2 -exec cp {} /opt/lib/ \; || : && \
+    find / -path /proc -prune -o -name libpango-1.0.so.0 -exec cp {} /opt/lib/ \; || : && \
+    find / -path /proc -prune -o -name libpangocairo-1.0.so.0 -exec cp {} /opt/lib/ \; || : && \
+    find / -path /proc -prune -o -name libgdk_pixbuf-2.0.so.0 -exec cp {} /opt/lib/ \; || :
 
-# No need for ldconfig here since we're directly placing libraries where Lambda expects them
+# Ensure the system knows where to find the shared Python libraries and libpng16
+RUN ldconfig /usr/local/lib
 
 # Prepare the lambda layer zip file containing Python runtime, packages, and shared libraries
 WORKDIR /lambda-layer
 RUN mkdir -p python/lib/python3.10/site-packages/ && \
     cp -a /usr/local/lib/python3.10/site-packages/* python/lib/python3.10/site-packages/ && \
-    # Also copying shared libraries from /opt/lib to the zip, ensuring the structure matches Lambda's expectations
+    # Also copying shared libraries from /opt/lib to the zip
     cp -a /opt/lib/* lib/ && \
     zip -r9 /lambda-layer.zip python lib
 
