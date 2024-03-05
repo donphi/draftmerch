@@ -20,12 +20,15 @@ phases:
       - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /opt/lib/
       # Ensure libpng16.so.16 is found and copied to /opt/lib
       - find / -name libpng16.so.16 -exec cp {} /opt/lib/ \; -quit
-      # Navigate to the root before creating the ZIP to include the opt directory
+      # Use ldd to check dependencies (for manual inspection)
+      - ldd /opt/lib/libcairo.so.2
+      - ldd /opt/lib/libpango-1.0.so.0
+      - ldd /opt/lib/libpangocairo-1.0.so.0
+      - ldd /opt/lib/libgdk_pixbuf-2.0.so.0
+      # Prepare the rest of the layer
       - chmod -R 755 /opt
       - cd /
       - zip -r /cairosvg_layer.zip opt
-      # This creates a ZIP with the opt directory at the root
-      # No need for a move command after ZIP creation
 
   post_build:
     commands:
