@@ -6,6 +6,13 @@ RUN yum groupinstall -y "Development Tools" && \
     yum install -y tar openssl11-devel bzip2-devel libffi-devel zlib-devel wget shadow-utils.x86_64 zip \
     cairo-devel pango-devel gdk-pixbuf2-devel
 
+# Example commands to install and verify libraries (adjust as necessary)
+RUN yum install -y cairo pango gdk-pixbuf
+
+# Then use find just to verify their presence (not for the final Dockerfile)
+RUN find / -path /proc -prune -o -name libcairo.so.2 -print || echo "libcairo not found"
+RUN find / -path /proc -prune -o -name libpango-1.0.so.0 -print || echo "libpango not found"
+
 # Compile libpng16 from source
 WORKDIR /usr/src
 RUN wget https://download.sourceforge.net/libpng/libpng-1.6.37.tar.gz && \
