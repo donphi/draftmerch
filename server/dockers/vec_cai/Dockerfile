@@ -21,8 +21,8 @@ WORKDIR /opt/python
 RUN wget https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz && \
     tar -xzf Python-$PYTHON_VERSION.tgz && \
     cd Python-$PYTHON_VERSION && \
-    LD_RUN_PATH=/usr/lib64 ./configure --enable-optimizations --enable-shared --with-ensurepip=install && \
-    make altinstall V=1
+    LD_RUN_PATH=/usr/local/lib ./configure --enable-optimizations --enable-shared --with-ensurepip=install && \
+    make altinstall
 
 # Update ldconfig to know about Python 3.10 dynamic libraries and libpng16
 RUN ldconfig /usr/local/lib
@@ -44,22 +44,25 @@ RUN yum update -y && \
 # Copy necessary files from the build stage, including compiled Python and libpng16 libraries
 COPY --from=python-build /usr/local /usr/local
 
-# Update ldconfig to ensure the system knows where to find the shared Python libraries and libpng16
+# Copy shared libraries to /opt/lib to ensure they are found by Lambda runtime
+RUN mkdir -p /opt/lib && \
+    cp /usr/local/lib/libpng16.so.16 /opt/lib/ && \
+    cp /usr/local/lib/libcairo.so.2 /opt/lib/ && \
+    cp /usr/local/lib/libpango-1.0.so.0 /opt/lib/ && \
+    cp /usr/local/lib/libpangocairo-1.0.so.0 /opt/lib/ && \
+    cp /usr/local/lib/libgdk_pixbuf-2.0.so.0 /opt/lib/
+
+# Ensure the system knows where to find the shared Python libraries and libpng16
 RUN ldconfig /usr/local/lib
 
-# Verify that Python is correctly set up
-RUN python3.10 --version && \
-    pip3.10 --version
-
-# Prepare the lambda layer zip file containing Python runtime and packages
+# Prepare the lambda layer zip file containing Python runtime, packages, and shared libraries
 WORKDIR /lambda-layer
-RUN mkdir -p python && \
-    cd python && \
-    cp -a /usr/local/lib/python3.10/site-packages/ . && \
-    if [ -d /usr/local/lib64/python3.10/site-packages/ ]; then cp -a /usr/local/lib64/python3.10/site-packages/ .; fi && \
-    find . -name '__pycache__' -exec rm -rf {} + && \
-    cd .. && \
-    zip -r9 /lambda-layer.zip .
+RUN mkdir -p python/lib/python3.10/site-packages/ && \
+    cp -a /usr/local/lib/python3.10/site-packages/* python/lib/python3.10/site-packages/ && \
+    # Also copying shared libraries
+    cp -a /opt/lib/* /lambda-layer/lib/ && \
+    zip -r9 /lambda-layer.zip python lib
 
 # Define a command to keep the container running, if necessary
 CMD ["tail", "-f", "/dev/null"]
+
