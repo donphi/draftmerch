@@ -14,18 +14,44 @@ phases:
   build:
     commands:
       - mkdir -p /opt/lib
+      # Copy primary libraries
       - cp /usr/lib64/libcairo.so.2 /opt/lib/
       - cp /usr/lib64/libpango-1.0.so.0 /opt/lib/
       - cp /usr/lib64/libpangocairo-1.0.so.0 /opt/lib/
       - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /opt/lib/
-      # Ensure libpng16.so.16 is found and copied to /opt/lib
       - find / -name libpng16.so.16 -exec cp {} /opt/lib/ \; -quit
-      # Use ldd to check dependencies (for manual inspection)
-      - ldd /opt/lib/libcairo.so.2
-      - ldd /opt/lib/libpango-1.0.so.0
-      - ldd /opt/lib/libpangocairo-1.0.so.0
-      - ldd /opt/lib/libgdk_pixbuf-2.0.so.0
-      # Prepare the rest of the layer
+      # Copy identified dependencies
+      - cp /usr/lib64/libpixman-1.so.0 /opt/lib/
+      - cp /usr/lib64/libfontconfig.so.1 /opt/lib/
+      - cp /usr/lib64/libfreetype.so.6 /opt/lib/
+      - cp /usr/lib64/libEGL.so.1 /opt/lib/
+      - cp /usr/lib64/libpng15.so.15 /opt/lib/
+      - cp /usr/lib64/libxcb-shm.so.0 /opt/lib/
+      - cp /usr/lib64/libxcb.so.1 /opt/lib/
+      - cp /usr/lib64/libxcb-render.so.0 /opt/lib/
+      - cp /usr/lib64/libXrender.so.1 /opt/lib/
+      - cp /usr/lib64/libX11.so.6 /opt/lib/
+      - cp /usr/lib64/libXext.so.6 /opt/lib/
+      - cp /usr/lib64/libz.so.1 /opt/lib/
+      - cp /usr/lib64/libGL.so.1 /opt/lib/
+      - cp /usr/lib64/librt.so.1 /opt/lib/
+      - cp /usr/lib64/libm.so.6 /opt/lib/
+      - cp /usr/lib64/libc.so.6 /opt/lib/
+      - cp /usr/lib64/libpthread.so.0 /opt/lib/
+      - cp /usr/lib64/libdl.so.2 /opt/lib/
+      - cp /usr/lib64/libgobject-2.0.so.0 /opt/lib/
+      - cp /usr/lib64/libglib-2.0.so.0 /opt/lib/
+      - cp /usr/lib64/libthai.so.0 /opt/lib/
+      - cp /usr/lib64/libfribidi.so.0 /opt/lib/
+      - cp /usr/lib64/libpcre.so.1 /opt/lib/
+      - cp /usr/lib64/libffi.so.6 /opt/lib/
+      - cp /usr/lib64/libexpat.so.1 /opt/lib/
+      - cp /usr/lib64/libuuid.so.1 /opt/lib/
+      - cp /usr/lib64/libbz2.so.1 /opt/lib/
+      - cp /usr/lib64/libGLdispatch.so.0 /opt/lib/
+      - cp /usr/lib64/libXau.so.6 /opt/lib/
+      - cp /usr/lib64/libGLX.so.0 /opt/lib/
+      # Prepare for the ZIP creation
       - chmod -R 755 /opt
       - cd /
       - zip -r /cairosvg_layer.zip opt
