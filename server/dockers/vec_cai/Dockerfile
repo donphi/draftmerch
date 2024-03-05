@@ -5,6 +5,10 @@ FROM amazonlinux:2 AS python-build
 RUN yum groupinstall -y "Development Tools" && \
     yum install -y tar openssl-devel bzip2-devel libffi-devel zlib-devel wget shadow-utils.x86_64
 
+# List installed openssl packages and locate libssl
+RUN yum list installed | grep openssl
+RUN find / -name libssl.so*
+
 # Define the Python version
 ENV PYTHON_VERSION=3.10.4
 
@@ -13,7 +17,7 @@ WORKDIR /opt/python
 RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
     tar -xzf Python-${PYTHON_VERSION}.tgz && \
     cd Python-${PYTHON_VERSION} && \
-    ./configure --enable-optimizations --enable-shared --prefix=/usr/local LDFLAGS="-Wl,-rpath /usr/local/lib" && \
+    ./configure --enable-optimizations --enable-shared --with-ensurepip=install --with-openssl=/usr/local/ssl && \
     make altinstall
 
 # Update ldconfig to know about Python 3.10 dynamic libraries
