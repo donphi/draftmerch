@@ -26,8 +26,12 @@ RUN python3.10 --version && \
 # Install cairosvg using pip
 RUN pip3.10 install cairosvg
 
-# Stage 2: Prepare the runtime environment
+## Stage 2: Prepare the runtime environment
 FROM amazonlinux:2
+
+# Install zip
+RUN yum update -y && \
+    yum install -y zip
 
 # Copy necessary files from the build stage
 COPY --from=python-build /usr/local /usr/local
