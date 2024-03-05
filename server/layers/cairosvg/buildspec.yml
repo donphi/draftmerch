@@ -9,7 +9,7 @@ phases:
 
   pre_build:
     commands:
-      - pip3 install cairosvg -t /python/lib/python3.10/site-packages/
+      - pip3 install cairosvg -t /opt/python/lib/python3.10/site-packages/
 
   build:
     commands:
