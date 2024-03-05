@@ -53,16 +53,22 @@ RUN mkdir -p /opt/lib && \
     find / -path /proc -prune -o -name libpangocairo-1.0.so.0 -exec cp {} /opt/lib/ \; || : && \
     find / -path /proc -prune -o -name libgdk_pixbuf-2.0.so.0 -exec cp {} /opt/lib/ \; || :
 
+RUN ls -l /opt/lib/
+
 # Ensure the system knows where to find the shared Python libraries and libpng16
 RUN ldconfig /usr/local/lib
 
 # Prepare the lambda layer zip file containing Python runtime, packages, and shared libraries
 WORKDIR /lambda-layer
 RUN mkdir -p python/lib/python3.10/site-packages/ && \
-    cp -a /usr/local/lib/python3.10/site-packages/* python/lib/python3.10/site-packages/ && \
-    # Also copying shared libraries from /opt/lib to the zip
-    cp -a /opt/lib/* lib/ && \
-    zip -r9 /lambda-layer.zip python lib
+    cp -a /usr/local/lib/python3.10/site-packages/* python/lib/python3.10/site-packages/
+
+# Ensure /opt/lib exists and copy the shared libraries there
+RUN mkdir -p /opt/lib && \
+    cp -a /opt/lib/* lib/ || : 
+
+# Create the ZIP with the correct structure
+RUN zip -r9 /lambda-layer.zip python /opt/lib
 
 # Define a command to keep the container running, if necessary
 CMD ["tail", "-f", "/dev/null"]
