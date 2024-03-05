@@ -18,8 +18,8 @@ phases:
       - cp /usr/lib64/libpango-1.0.so.0 /cairosvg_layer/lib/
       - cp /usr/lib64/libpangocairo-1.0.so.0 /cairosvg_layer/lib/
       - cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /cairosvg_layer/lib/
-      - cp /usr/lib64/libpng16.so.16 /cairosvg_layer/lib/
-      # The above lines already include necessary libraries, so duplicates are removed
+      # Check if libpng16.so.16 exists before attempting to copy
+      - if [ -f /usr/lib64/libpng16.so.16 ]; then cp /usr/lib64/libpng16.so.16 /cairosvg_layer/lib/; fi
       - cd /cairosvg_layer
       - zip -r cairosvg_layer.zip .
       - mv cairosvg_layer.zip /cairosvg_layer.zip
@@ -32,4 +32,3 @@ phases:
 artifacts:
   files:
     - /cairosvg_layer.zip
-
