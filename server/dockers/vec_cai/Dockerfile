@@ -44,7 +44,7 @@ WORKDIR /lambda-layer
 RUN mkdir -p python && \
     cd python && \
     cp -a /usr/local/lib/python3.10/site-packages/ . && \
-    cp -a /usr/local/lib64/python3.10/site-packages/ . && \
+    if [ -d /usr/local/lib64/python3.10/site-packages/ ]; then cp -a /usr/local/lib64/python3.10/site-packages/ .; fi && \
     find . -name '__pycache__' -exec rm -rf {} + && \
     cd .. && \
     zip -r9 /lambda-layer.zip .
