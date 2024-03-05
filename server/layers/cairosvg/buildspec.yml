@@ -30,7 +30,7 @@ phases:
       # Prepare for the ZIP creation
       - chmod -R 755 /lib /python
       - cd /
-      - zip -r /cairosvg_layer.zip lib python
+      - zip -r /cairosvg_layer.zip /lib /python
 
   post_build:
     commands:
