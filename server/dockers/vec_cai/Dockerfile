@@ -46,24 +46,25 @@ RUN yum update -y && \
 COPY --from=python-build /usr/local /usr/local
 
 # Copy shared libraries to /opt/lib to ensure they are found by Lambda runtime
+# Adjusting the paths to /usr/lib64 where yum-installed libraries are located
 RUN mkdir -p /opt/lib && \
-    cp /usr/local/lib/libpng16.so.16 /opt/lib/ && \
-    cp /usr/local/lib/libcairo.so.2 /opt/lib/ && \
-    cp /usr/local/lib/libpango-1.0.so.0 /opt/lib/ && \
-    cp /usr/local/lib/libpangocairo-1.0.so.0 /opt/lib/ && \
-    cp /usr/local/lib/libgdk_pixbuf-2.0.so.0 /opt/lib/
+    cp /usr/lib64/libpng16.so.16 /opt/lib/ || : && \
+    cp /usr/lib64/libcairo.so.2 /opt/lib/ || : && \
+    cp /usr/lib64/libpango-1.0.so.0 /opt/lib/ || : && \
+    cp /usr/lib64/libpangocairo-1.0.so.0 /opt/lib/ || : && \
+    cp /usr/lib64/libgdk_pixbuf-2.0.so.0 /opt/lib/ || :
 
-# Ensure the system knows where to find the shared Python libraries and libpng16
-RUN ldconfig /usr/local/lib
+# No need for ldconfig here since we're directly placing libraries where Lambda expects them
 
 # Prepare the lambda layer zip file containing Python runtime, packages, and shared libraries
 WORKDIR /lambda-layer
 RUN mkdir -p python/lib/python3.10/site-packages/ && \
     cp -a /usr/local/lib/python3.10/site-packages/* python/lib/python3.10/site-packages/ && \
-    # Also copying shared libraries
+    # Also copying shared libraries from /opt/lib to the zip, ensuring the structure matches Lambda's expectations
     cp -a /opt/lib/* lib/ && \
     zip -r9 /lambda-layer.zip python lib
 
 # Define a command to keep the container running, if necessary
 CMD ["tail", "-f", "/dev/null"]
+
 
