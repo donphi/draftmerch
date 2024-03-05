@@ -3,7 +3,8 @@ FROM amazonlinux:2 AS python-build
 
 # Prepare the build environment
 RUN yum groupinstall -y "Development Tools" && \
-    yum install -y tar openssl11-devel bzip2-devel libffi-devel zlib-devel wget shadow-utils.x86_64 zip
+    yum install -y tar openssl11-devel bzip2-devel libffi-devel zlib-devel wget shadow-utils.x86_64 zip \
+    cairo-devel pango-devel gdk-pixbuf2-devel
 
 # Compile libpng16 from source
 WORKDIR /usr/src
@@ -60,7 +61,7 @@ WORKDIR /lambda-layer
 RUN mkdir -p python/lib/python3.10/site-packages/ && \
     cp -a /usr/local/lib/python3.10/site-packages/* python/lib/python3.10/site-packages/ && \
     # Also copying shared libraries
-    cp -a /opt/lib/* /lambda-layer/lib/ && \
+    cp -a /opt/lib/* lib/ && \
     zip -r9 /lambda-layer.zip python lib
 
 # Define a command to keep the container running, if necessary
