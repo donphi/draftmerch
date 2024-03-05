@@ -211,6 +211,9 @@ def lambda_handler(event, context):
     # Construct the response or perform additional actions as needed
     # Note: Adjust this part based on how you want to handle the Lambda's response
     return {
-        'statusCode': 200,
-        'body': json.dumps('Background removal and update completed successfully')
-    }
+    'statusCode': 200,
+    'body': json.dumps({
+        'message': 'Background removal and update completed successfully',
+        'renderId': renderId  # Make sure this is the same variable that contains the renderId
+    })
+}
