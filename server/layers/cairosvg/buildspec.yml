@@ -30,7 +30,7 @@ phases:
       # Prepare for the ZIP creation
       - chmod -R 755 /opt
       - cd /
-      - zip -r /cairosvg_layer.zip opt
+      - zip -r /cairosvg_layer.zip .
 
   post_build:
     commands:
