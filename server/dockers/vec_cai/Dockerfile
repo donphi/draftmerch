@@ -16,6 +16,9 @@ RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VER
     ./configure --enable-optimizations --enable-shared --with-ensurepip=install && \
     make altinstall
 
+# Check if SSL support is enabled
+RUN python3.10 -c "import ssl"
+
 # Update ldconfig to know about Python 3.10 dynamic libraries
 RUN echo "/usr/local/lib" >> /etc/ld.so.conf.d/python3.10.conf && \
     ldconfig
