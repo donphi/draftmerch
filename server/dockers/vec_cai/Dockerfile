@@ -13,15 +13,11 @@ WORKDIR /opt/python
 RUN wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
     tar -xzf Python-${PYTHON_VERSION}.tgz && \
     cd Python-${PYTHON_VERSION} && \
-    ./configure --enable-optimizations --enable-shared --with-ensurepip=install && \
+    ./configure --enable-optimizations --enable-shared --prefix=/usr/local LDFLAGS="-Wl,-rpath /usr/local/lib" && \
     make altinstall
 
-# Check if SSL support is enabled
-RUN python3.10 -c "import ssl"
-
 # Update ldconfig to know about Python 3.10 dynamic libraries
-RUN echo "/usr/local/lib" >> /etc/ld.so.conf.d/python3.10.conf && \
-    ldconfig
+RUN ldconfig /usr/local/lib
 
 # Verify Python installation
 RUN python3.10 --version && \
@@ -37,8 +33,7 @@ FROM amazonlinux:2
 COPY --from=python-build /usr/local /usr/local
 
 # Update ldconfig to ensure the system knows where to find the shared Python libraries
-RUN echo "/usr/local/lib" >> /etc/ld.so.conf.d/python3.10.conf && \
-    ldconfig
+RUN ldconfig /usr/local/lib
 
 # Verify that Python is correctly set up
 RUN python3.10 --version && \
