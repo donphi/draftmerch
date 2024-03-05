@@ -3,7 +3,8 @@ FROM amazonlinux:2 AS python-build
 
 # Prepare the build environment
 RUN yum groupinstall -y "Development Tools" && \
-    yum install -y tar openssl11-devel bzip2-devel libffi-devel libpng16 zlib-devel wget shadow-utils.x86_64 zip aws-cli
+    yum install -y tar openssl-devel bzip2-devel libffi-devel zlib-devel wget shadow-utils.x86_64 zip && \
+    yum install -y libpng-devel # Ensure libpng is installed
 
 # Define the Python version
 ENV PYTHON_VERSION=3.10.4
@@ -29,9 +30,9 @@ RUN pip3.10 install cairosvg
 ## Stage 2: Prepare the runtime environment
 FROM amazonlinux:2
 
-# Install zip
+# Install zip and aws-cli
 RUN yum update -y && \
-    yum install -y zip
+    yum install -y zip aws-cli libpng
 
 # Copy necessary files from the build stage
 COPY --from=python-build /usr/local /usr/local
@@ -42,6 +43,10 @@ RUN ldconfig /usr/local/lib
 # Verify that Python is correctly set up
 RUN python3.10 --version && \
     pip3.10 --version
+
+# Copy necessary libraries from build stage (if applicable)
+# Note: This step might need adjustment if libraries are not found or different versions are required.
+COPY --from=python-build /usr/lib64/libpng* /usr/lib64/
 
 # Prepare the lambda layer zip file containing Python runtime and packages
 WORKDIR /lambda-layer
