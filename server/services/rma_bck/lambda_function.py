@@ -51,8 +51,7 @@ def lambda_handler(event, context):
         credentials = json.loads(secret['SecretString'])
         
         # The API key is the value of the unique key in your secret
-        api_key = credentials.get('apiKey')
-        api_secret = credentials.get('apiSecret')
+        api_key, api_secret = next(iter(credentials.items()))
         
         # Look up in the DynamoDB table for upscaledImageUrl
         table = dynamodb.Table('RenderRequests')
