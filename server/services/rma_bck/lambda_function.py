@@ -49,10 +49,12 @@ def lambda_handler(event, context):
         secret_name = "Backgroundremover"
         secret = secretsmanager.get_secret_value(SecretId=secret_name)
         credentials = json.loads(secret['SecretString'])
+        logging.info(f"Credentials loaded: {credentials}")  # Only for debugging, remove sensitive logging before production deployment
         
         # The API key is the value of the unique key in your secret
         api_key = credentials.get('apiKey')
         api_secret = credentials.get('apiSecret')
+        logging.info(f"API Key: {api_key}, API Secret: {api_secret}")  # Only for debugging, remove sensitive logging before production deployment
         
         # Look up in the DynamoDB table for upscaledImageUrl
         table = dynamodb.Table('RenderRequests')
