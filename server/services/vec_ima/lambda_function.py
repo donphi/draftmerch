@@ -6,6 +6,7 @@ from PIL import Image
 import cairosvg
 from io import BytesIO
 from urllib.parse import urlparse
+import json
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
@@ -19,16 +20,10 @@ IMAGE_VECTORIZED_FOLDER = 'image_vectorized/'
 WATERMARK_FOLDER = 'watermark/'
 WATERMARKED_VECTOR_FOLDER = 'watermarked_vector/'
 
-# Get the secrets for the vectorization API
-def get_secrets():
-    secret_name = "Vectorizer"
-    secrets = secrets_manager_client.get_secret_value(SecretId=secret_name)
-    return eval(secrets['SecretString'])
-
 # Vectorize image
-def vectorize_image(filename, image_no_background_file_path):
+def vectorize_image(api_key, api_secret, filename, image_no_background_file_path):
     logging.info("Starting image vectorization...")
-    secrets = get_secrets()
+
     with open(image_no_background_file_path, 'rb') as image_file:
         files = {'image': (filename, image_file, 'image/png')}
         data = {
@@ -44,7 +39,7 @@ def vectorize_image(filename, image_no_background_file_path):
             'https://vectorizer.ai/api/v1/vectorize',
             files=files,
             data=data,
-            auth=(secrets['key'], secrets['secret'])
+            auth=(api_key, api_secret)
         )
 
     logging.info("Received response from vectorization API.")
@@ -102,8 +97,15 @@ def lambda_handler(event, context):
         image_no_background_file_path = '/tmp/' + object_key.split('/')[-1]  # If you want to keep the filename same as on S3
         s3_client.download_file(BUCKET_NAME, object_key, image_no_background_file_path)
 
+        # Get the secrets for the vectorization API
+        secret_name = "Vectorizer"
+        secrets = secrets_manager_client.get_secret_value(SecretId=secret_name)
+        credentials = json.loads(secrets['SecretString'])
+        # The API key is the value of the unique key in your secret
+        api_key, api_secret = next(iter(credentials.items()))
+
         # Vectorize the image
-        vectorized_content = vectorize_image(filename, image_no_background_file_path)
+        vectorized_content = vectorize_image(api_key, api_secret, filename, image_no_background_file_path)
         if vectorized_content:
             vectorized_filename = '(Vector) ' + filename.replace('.png', '.svg')
             vectorized_file_path = '/tmp/' + vectorized_filename
