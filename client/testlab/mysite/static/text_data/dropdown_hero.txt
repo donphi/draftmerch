@@ -1,6 +1,7 @@
 Astronaut
 Bear
 Cowboy
+Chicken
 Dinosaur
 Dolphin
 Dragon
@@ -22,11 +23,12 @@ Octopus
 Panther
 Frog
 Pirate
+Rooster
 Robot
 Samurai
 Shark
 Spartan
-Superhero
+Superhuman
 Tiger
 Unicorn
 Viking
