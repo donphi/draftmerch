@@ -94,7 +94,7 @@ def lambda_handler(event, context):
             new_image_url = f"s3://draft-image-bucket/{new_path}"
             table.update_item(
                 Key={'renderId': renderId},
-                UpdateExpression='SET imageNoBackground = :val1',
+                UpdateExpression='SET imageNoBackgroundUrl = :val1',
                 ExpressionAttributeValues={
                     ':val1': new_image_url
                 }
