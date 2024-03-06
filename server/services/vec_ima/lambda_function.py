@@ -74,12 +74,8 @@ def convert_svg_to_png(svg_content, png_path):
 # Lambda handler function
 def lambda_handler(event, context):
     try:
-    
-    	body = json.loads(event['body'])
-    	
         # Extract renderId and message from the event
         render_id = event['renderId']
-        message = event['message']
 
         # Retrieve the item from DynamoDB
         response = dynamodb_client.get_item(
