@@ -84,7 +84,7 @@ def lambda_handler(event, context):
         
         if background_removed:
             # Define new S3 path
-            new_path = f"image_no_background/{filename}.png"
+            new_path = f"image_no_background/{filename}"
             
             # Save the new image without background to S3
             s3.put_object(Bucket='draft-images-bucket', Key=new_path, Body=new_image)
