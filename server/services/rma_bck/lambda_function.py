@@ -8,6 +8,31 @@ dynamodb = boto3.resource('dynamodb')
 secretsmanager = boto3.client('secretsmanager')
 s3 = boto3.client('s3')
 
+# Function to remove background - updated with Secrets Manager integration
+def remove_background_image(api_key, api_secret, filename, original_image_path):
+    background_removal_url = "https://api.pixian.ai/api/v2/remove-background"
+    background_removal_params = {
+        "test": "false",
+        "output.format": "png",
+        "output.jpeg_quality": 75
+    }
+    
+    # Since original_image_path now contains the binary data of the image, adjust accordingly
+    files = {'image': (filename, original_image_path, 'image/png')}
+    
+    response = requests.post(
+        url=background_removal_url,
+        auth=(api_key, api_secret),
+        files=files,
+        params=background_removal_params
+    )
+    
+    if response.status_code == requests.codes.ok:
+        return True, response.content  # Return content as binary
+    else:
+        logging.error(f"Error during background removal API call: {response.status_code}, {response.text}")
+        return False, None
+
 def lambda_handler(event, context):
     try:
         # Extracting renderId and message from the previous Lambda
@@ -76,29 +101,4 @@ def lambda_handler(event, context):
     except Exception as e:
         print(e)
         raise e
-
-# Function to remove background - updated with Secrets Manager integration
-def remove_background_image(api_key, api_secret, filename, original_image_path):
-    background_removal_url = "https://api.pixian.ai/api/v2/remove-background"
-    background_removal_params = {
-        "test": "false",
-        "output.format": "png",
-        "output.jpeg_quality": 75
-    }
-    
-    # Since original_image_path now contains the binary data of the image, adjust accordingly
-    files = {'image': (filename, original_image_path, 'image/png')}
-    
-    response = requests.post(
-        url=background_removal_url,
-        auth=(api_key, api_secret),
-        files=files,
-        params=background_removal_params
-    )
-    
-    if response.status_code == requests.codes.ok:
-        return True, response.content  # Return content as binary
-    else:
-        logging.error(f"Error during background removal API call: {response.status_code}, {response.text}")
-        return False, None
 
