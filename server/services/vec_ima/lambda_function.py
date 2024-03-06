@@ -88,7 +88,7 @@ def lambda_handler(event, context):
 
         # Download the image with no background from S3
         image_no_background_file_path = '/tmp/' + filename
-        s3_client.download_file(BUCKET_NAME, IMAGE_NO_BACKGROUND_FOLDER + image_no_background_url, image_no_background_file_path)
+        s3_client.download_file(image_no_background_url)
 
         # Vectorize the image
         vectorized_content = vectorize_image(filename, image_no_background_file_path)
