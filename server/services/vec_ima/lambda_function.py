@@ -5,6 +5,7 @@ import requests
 from PIL import Image
 import cairosvg
 from io import BytesIO
+from urllib.parse import urlparse
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
@@ -71,6 +72,11 @@ def add_png_watermark(image_path, watermark_path, output_path):
 def convert_svg_to_png(svg_content, png_path):
     cairosvg.svg2png(bytestring=svg_content, write_to=png_path, output_width=1024, output_height=1024)
 
+def get_s3_key_from_url(url):
+    parsed_url = urlparse(url)
+    # Use .lstrip('/') to remove the leading slash
+    return parsed_url.path.lstrip('/')
+
 # Lambda handler function
 def lambda_handler(event, context):
     try:
@@ -88,7 +94,13 @@ def lambda_handler(event, context):
 
         # Download the image with no background from S3
         image_no_background_file_path = '/tmp/' + filename
-        s3_client.download_file(image_no_background_url)
+
+        # Extract the S3 object key from the full URL
+        object_key = get_s3_key_from_url(image_no_background_url)
+
+        # Then use object_key for downloading the file
+        image_no_background_file_path = '/tmp/' + object_key.split('/')[-1]  # If you want to keep the filename same as on S3
+        s3_client.download_file(BUCKET_NAME, object_key, image_no_background_file_path)
 
         # Vectorize the image
         vectorized_content = vectorize_image(filename, image_no_background_file_path)
