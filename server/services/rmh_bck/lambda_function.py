@@ -151,69 +151,78 @@ def smooth_mask_edges(mask, kernel_size=5, sigma=1, erosion_iterations=2, dilati
 
 # The Lambda handler
 def lambda_handler(event, context):
-    # Extract renderId from the event
-    renderId = event['renderId']
-    
-    # Get the image URL and filename from DynamoDB
-    response = dynamodb_client.get_item(
-        TableName=DYNAMODB_TABLE_NAME,
-        Key={'renderId': {'S': renderId}}
-    )
-    # Assuming 'upscaledImageUrl' directly stores the S3 key
-    s3_key = response['Item']['upscaledImageUrl']['S']
-    filename = response['Item']['filename']['S']
-    
-    # Define local file paths for input and output images based on the filename
-    input_image_path = f'/tmp/{filename}'
-    output_image_path = f'/tmp/processed_{filename}'
-    
-    # Let's assume s3_key might be a full S3 URL or just an S3 key
-    s3_url = urlparse(s3_key)
-
-    # Extract the path component and remove any leading '/'
-    extracted_key = s3_url.path.lstrip('/')
-
-    # If extracted_key is empty, s3_key was likely just a key to start with (or an invalid URL)
-    if not extracted_key:
-        extracted_key = s3_key  # fallback to using s3_key directly
-
-    print(f"Attempting to download from Bucket: {S3_BUCKET_NAME}, Key: {extracted_key}")
-
-    # Perform the S3 download operation using the S3 key
     try:
-        s3_client.download_file(S3_BUCKET_NAME, extracted_key, input_image_path)
-    except ClientError as error:
-        print(f"Error downloading file from S3: {error}")
-        raise
+        # Extract renderId from the event
+        renderId = event['renderId']
+        
+        # Get the image URL and filename from DynamoDB
+        response = dynamodb_client.get_item(
+            TableName=DYNAMODB_TABLE_NAME,
+            Key={'renderId': {'S': renderId}}
+        )
+        # Assuming 'upscaledImageUrl' directly stores the S3 key
+        s3_key = response['Item']['upscaledImageUrl']['S']
+        filename = response['Item']['filename']['S']
+        
+        # Define local file paths for input and output images based on the filename
+        input_image_path = f'/tmp/{filename}'
+        output_image_path = f'/tmp/processed_{filename}'
+        
+        # Let's assume s3_key might be a full S3 URL or just an S3 key
+        s3_url = urlparse(s3_key)
 
-    # Process the image
-    remove_background_and_preserve_white(input_image_path, output_image_path)
-    
-    # Upload the processed image to S3
-    output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
-    try:
-        s3_client.upload_file(output_image_path, S3_BUCKET_NAME, output_s3_path)
-    except ClientError as error:
-        print(f"Error uploading file to S3: {error}")
-        raise
-    
-    # Update the DynamoDB table with the new image location
-    full_s3_url = f"s3://{S3_BUCKET_NAME}/{output_s3_path}"
-    dynamodb_client.update_item(
-        TableName=DYNAMODB_TABLE_NAME,
-        Key={'renderId': {'S': renderId}},
-        UpdateExpression='SET imageNoBackgroundUrl = :val1',
-        ExpressionAttributeValues={
-            ':val1': {'S': full_s3_url}  # Corrected to use 'output_s3_key'
+        # Extract the path component and remove any leading '/'
+        extracted_key = s3_url.path.lstrip('/')
+
+        # If extracted_key is empty, s3_key was likely just a key to start with (or an invalid URL)
+        if not extracted_key:
+            extracted_key = s3_key  # fallback to using s3_key directly
+
+        print(f"Attempting to download from Bucket: {S3_BUCKET_NAME}, Key: {extracted_key}")
+
+        # Perform the S3 download operation using the S3 key
+        try:
+            s3_client.download_file(S3_BUCKET_NAME, extracted_key, input_image_path)
+        except ClientError as error:
+            print(f"Error downloading file from S3: {error}")
+            raise
+
+        # Process the image
+        remove_background_and_preserve_white(input_image_path, output_image_path)
+        
+        # Upload the processed image to S3
+        output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
+        try:
+            s3_client.upload_file(output_image_path, S3_BUCKET_NAME, output_s3_path)
+        except ClientError as error:
+            print(f"Error uploading file to S3: {error}")
+            raise
+        
+        # Update the DynamoDB table with the new image location
+        full_s3_url = f"s3://{S3_BUCKET_NAME}/{output_s3_path}"
+        dynamodb_client.update_item(
+            TableName=DYNAMODB_TABLE_NAME,
+            Key={'renderId': {'S': renderId}},
+            UpdateExpression='SET imageNoBackgroundUrl = :val1',
+            ExpressionAttributeValues={
+                ':val1': {'S': full_s3_url}  # Corrected to use 'output_s3_key'
+            }
+        )
+        
+        # Construct the response or perform additional actions as needed
+        # Note: Adjust this part based on how you want to handle the Lambda's response
+        # Construct the payload to pass to the next step
+        next_step_payload = {
+            'renderId': renderId,
         }
-    )
+
+        # Return this payload directly
+        return next_step_payload
     
-    # Construct the response or perform additional actions as needed
-    # Note: Adjust this part based on how you want to handle the Lambda's response
-    return {
-    'statusCode': 200,
-    'body': json.dumps({
-        'message': 'Background removal and update completed successfully',
-        'renderId': renderId  # Make sure this is the same variable that contains the renderId
-    })
-}
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        # Consider including error details in the response if this aligns with your error handling strategy
+        return {
+            'statusCode': 500,
+            'error': str(e)
+        }
