@@ -34,10 +34,16 @@ def remove_background_image(api_key, api_secret, filename, original_image_path):
         return False, None
 
 def lambda_handler(event, context):
+    # Initialize the response payload
+    next_step_payload = {
+        'renderId': event.get('renderId'),  # Use .get() to avoid KeyError if 'renderId' is not present
+        'message': event.get('message')     # Use .get() to avoid KeyError if 'message' is not present
+    }
+
     try:
-        # Extracting renderId and message from the previous Lambda
-        renderId = event['renderId']
-        message = event['message']
+        renderId = next_step_payload['renderId']
+        if renderId is None:
+            raise ValueError("renderId not provided in the event.")
         
         # Retrieve secret
         secret_name = "Backgroundremover"
@@ -57,11 +63,13 @@ def lambda_handler(event, context):
                 upscaled_image_url = item['upscaledImageUrl']
                 filename = item['filename']
             else:
-                print(f"Missing 'upscaledImageUrl' or 'filename' for renderId: {renderId}")
-                return {"error": "Missing 'upscaledImageUrl' or 'filename'."}
+                logging.error(f"Missing 'upscaledImageUrl' or 'filename' for renderId: {renderId}")
+                next_step_payload['error'] = "Missing 'upscaledImageUrl' or 'filename'."
+                return next_step_payload
         else:
-            print(f"No item found with renderId: {renderId}")
-            return {"error": "Item not found."}
+            logging.error(f"No item found with renderId: {renderId}")
+            next_step_payload['error'] = "Item not found."
+            return next_step_payload
         
         # Parse the S3 bucket and object key from the S3 URL
         parsed_url = urlparse(upscaled_image_url)
@@ -70,7 +78,7 @@ def lambda_handler(event, context):
         
         # Get the image from S3
         original_image = s3.get_object(Bucket=bucket_name, Key=object_key)
-        original_image_path = original_image['Body'].read()  # Assuming you're handling binary data correctly here
+        original_image_path = original_image['Body'].read()
         
         # Remove background from the image
         background_removed, new_image = remove_background_image(api_key, api_secret, filename, original_image_path)
@@ -84,21 +92,20 @@ def lambda_handler(event, context):
             
             # Update DynamoDB with the new image URL
             new_image_url = f"s3://draft-image-bucket/{new_path}"
-            response = table.update_item(
+            table.update_item(
                 Key={'renderId': renderId},
                 UpdateExpression='SET imageNoBackground = :val1',
                 ExpressionAttributeValues={
                     ':val1': new_image_url
                 }
             )
-            
-            # Pass renderId and message to the next Lambda / step
-            # Assuming you're invoking another Lambda or passing this to a Step Function, adjust accordingly
-            next_step_payload = {'renderId': renderId, 'message': message}
-            return next_step_payload
         else:
-            return {"error": "Failed to remove background."}
+            next_step_payload['error'] = "Failed to remove background."
+            return next_step_payload
     except Exception as e:
-        print(e)
-        raise e
-
+        logging.error("Exception occurred", exc_info=True)
+        next_step_payload['error'] = str(e)
+        return next_step_payload
+    
+    # Pass renderId and message to the next Lambda / step
+    return next_step_payload
