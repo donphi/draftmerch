@@ -22,7 +22,7 @@ def remove_background_image(api_key, api_secret, filename, original_image_path):
     
     response = requests.post(
         url=background_removal_url,
-        auth=(api_key, api_secret),
+        auth=('pxgze8ryzbalt7h', '6oc87e4f5td19tpoo5spi96or5moslsfrulqesls6kdav413pu2q'),
         files=files,
         params=background_removal_params
     )
