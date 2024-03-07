@@ -12,6 +12,7 @@ import json
 s3_client = boto3.client('s3')
 dynamodb_client = boto3.client('dynamodb')
 secrets_manager_client = boto3.client('secretsmanager')
+lambda_client = boto3.client('lambda')
 
 # Constants for S3 bucket and folder paths
 BUCKET_NAME = 'draft-images-bucket'
@@ -140,6 +141,27 @@ def lambda_handler(event, context):
                     ':imageWatermarkVectorUrl': {'S': f's3://{BUCKET_NAME}/{WATERMARKED_VECTOR_FOLDER}' + vectorized_filename.replace('.svg', '.png')}
                 }
             )
+
+            # Prepare the payload for invoking Lambda E (sen_vec) with the required information
+            payload = json.dumps({
+                'connectionId': 'YOUR_CONNECTION_ID',  # Replace 'YOUR_CONNECTION_ID' with actual connection ID retrieval logic
+                'renderId': render_id,
+                'message': 'Vector image processing complete. Please fetch vector images.',  # Optional: Customize message as needed
+                'action': 'fetch_vector_images'  # This action code helps the client to identify the next step
+            })
+
+            try:
+                response = lambda_client.invoke(
+                    FunctionName='sen_vec',  # Use the correct name or ARN for Lambda E
+                    InvocationType='Event',  # Asynchronous invocation
+                    Payload=payload,
+                )
+                logging.info("Successfully invoked Lambda E (sen_vec) for notifying client")
+            except Exception as e:
+                logging.error(f"Error invoking Lambda E (sen_vec) for client notification: {str(e)}")
+                # Handle the error appropriately
+                raise e
+
             return {
                 'statusCode': 200,
                 'body': {
@@ -147,6 +169,7 @@ def lambda_handler(event, context):
                     'imageWatermarkVectorUrl': 's3://draft-images-bucket/watermarked_vector/Watermarked_' + vectorized_filename.replace('.svg', '.png')
                 }
             }
+        
         else:
             error_message = "Failed to vectorize image."
             logging.error(error_message)
