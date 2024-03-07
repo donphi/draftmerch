@@ -87,6 +87,7 @@ def lambda_handler(event, context):
         item = response['Item']
         image_no_background_url = item['imageNoBackgroundUrl']['S']
         filename = item['filename']['S']
+        connection_id = item['connectionId']['S']  # Assuming 'connectionId' is the correct key
 
         # Download the image with no background from S3
         image_no_background_file_path = '/tmp/' + filename
@@ -144,7 +145,7 @@ def lambda_handler(event, context):
 
             # Prepare the payload for invoking Lambda E (sen_vec) with the required information
             payload = json.dumps({
-                'connectionId': 'YOUR_CONNECTION_ID',  # Replace 'YOUR_CONNECTION_ID' with actual connection ID retrieval logic
+                'connectionId': connection_id,  # Replace 'YOUR_CONNECTION_ID' with actual connection ID retrieval logic
                 'renderId': render_id,
                 'message': 'Vector image processing complete. Please fetch vector images.',  # Optional: Customize message as needed
                 'action': 'fetch_vector_images'  # This action code helps the client to identify the next step
