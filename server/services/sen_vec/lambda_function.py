@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     }
 
     try:
-        logger.info(f"Sending vector image processing completion message to connectionId: {connection_id}")
+        logger.info(f"Sending vector image processing completion message to connectionId: {connection_id} and renderId: {render_id}")
         api_gw_client.post_to_connection(
             ConnectionId=connection_id,
             Data=json.dumps(message)
