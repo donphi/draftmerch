@@ -6,7 +6,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # Assuming you have the same API Gateway setup
-api_gw_client = boto3.client('apigatewaymanagementapi', endpoint_url='YOUR_API_GATEWAY_ENDPOINT')
+api_gw_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/')
 
 def lambda_handler(event, context):
     connection_id = event.get('connectionId')
@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     # Compose the message with specific instructions for vector images
     message = {
         'message': message_content,
-        'status': 'ProcessingComplete',
+        'status': 'VectorComplete',
         'renderId': render_id,
         'connectionId': connection_id,
         'action': action  # This could be used by the client to determine the next steps
