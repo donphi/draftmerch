@@ -64,8 +64,8 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'headers': cors_headers,
             'body': json.dumps({
-                'vector_image_url': vector_image_url,
-                'watermarked_vector_image_url': watermarked_vector_image_url,
+                'vectorImageUrl': vector_image_url,  # Changed from vector_image_url to vectorImageUrl
+        	'watermarkedVectorImageUrl': watermarked_vector_image_url,  # Changed from watermarked_vector_image_url to watermarkedVectorImageUrl
                 'filename': item.get('filename', '')  # Assuming the filename is still relevant
             })
         }
