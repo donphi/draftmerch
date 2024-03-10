@@ -109,37 +109,35 @@ def lambda_handler(event, context):
         # Vectorize the image
         vectorized_content = vectorize_image(api_key, api_secret, filename, image_no_background_file_path)
         if vectorized_content:
-            vectorized_filename = '(Vector) ' + filename.replace('.png', '.svg')
-            vectorized_file_path = '/tmp/' + vectorized_filename
-
-            # Save the vectorized SVG file
-            with open(vectorized_file_path, 'wb') as file:
-                file.write(vectorized_content)
-            logging.info(f"Vectorized SVG image file written successfully at: {vectorized_file_path}")
+            # Create the correctly formatted SVG filename
+            vectorized_filename_svg = '(Vector) ' + filename.replace('.png', '.svg')
+            vectorized_file_path_svg = '/tmp/' + vectorized_filename_svg
 
             # Convert SVG to PNG
-            png_file_path = vectorized_file_path.replace('.svg', '.png')
+            png_file_path = vectorized_file_path_svg.replace('(Vector) ', '').replace('.svg', '.png')
             convert_svg_to_png(vectorized_content, png_file_path)
-            logging.info("SVG to PNG conversion complete.")
 
-            # Apply watermark to PNG
+            # Apply the watermark to create a PNG file with both "(Watermark)" and "(Vector)" in the name
+            watermarked_vectorized_filename_png = '(Watermark) (Vector) ' + filename.replace('.png', '.png')
+            watermarked_png_path = '/tmp/' + watermarked_vectorized_filename_png
+
+            # Download watermark image, apply watermark and save
             watermark_path = '/tmp/watermark.png'
-            s3_client.download_file('draft-images-bucket', 'watermark/watermark.png', watermark_path)
-            watermarked_png_path = '/tmp/Watermarked_' + vectorized_filename.replace('.svg', '.png')
+            s3_client.download_file(BUCKET_NAME, 'watermark/watermark.png', watermark_path)
             add_png_watermark(png_file_path, watermark_path, watermarked_png_path)
-            logging.info("Watermarked PNG image saved.")
 
-            # Upload the vectorized and watermarked images to S3
-            s3_client.upload_file(vectorized_file_path, BUCKET_NAME, IMAGE_VECTORIZED_FOLDER + vectorized_filename)
-            s3_client.upload_file(watermarked_png_path, BUCKET_NAME, WATERMARKED_VECTOR_FOLDER + 'Watermarked_' + vectorized_filename.replace('.svg', '.png'))
-            # Update the DynamoDB table with the new URLs
+            # Upload the vectorized (SVG) and watermarked vectorized (PNG) images to S3
+            s3_client.upload_file(vectorized_file_path_svg, BUCKET_NAME, IMAGE_VECTORIZED_FOLDER + vectorized_filename_svg)
+            s3_client.upload_file(watermarked_png_path, BUCKET_NAME, WATERMARKED_VECTOR_FOLDER + watermarked_vectorized_filename_png)
+
+            # Update DynamoDB to reflect the new file names/locations
             dynamodb_client.update_item(
                 TableName='RenderRequests',
                 Key={'renderId': {'S': render_id}},
                 UpdateExpression='SET imageVectorUrl = :imageVectorUrl, imageWatermarkVectorUrl = :imageWatermarkVectorUrl',
                 ExpressionAttributeValues={
-                    ':imageVectorUrl': {'S': f's3://{BUCKET_NAME}/{IMAGE_VECTORIZED_FOLDER}' + vectorized_filename},
-                    ':imageWatermarkVectorUrl': {'S': f's3://{BUCKET_NAME}/{WATERMARKED_VECTOR_FOLDER}' + vectorized_filename.replace('.svg', '.png')}
+                    ':imageVectorUrl': {'S': f's3://{BUCKET_NAME}/{IMAGE_VECTORIZED_FOLDER}' + vectorized_filename_svg},
+                    ':imageWatermarkVectorUrl': {'S': f's3://{BUCKET_NAME}/{WATERMARKED_VECTOR_FOLDER}' + watermarked_vectorized_filename_png}
                 }
             )
 
