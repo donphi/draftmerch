@@ -31,6 +31,16 @@ def get_secret(secret_name):
 
 def lambda_handler(event, context):
     try:
+
+        # Update before invoking Lambda B
+        dynamodb_client.update_item(
+            TableName=render_requests_table_name,
+            Key={'renderId': {'S': render_id}},
+            UpdateExpression='SET renderStatus = :statusVal',
+            ExpressionAttributeValues={
+                ':statusVal': {'N': '25'},  # Updating status to 25%
+            }
+        )
         # Fetch the API key from Secrets Manager
         secrets_generator = get_secret('Generator')
         api_key = secrets_generator['apiKey']  # Access the API key using the 'apiKey' key
@@ -133,6 +143,16 @@ def lambda_handler(event, context):
 
     # Check if response status is a success
     if response.status_code == 200:
+        # Update after saving images to S3 but before invoking Lambda C
+        dynamodb_client.update_item(
+            TableName=render_requests_table_name,
+            Key={'renderId': {'S': render_id}},
+            UpdateExpression='SET renderStatus = :statusVal',
+            ExpressionAttributeValues={
+                ':statusVal': {'N': '65'}, 
+            }
+        )
+
         logger.info("OpenAI API call successful.")
         # Parse the JSON response safely
         response_json = response.json()

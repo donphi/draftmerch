@@ -81,10 +81,19 @@ def lambda_handler(event, context):
                 }
             }
         )
+        # After putting the item into the RenderRequests table
+        dynamodb_client.put_item(
+            TableName=render_requests_table_name,
+            Item={
+                # Existing Item fields
+                'renderStatus': {'N': '10'}, 
+            }
+        )
 
         # Ensure the connection_id and render_id are correctly assigned
         # as per your earlier code.
-
+        # Update before invoking Lambda B
+        
         # Payload correction - both connectionId and renderId included properly
         response = lambda_client.invoke(
             FunctionName='gen_ima',
@@ -137,7 +146,8 @@ def lambda_handler(event, context):
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
                     ':statusVal': {'S': 'completed'},
-                    ':filename': {'S': filename}
+                    ':filename': {'S': filename},
+                    ':statusVal': {'N': '75'}
                 },
                 ExpressionAttributeNames={
                     '#status': 'status'
