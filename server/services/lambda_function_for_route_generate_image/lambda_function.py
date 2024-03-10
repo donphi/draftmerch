@@ -20,6 +20,7 @@ bucket_name = 'draft-images-bucket'
 
 # DynamoDB table names
 render_requests_table_name = 'RenderRequests'
+generate_status_table_name = 'GenerateStatus'
 
 # Set up the endpoint URL for the 'ApiGatewayManagementApi' client
 api_gw_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/')
@@ -69,7 +70,6 @@ def lambda_handler(event, context):
                 'originalImageUrl': {'S': ''},
                 'watermarkedImageUrl': {'S': ''},
                 'status': {'S': 'pending'},
-                'renderStatus': {'N': '10'}, 
                 'options': {  # Including nested fields right from the start.
                     'M': {
                         'hero': {'S': body.get('hero', 'N/A')},
@@ -82,6 +82,12 @@ def lambda_handler(event, context):
                 }
             }
         )
+        dynamodb_client.put_item(
+            TableName=generate_status_table_name,
+            Item={
+                'renderId': {'S': render_id},
+                'renderStatus': {'N': '10'}
+            })
 
         # Ensure the connection_id and render_id are correctly assigned
         # as per your earlier code.
@@ -140,13 +146,20 @@ def lambda_handler(event, context):
                     ':waterUrl': {'S': watermarked_image_url},
                     ':statusVal': {'S': 'completed'},
                     ':filename': {'S': filename},
-                    ':statusVal': {'N': '75'}
+                    ':statusVal': {'N': '90'}
                 },
                 ExpressionAttributeNames={
                     '#status': 'status'
                 }
             )
 
+            dynamodb_client.update_item(
+                TableName=generate_status_table_name,
+                Key={'renderId': {'S': render_id}},
+                ExpressionAttributeValues={
+                    ':statusVal': {'N': '90'}
+                })
+            
             # Prepare the payload for invoking Lambda C with the required information
             payload = json.dumps({
                 'connectionId': connection_id,
