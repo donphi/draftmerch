@@ -87,7 +87,8 @@ def lambda_handler(event, context):
             Item={
                 'renderId': {'S': render_id},
                 'renderStatus': {'N': '10'}
-            })
+            }
+        )
 
         # Ensure the connection_id and render_id are correctly assigned
         # as per your earlier code.
@@ -140,8 +141,8 @@ def lambda_handler(event, context):
             dynamodb_client.update_item(
                 TableName=render_requests_table_name,
                 Key={'renderId': {'S': render_id}},
-                UpdateExpression='SET originalImageUrl = :origUrl, watermarkedImageUrl = :waterUrl, #status = :statusVal, filename = :filename',
-                ExpressionAttributeValues={
+                UpdateExpression='SE
+                                                ExpressionAttributeValues={
                     ':origUrl': {'S': original_image_url},
                     ':waterUrl': {'S': watermarked_image_url},
                     ':statusVal': {'S': 'completed'},
@@ -156,9 +157,11 @@ def lambda_handler(event, context):
             dynamodb_client.update_item(
                 TableName=generate_status_table_name,
                 Key={'renderId': {'S': render_id}},
+                UpdateExpression='SET renderStatus = :renderStatus',
                 ExpressionAttributeValues={
                     ':renderStatus': {'N': '90'}
-                })
+                }
+            )
                 
             # Prepare the payload for invoking Lambda C with the required information
             payload = json.dumps({
