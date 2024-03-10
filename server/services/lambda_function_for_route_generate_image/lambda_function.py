@@ -157,9 +157,9 @@ def lambda_handler(event, context):
                 TableName=generate_status_table_name,
                 Key={'renderId': {'S': render_id}},
                 ExpressionAttributeValues={
-                    ':statusVal': {'N': '90'}
+                    ':renderStatus': {'N': '90'}
                 })
-            
+                
             # Prepare the payload for invoking Lambda C with the required information
             payload = json.dumps({
                 'connectionId': connection_id,
