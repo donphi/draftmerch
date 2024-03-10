@@ -32,15 +32,6 @@ def get_secret(secret_name):
 def lambda_handler(event, context):
     try:
 
-        # Update before invoking Lambda B
-        dynamodb_client.update_item(
-            TableName=render_requests_table_name,
-            Key={'renderId': {'S': render_id}},
-            UpdateExpression='SET renderStatus = :statusVal',
-            ExpressionAttributeValues={
-                ':statusVal': {'N': '25'},  # Updating status to 25%
-            }
-        )
         # Fetch the API key from Secrets Manager
         secrets_generator = get_secret('Generator')
         api_key = secrets_generator['apiKey']  # Access the API key using the 'apiKey' key
@@ -56,6 +47,16 @@ def lambda_handler(event, context):
         if not render_id:
             logger.error("No 'renderId' found in the event")
             return {'statusCode': 400, 'body': json.dumps({'error': 'No renderId provided'})}
+            
+        # Update before invoking Lambda B
+        dynamodb_client.update_item(
+            TableName=render_requests_table_name,
+            Key={'renderId': {'S': render_id}},
+            UpdateExpression='SET renderStatus = :statusVal',
+            ExpressionAttributeValues={
+                ':statusVal': {'N': '25'},  # Updating status to 25%
+            }
+        )
         
         response = dynamodb_client.get_item(
             TableName=render_requests_table_name,
