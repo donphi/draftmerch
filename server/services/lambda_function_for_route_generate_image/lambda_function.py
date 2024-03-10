@@ -69,6 +69,7 @@ def lambda_handler(event, context):
                 'originalImageUrl': {'S': ''},
                 'watermarkedImageUrl': {'S': ''},
                 'status': {'S': 'pending'},
+                'renderStatus': {'N': '10'}, 
                 'options': {  # Including nested fields right from the start.
                     'M': {
                         'hero': {'S': body.get('hero', 'N/A')},
@@ -79,14 +80,6 @@ def lambda_handler(event, context):
                         'uploaded_image_description': {'S': body.get('uploaded_image_description', 'N/A')}
                     }
                 }
-            }
-        )
-        # After putting the item into the RenderRequests table
-        dynamodb_client.put_item(
-            TableName=render_requests_table_name,
-            Item={
-                # Existing Item fields
-                'renderStatus': {'N': '10'}, 
             }
         )
 
@@ -188,7 +181,8 @@ def lambda_handler(event, context):
             Key={'renderId': {'S': render_id}},
             UpdateExpression='SET #status = :statusVal',
             ExpressionAttributeValues={
-                ':statusVal': {'S': 'error'}
+                ':statusVal': {'S': 'error'},
+                'renderStatus': {'N': '90'},
             },
             ExpressionAttributeNames={
                 '#status': 'status'
