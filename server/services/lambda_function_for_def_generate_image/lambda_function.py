@@ -19,6 +19,7 @@ dynamodb_client = boto3.client('dynamodb')
 render_table_name = 'Render'
 user_sessions_table_name = 'UserSessions'
 render_requests_table_name = 'RenderRequests'
+generate_status_table_name = 'GenerateStatus'
 
 def get_secret(secret_name):
     try:
@@ -50,7 +51,7 @@ def lambda_handler(event, context):
             
         # Update before invoking Lambda B
         dynamodb_client.update_item(
-            TableName=render_requests_table_name,
+            TableName=generate_status_table_name,
             Key={'renderId': {'S': render_id}},
             UpdateExpression='SET renderStatus = :statusVal',
             ExpressionAttributeValues={
@@ -146,7 +147,7 @@ def lambda_handler(event, context):
     if response.status_code == 200:
         # Update after saving images to S3 but before invoking Lambda C
         dynamodb_client.update_item(
-            TableName=render_requests_table_name,
+            TableName=generate_status_table_name,
             Key={'renderId': {'S': render_id}},
             UpdateExpression='SET renderStatus = :statusVal',
             ExpressionAttributeValues={
