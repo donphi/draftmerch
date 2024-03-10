@@ -113,11 +113,11 @@ def lambda_handler(event, context):
             vectorized_filename_svg = '(Vector) ' + filename.replace('.png', '.svg')
             vectorized_file_path_svg = '/tmp/' + vectorized_filename_svg
 
-            # Convert SVG to PNG
-            png_file_path = vectorized_file_path_svg.replace('(Vector) ', '').replace('.svg', '.png')
+            # Convert SVG to PNG (fixed)
+            png_file_path = '/tmp/(Vector) ' + filename.replace('.png', '.png')
             convert_svg_to_png(vectorized_content, png_file_path)
 
-            # Apply the watermark to create a PNG file with both "(Watermark)" and "(Vector)" in the name
+            # Apply the watermark to create a PNG file with both "(Watermark)" and "(Vector)" in the name (slightly adjusted)
             watermarked_vectorized_filename_png = '(Watermark) (Vector) ' + filename.replace('.png', '.png')
             watermarked_png_path = '/tmp/' + watermarked_vectorized_filename_png
 
