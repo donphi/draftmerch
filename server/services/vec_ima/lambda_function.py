@@ -113,18 +113,24 @@ def lambda_handler(event, context):
             vectorized_filename_svg = '(Vector) ' + filename.replace('.png', '.svg')
             vectorized_file_path_svg = '/tmp/' + vectorized_filename_svg
 
-            # Convert SVG to PNG (fixed)
-            png_file_path = '/tmp/(Vector) ' + filename.replace('.png', '.png')
+            # Save the vectorized SVG file
+            with open(vectorized_file_path_svg, 'wb') as file:
+                file.write(vectorized_content)
+            logging.info(f"Vectorized SVG image file written successfully at: {vectorized_file_path_svg}")
+
+            # Convert SVG to PNG without any unnecessary replacements
+            png_file_path = vectorized_file_path_svg.replace('.svg', '.png')
             convert_svg_to_png(vectorized_content, png_file_path)
 
-            # Apply the watermark to create a PNG file with both "(Watermark)" and "(Vector)" in the name (slightly adjusted)
-            watermarked_vectorized_filename_png = '(Watermark) (Vector) ' + filename.replace('.png', '.png')
-            watermarked_png_path = '/tmp/' + watermarked_vectorized_filename_png
+            # Apply the watermark to create a PNG file with both "(Watermark)" and "(Vector)" in the name
+            watermarked_vectorized_filename_png = '(Watermark) ' + vectorized_filename_svg.replace('.svg', '.png')
+            watermarked_png_path = '/tmp/' + watermarked_vectorized_filename_png.replace('(Vector) ', '')
 
-            # Download watermark image, apply watermark and save
+            # Download watermark image, apply watermark, and save
             watermark_path = '/tmp/watermark.png'
             s3_client.download_file(BUCKET_NAME, 'watermark/watermark.png', watermark_path)
             add_png_watermark(png_file_path, watermark_path, watermarked_png_path)
+            logging.info("Watermarked PNG image saved.")
 
             # Upload the vectorized (SVG) and watermarked vectorized (PNG) images to S3
             s3_client.upload_file(vectorized_file_path_svg, BUCKET_NAME, IMAGE_VECTORIZED_FOLDER + vectorized_filename_svg)
