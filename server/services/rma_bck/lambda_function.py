@@ -7,6 +7,7 @@ import logging
 dynamodb = boto3.resource('dynamodb')
 secretsmanager = boto3.client('secretsmanager')
 s3 = boto3.client('s3')
+vector_status_table_name = 'VectorStatusTable'
 
 # Function to remove background - updated with Secrets Manager integration
 def remove_background_image(api_key, api_secret, filename, original_image_path):
@@ -32,6 +33,17 @@ def remove_background_image(api_key, api_secret, filename, original_image_path):
     else:
         logging.error(f"Error during background removal API call: {response.status_code}, {response.text}")
         return False, None
+        
+def update_vector_status(render_id, status):
+    """Function to update the VectorStatus in DynamoDB"""
+    vector_status_table = dynamodb.Table(vector_status_table_name)
+    response = vector_status_table.update_item(
+        Key={'renderId': render_id},
+        UpdateExpression='SET vectorStatus = :status',
+        ExpressionAttributeValues={':status': status},
+        ReturnValues="UPDATED_NEW"
+    )
+    logger.info(f"VectorStatus updated for renderId: {render_id} to {status}%")
 
 def lambda_handler(event, context):
     # Initialize the response payload
@@ -44,6 +56,9 @@ def lambda_handler(event, context):
         renderId = next_step_payload['renderId']
         if renderId is None:
             raise ValueError("renderId not provided in the event.")
+        
+        # Update VectorStatus to 33% at the start
+        update_vector_status(renderId, 33)
         
         # Retrieve secret
         secret_name = "Backgroundremover"
@@ -98,6 +113,7 @@ def lambda_handler(event, context):
                     ':val1': new_image_url
                 }
             )
+            update_vector_status(renderId, 45)
         else:
             next_step_payload['error'] = "Failed to remove background."
             return next_step_payload

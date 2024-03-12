@@ -5,15 +5,36 @@ import os
 from botocore.exceptions import ClientError
 import json
 from urllib.parse import urlparse
+import logging
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
 dynamodb_client = boto3.client('dynamodb')
+dynamodb_resource = boto3.resource('dynamodb')
 
 # Define your bucket and table names
 DYNAMODB_TABLE_NAME = 'RenderRequests'
 S3_BUCKET_NAME = 'draft-images-bucket'
 S3_OUTPUT_FOLDER = 'image_no_background'
+VECTOR_STATUS_TABLE_NAME = 'VectorStatusTable'
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Function to update the VectorStatus in DynamoDB
+def update_vector_status(render_id, status):
+    table = dynamodb_resource.Table(VECTOR_STATUS_TABLE_NAME)
+    try:
+        response = table.update_item(
+            Key={'renderId': render_id},
+            UpdateExpression='SET vectorStatus = :val',
+            ExpressionAttributeValues={':val': status},
+            ReturnValues="UPDATED_NEW"
+        )
+        logger.info(f"VectorStatus updated for renderId: {render_id} to {status}%")
+    except Exception as e:
+        logger.error(f"Failed to update VectorStatus for renderId: {render_id}. Error: {str(e)}")
+
 
 #Pure white Background Removal: Inhouse
 def remove_background_and_preserve_white(input_image_path, output_image_path, white_threshold=100, debug=False):
@@ -154,6 +175,9 @@ def lambda_handler(event, context):
     try:
         # Extract renderId from the event
         renderId = event['renderId']
+
+        # Update VectorStatus to 33% at the start
+        update_vector_status(renderId, 33)
         
         # Get the image URL and filename from DynamoDB
         response = dynamodb_client.get_item(
@@ -190,6 +214,8 @@ def lambda_handler(event, context):
         # Process the image
         remove_background_and_preserve_white(input_image_path, output_image_path)
         
+        update_vector_status(renderId, 45)
+
         # Upload the processed image to S3
         output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed
         try:
