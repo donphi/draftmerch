@@ -74,14 +74,22 @@ def upscale_image(api_key, image_content):
         logger.error(f"Exception occurred during image upscaling: {str(e)}")
         return None
         
-def update_vector_status(render_id, status):
+def update_vector_status(render_id, status, connection_id):
     try:
+        update_exp = 'SET renderStatus = :val'
+        exp_attr_values = {':val': {'N': str(status)}}
+
+        if connection_id:
+            update_exp += ', connectionId = :connectionId'
+            exp_attr_values[':connectionId'] = {'S': connection_id}
+        
         dynamodb_client.update_item(
             TableName=TABLE_NAME_VECTOR_STATUS,
             Key={'renderId': {'S': render_id}},
-            UpdateExpression='SET renderStatus = :val',
-            ExpressionAttributeValues={':val': {'N': str(status)}}
+            UpdateExpression=update_exp,
+            ExpressionAttributeValues=exp_attr_values
         )
+        logger.info(f"VectorStatus updated for renderId: {render_id} to {status}%")
         return True
     except Exception as e:
         logger.error(f"Failed to update VectorStatus in DynamoDB: {str(e)}")
@@ -93,7 +101,10 @@ def lambda_handler(event, context):
     if 'renderId' in event:
         api_key = get_secret()
         render_id = event['renderId']
-        update_vector_status(render_id, 0)
+
+        connection_id = event.get('connectionId')
+        
+        update_vector_status(render_id, 0, connection_id)
         item = get_item_from_dynamodb(render_id)
 
         if item and 'originalImageUrl' in item:
