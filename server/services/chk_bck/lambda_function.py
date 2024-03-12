@@ -50,7 +50,7 @@ def update_vector_status(render_id, status):
     table = dynamodb.Table(vector_status_table_name)
     response = table.update_item(
         Key={'renderId': render_id},
-        UpdateExpression='SET vectorStatus = :val',
+        UpdateExpression='SET RenderStatus = :val',
         ExpressionAttributeValues={':val': status},
         ReturnValues="UPDATED_NEW"
     )

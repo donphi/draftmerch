@@ -7,7 +7,7 @@ import logging
 dynamodb = boto3.resource('dynamodb')
 secretsmanager = boto3.client('secretsmanager')
 s3 = boto3.client('s3')
-vector_status_table_name = 'VectorStatusTable'
+vector_status_table_name = 'VectorStatus'
 
 # Function to remove background - updated with Secrets Manager integration
 def remove_background_image(api_key, api_secret, filename, original_image_path):
@@ -39,7 +39,7 @@ def update_vector_status(render_id, status):
     vector_status_table = dynamodb.Table(vector_status_table_name)
     response = vector_status_table.update_item(
         Key={'renderId': render_id},
-        UpdateExpression='SET vectorStatus = :status',
+        UpdateExpression='SET renderStatus = :status',
         ExpressionAttributeValues={':status': status},
         ReturnValues="UPDATED_NEW"
     )

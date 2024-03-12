@@ -22,7 +22,7 @@ IMAGE_NO_BACKGROUND_FOLDER = 'image_no_background/'
 IMAGE_VECTORIZED_FOLDER = 'image_vectorized/'
 WATERMARK_FOLDER = 'watermark/'
 WATERMARKED_VECTOR_FOLDER = 'watermarked_vector/'
-VECTOR_STATUS_TABLE_NAME = 'VectorStatusTable'
+VECTOR_STATUS_TABLE_NAME = 'VectorStatus'
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -84,7 +84,7 @@ def update_vector_status(render_id, status):
     try:
         response = table.update_item(
             Key={'renderId': render_id},
-            UpdateExpression='SET vectorStatus = :val',
+            UpdateExpression='SET renderStatus = :val',
             ExpressionAttributeValues={':val': status},
             ReturnValues="UPDATED_NEW"
         )

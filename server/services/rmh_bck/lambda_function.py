@@ -16,7 +16,7 @@ dynamodb_resource = boto3.resource('dynamodb')
 DYNAMODB_TABLE_NAME = 'RenderRequests'
 S3_BUCKET_NAME = 'draft-images-bucket'
 S3_OUTPUT_FOLDER = 'image_no_background'
-VECTOR_STATUS_TABLE_NAME = 'VectorStatusTable'
+VECTOR_STATUS_TABLE_NAME = 'VectorStatus'
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -27,7 +27,7 @@ def update_vector_status(render_id, status):
     try:
         response = table.update_item(
             Key={'renderId': render_id},
-            UpdateExpression='SET vectorStatus = :val',
+            UpdateExpression='SET renderStatus = :val',
             ExpressionAttributeValues={':val': status},
             ReturnValues="UPDATED_NEW"
         )
