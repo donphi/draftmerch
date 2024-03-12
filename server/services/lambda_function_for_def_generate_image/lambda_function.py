@@ -55,7 +55,7 @@ def lambda_handler(event, context):
             Key={'renderId': {'S': render_id}},
             UpdateExpression='SET renderStatus = :statusVal',
             ExpressionAttributeValues={
-                ':statusVal': {'N': '50'}, 
+                ':statusVal': {'N': '70'}, 
             }
         )
         
@@ -151,7 +151,7 @@ def lambda_handler(event, context):
             Key={'renderId': {'S': render_id}},
             UpdateExpression='SET renderStatus = :statusVal',
             ExpressionAttributeValues={
-                ':statusVal': {'N': '80'}, 
+                ':statusVal': {'N': '93'}, 
             }
         )
 
