@@ -7,12 +7,14 @@ import cairosvg
 from io import BytesIO
 from urllib.parse import urlparse
 import json
+import logging
 
 # Initialize AWS clients
 s3_client = boto3.client('s3')
 dynamodb_client = boto3.client('dynamodb')
 secrets_manager_client = boto3.client('secretsmanager')
 lambda_client = boto3.client('lambda')
+dynamodb_resource = boto3.resource('dynamodb')
 
 # Constants for S3 bucket and folder paths
 BUCKET_NAME = 'draft-images-bucket'
@@ -20,6 +22,10 @@ IMAGE_NO_BACKGROUND_FOLDER = 'image_no_background/'
 IMAGE_VECTORIZED_FOLDER = 'image_vectorized/'
 WATERMARK_FOLDER = 'watermark/'
 WATERMARKED_VECTOR_FOLDER = 'watermarked_vector/'
+VECTOR_STATUS_TABLE_NAME = 'VectorStatusTable'
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 # Vectorize image
 def vectorize_image(api_key, api_secret, filename, image_no_background_file_path):
@@ -73,11 +79,27 @@ def get_s3_key_from_url(url):
     # Use .lstrip('/') to remove the leading slash
     return parsed_url.path.lstrip('/')
 
+def update_vector_status(render_id, status):
+    table = dynamodb_resource.Table(VECTOR_STATUS_TABLE_NAME)
+    try:
+        response = table.update_item(
+            Key={'renderId': render_id},
+            UpdateExpression='SET vectorStatus = :val',
+            ExpressionAttributeValues={':val': status},
+            ReturnValues="UPDATED_NEW"
+        )
+        logger.info(f"VectorStatus updated for renderId: {render_id} to {status}%")
+    except Exception as e:
+        logger.error(f"Failed to update VectorStatus for renderId: {render_id}. Error: {str(e)}")
+
+
 # Lambda handler function
 def lambda_handler(event, context):
     try:
         # Extract renderId and message from the event
         render_id = event['renderId']
+
+        update_vector_status(render_id, 45)
 
         # Retrieve the item from DynamoDB
         response = dynamodb_client.get_item(
@@ -166,6 +188,8 @@ def lambda_handler(event, context):
                 logging.error(f"Error invoking Lambda E (sen_vec) for client notification: {str(e)}")
                 # Handle the error appropriately
                 raise e
+
+            update_vector_status(render_id, 100)
 
             return {
                 'statusCode': 200,
