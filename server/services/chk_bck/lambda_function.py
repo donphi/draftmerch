@@ -13,7 +13,7 @@ logger.setLevel(logging.INFO)  # You can adjust this to DEBUG for more detailed 
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 table_name = os.environ['TABLE_NAME']  # Ensure the environment variable is correctly set.
-vector_status_table_name = 'VectorStatusTable'
+vector_status_table_name = 'VectorStatus'
 
 def is_background_white(image_bytes, threshold=0.9):
     # Check if the image has a predominantly white background.
@@ -102,7 +102,7 @@ def lambda_handler(event, context):
                 # Log after updating DynamoDB successfully
                 logger.info(f"DynamoDB update successful for renderId: {render_id}, response: {update_response}")
                 update_vector_status(render_id, 33)
-                
+
                 return {
 		    'statusCode': 200,
 		    'renderId': render_id,
