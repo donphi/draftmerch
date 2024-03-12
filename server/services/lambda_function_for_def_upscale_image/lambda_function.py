@@ -142,7 +142,7 @@ def lambda_handler(event, context):
                     base_filename, file_extension = os.path.splitext(os.path.basename(key))
                     upscaled_filename = f"{base_filename}_2x{file_extension}"
                     upscaled_key = f"{TARGET_FOLDER}/{upscaled_filename}"
-                    update_vector_status(render_id, 9)
+                    update_vector_status(render_id, 9, connection_id)
 
                     if upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content):
                         upscaled_image_url = f"s3://{BUCKET_NAME}/{upscaled_key}"
