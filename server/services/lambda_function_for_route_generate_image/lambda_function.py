@@ -160,7 +160,7 @@ def lambda_handler(event, context):
                 Key={'renderId': {'S': render_id}},
                 UpdateExpression='SET renderStatus = :renderStatus',
                 ExpressionAttributeValues={
-                    ':renderStatus': {'N': '90'}
+                    ':renderStatus': {'N': '100'}
                 }
             )
                 
