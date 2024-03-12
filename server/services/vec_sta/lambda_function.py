@@ -3,7 +3,6 @@ import json
 import os
 
 # Initialize the API Gateway Management API client outside the handler
-# Make sure to replace the endpoint_url with your WebSocket API Gateway endpoint
 api_gateway_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://yourApiGatewayId.execute-api.yourRegion.amazonaws.com/Prod/')
 
 def lambda_handler(event, context):
@@ -11,21 +10,17 @@ def lambda_handler(event, context):
         if record['eventName'] in ('INSERT', 'MODIFY'):
             new_image = record['dynamodb']['NewImage']
             render_id = new_image['renderId']['S']
-            # Assume vectorStatus is stored similarly to renderStatus
             vector_status = int(new_image['vectorStatus']['N']) if 'vectorStatus' in new_image else None
             
             # Here you need to have the connectionId to send the message to the correct WebSocket client
-            # Assuming connectionId is stored in the DynamoDB record
             connection_id = new_image['connectionId']['S'] if 'connectionId' in new_image else None
             
-            # Check if both connection_id and vector_status are available
-            if connection_id and vector_status is not None:
-                message = {
-                    "type": "vectorStatus",
-                    "renderId": render_id,
-                    "vectorStatus": vector_status
-                }
-                send_update(connection_id, message)
+            message = {
+                "type": "vectorStatus",
+                "renderId": render_id,
+                "vectorStatus": vector_status
+            }
+            send_update(connection_id, message)
 
 def send_update(connection_id, message):
     try:
