@@ -14,9 +14,11 @@ logger.setLevel(logging.INFO)
 secretsmanager_client = boto3.client('secretsmanager')
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
+dynamodb_client = boto3.client('dynamodb')
 
 # Environment variables
 TABLE_NAME = os.getenv('TABLE_NAME', 'RenderRequests')
+TABLE_NAME_VECTOR_STATUS = 'VectorStatus'
 BUCKET_NAME = os.getenv('BUCKET_NAME', 'draft-images-bucket')
 TARGET_FOLDER = os.getenv('TARGET_FOLDER', 'image_2x')
 UPSCALER_SECRET_NAME = os.getenv('UPSCALER_SECRET_NAME', 'Upscaler')
@@ -71,6 +73,19 @@ def upscale_image(api_key, image_content):
     except Exception as e:
         logger.error(f"Exception occurred during image upscaling: {str(e)}")
         return None
+        
+def update_vector_status(render_id, status):
+    try:
+        dynamodb_client.update_item(
+            TableName=TABLE_NAME_VECTOR_STATUS,
+            Key={'renderId': {'S': render_id}},
+            UpdateExpression='SET renderStatus = :val',
+            ExpressionAttributeValues={':val': {'N': str(status)}}
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update VectorStatus in DynamoDB: {str(e)}")
+        return False
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
@@ -78,6 +93,7 @@ def lambda_handler(event, context):
     if 'renderId' in event:
         api_key = get_secret()
         render_id = event['renderId']
+        update_vector_status(render_id, 0)
         item = get_item_from_dynamodb(render_id)
 
         if item and 'originalImageUrl' in item:
@@ -97,6 +113,7 @@ def lambda_handler(event, context):
                     base_filename, file_extension = os.path.splitext(os.path.basename(key))
                     upscaled_filename = f"{base_filename}_2x{file_extension}"
                     upscaled_key = f"{TARGET_FOLDER}/{upscaled_filename}"
+                    update_vector_status(render_id, 9)
 
                     if upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content):
                         upscaled_image_url = f"s3://{BUCKET_NAME}/{upscaled_key}"

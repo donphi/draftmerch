@@ -13,6 +13,7 @@ logger.setLevel(logging.INFO)  # You can adjust this to DEBUG for more detailed 
 s3_client = boto3.client('s3')
 dynamodb = boto3.resource('dynamodb')
 table_name = os.environ['TABLE_NAME']  # Ensure the environment variable is correctly set.
+vector_status_table_name = 'VectorStatusTable'
 
 def is_background_white(image_bytes, threshold=0.9):
     # Check if the image has a predominantly white background.
@@ -43,6 +44,17 @@ def get_image_location_from_dynamodb(render_id, table_name):
     else:
         logger.info(f"No item found for renderId: {render_id}")
         return None
+    
+def update_vector_status(render_id, status):
+    # Function to update the VectorStatus in DynamoDB using a hardcoded table name
+    table = dynamodb.Table(vector_status_table_name)
+    response = table.update_item(
+        Key={'renderId': render_id},
+        UpdateExpression='SET vectorStatus = :val',
+        ExpressionAttributeValues={':val': status},
+        ReturnValues="UPDATED_NEW"
+    )
+    logger.info(f"VectorStatus updated for renderId: {render_id} to {status}%")
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {event}")
@@ -58,6 +70,7 @@ def lambda_handler(event, context):
 
     if render_id:
         upscaled_image_url = get_image_location_from_dynamodb(render_id, table_name)
+        update_vector_status(render_id, 9)
 
         if upscaled_image_url:
             # Parse the S3 bucket and key from the URL
@@ -88,7 +101,8 @@ def lambda_handler(event, context):
 
                 # Log after updating DynamoDB successfully
                 logger.info(f"DynamoDB update successful for renderId: {render_id}, response: {update_response}")
-
+                update_vector_status(render_id, 33)
+                
                 return {
 		    'statusCode': 200,
 		    'renderId': render_id,
