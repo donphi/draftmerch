@@ -86,7 +86,7 @@ def lambda_handler(event, context):
             TableName=generate_status_table_name,
             Item={
                 'renderId': {'S': render_id},
-                'renderStatus': {'N': '10'},
+                'renderStatus': {'N': '0'},
                 'connectionId': {'S': connection_id}
             }
         )
@@ -148,7 +148,7 @@ def lambda_handler(event, context):
                     ':waterUrl': {'S': watermarked_image_url},
                     ':statusVal': {'S': 'completed'},
                     ':filename': {'S': filename},
-                    ':statusVal': {'N': '90'}
+                    ':statusVal': {'N': '100'}
                 },
                 ExpressionAttributeNames={
                     '#status': 'status'
