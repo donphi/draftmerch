@@ -101,8 +101,7 @@ def lambda_handler(event, context):
     if 'renderId' in event:
         api_key = get_secret()
         render_id = event['renderId']
-
-        connection_id = event.get('connectionId')
+        connection_id = event['connectionId']
         
         update_vector_status(render_id, 0, connection_id)
         item = get_item_from_dynamodb(render_id)
