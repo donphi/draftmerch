@@ -9,6 +9,9 @@ secretsmanager = boto3.client('secretsmanager')
 s3 = boto3.client('s3')
 vector_status_table_name = 'VectorStatus'
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 # Function to remove background - updated with Secrets Manager integration
 def remove_background_image(api_key, api_secret, filename, original_image_path):
     background_removal_url = "https://api.pixian.ai/api/v2/remove-background"
