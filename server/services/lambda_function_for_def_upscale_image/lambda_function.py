@@ -97,17 +97,29 @@ def update_vector_status(render_id, status, connection_id):
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
-    body = json.loads(event['body'])
     
-    if 'renderId' in body and 'connectionId' in body:
+    try:
+        body = json.loads(event['body'])
+    except KeyError as e:
+        logger.error(f"Body parsing error, key missing: {str(e)}")
+        return {'statusCode': 400, 'body': json.dumps({'error': 'Request body is missing or malformed.'})}
+
+    try:
         render_id = body['renderId']
         connection_id = body['connectionId']
-        logger.info(f"Received renderId: {render_id}, connectionId: {connection_id}")
-        
-        update_vector_status(render_id, 0, connection_id)
-        item = get_item_from_dynamodb(render_id)
+    except KeyError as e:
+        logger.error(f"Key missing in request body: {str(e)}")
+        return {'statusCode': 400, 'body': json.dumps({'error': f"Missing required key: {str(e)}"})}
 
-        if item and 'originalImageUrl' in item:
+    logger.info(f"Received renderId: {render_id}, connectionId: {connection_id}")
+
+    api_key = get_secret()  # Ensure this is called here to get the API key
+
+    # Proceed with updating status, getting item, and processing the image
+    update_vector_status(render_id, 0, connection_id)  # Corrected to include connection_id
+
+    item = get_item_from_dynamodb(render_id)
+    if item and 'originalImageUrl' in item:
             parsed_url = urlparse(item['originalImageUrl'])
             key = parsed_url.path.lstrip('/')
 
@@ -146,8 +158,8 @@ def lambda_handler(event, context):
             except Exception as e:
                 logger.error(f"Error processing image: {str(e)}")
                 return {'statusCode': 500, 'body': json.dumps({'error': 'Error processing image'})}
-        else:
-            return {'statusCode': 404, 'body': json.dumps({'error': 'Original image URL or filename not found'})}
     else:
-        return {'statusCode': 400, 'body': json.dumps({'error': "Event object does not contain 'renderId'."})}
+        logger.error('Original image URL or item not found in DynamoDB.')
+        return {'statusCode': 404, 'body': json.dumps({'error': 'Original image URL or filename not found'})}
+
 
