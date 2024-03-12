@@ -97,67 +97,57 @@ def update_vector_status(render_id, status, connection_id):
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
+    body = json.loads(event['body'])
     
-    # Check if 'body' exists in the event
-    if 'body' in event and event['body']:
-        try:
-            body = json.loads(event['body'])
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding event body: {str(e)}")
-            return {'statusCode': 400, 'body': json.dumps({'error': 'Malformed JSON body'})}
-
-        render_id = body.get('renderId')
-        connection_id = body.get('connectionId')
+    if 'renderId' in body and 'connectionId' in body:
+        render_id = body['renderId']
+        connection_id = body['connectionId']
+        logger.info(f"Received renderId: {render_id}, connectionId: {connection_id}")
         
-        # Ensure both renderId and connectionId are present
-        if render_id and connection_id:
-            api_key = get_secret()
-            
-            update_vector_status(render_id, 0, connection_id)
-            item = get_item_from_dynamodb(render_id)
+        update_vector_status(render_id, 0, connection_id)
+        item = get_item_from_dynamodb(render_id)
 
-            if item and 'originalImageUrl' in item:
-                parsed_url = urlparse(item['originalImageUrl'])
-                key = parsed_url.path.lstrip('/')
+        if item and 'originalImageUrl' in item:
+            parsed_url = urlparse(item['originalImageUrl'])
+            key = parsed_url.path.lstrip('/')
 
-                try:
-                    # Download the image content from S3
-                    image_object = s3_client.get_object(Bucket=BUCKET_NAME, Key=key)
-                    image_content = image_object['Body'].read()
+            try:
+                # Download the image content from S3
+                image_object = s3_client.get_object(Bucket=BUCKET_NAME, Key=key)
+                image_content = image_object['Body'].read()
 
-                    # Proceed with the upscaling using the image content
-                    response = upscale_image(api_key, image_content)
+                # Proceed with the upscaling using the image content
+                response = upscale_image(api_key, image_content)
 
-                    if response and response.status_code == 200:
-                        upscaled_image_content = base64.b64decode(response.json()["artifacts"][0]["base64"])
-                        base_filename, file_extension = os.path.splitext(os.path.basename(key))
-                        upscaled_filename = f"{base_filename}_2x{file_extension}"
-                        upscaled_key = f"{TARGET_FOLDER}/{upscaled_filename}"
-                        update_vector_status(render_id, 9)
+                if response and response.status_code == 200:
+                    upscaled_image_content = base64.b64decode(response.json()["artifacts"][0]["base64"])
+                    base_filename, file_extension = os.path.splitext(os.path.basename(key))
+                    upscaled_filename = f"{base_filename}_2x{file_extension}"
+                    upscaled_key = f"{TARGET_FOLDER}/{upscaled_filename}"
+                    update_vector_status(render_id, 9)
 
-                        if upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content):
-                            upscaled_image_url = f"s3://{BUCKET_NAME}/{upscaled_key}"
-                            if update_dynamodb(render_id, upscaled_image_url):
-                                return {
-                                    'statusCode': 200,
-                                    'body': json.dumps({
-                                        'message': "Image upscaled successfully",
-                                        'renderId': render_id,
-                                        'upscaledImageUrl': upscaled_image_url
-                                    })
-                                }
-                            else:
-                                return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to update DynamoDB'})}
+                    if upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content):
+                        upscaled_image_url = f"s3://{BUCKET_NAME}/{upscaled_key}"
+                        if update_dynamodb(render_id, upscaled_image_url):
+                            return {
+                                'statusCode': 200,
+                                'body': json.dumps({
+                                    'message': "Image upscaled successfully",
+                                    'renderId': render_id,
+                                    'upscaledImageUrl': upscaled_image_url
+                                })
+                            }
                         else:
-                            return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upload upscaled image to S3'})}
+                            return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to update DynamoDB'})}
                     else:
-                        return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upscale image'})}
-                except Exception as e:
-                    logger.error(f"Error processing image: {str(e)}")
-                    return {'statusCode': 500, 'body': json.dumps({'error': 'Error processing image'})}
-            else:
-                return {'statusCode': 404, 'body': json.dumps({'error': 'Original image URL or filename not found'})}
+                        return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upload upscaled image to S3'})}
+                else:
+                    return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upscale image'})}
+            except Exception as e:
+                logger.error(f"Error processing image: {str(e)}")
+                return {'statusCode': 500, 'body': json.dumps({'error': 'Error processing image'})}
         else:
-            return {'statusCode': 400, 'body': json.dumps({'error': "Missing 'renderId' or 'connectionId'"})}
+            return {'statusCode': 404, 'body': json.dumps({'error': 'Original image URL or filename not found'})}
     else:
-        return {'statusCode': 400, 'body': json.dumps({'error': "Missing or empty 'body'"})}
+        return {'statusCode': 400, 'body': json.dumps({'error': "Event object does not contain 'renderId'."})}
+
