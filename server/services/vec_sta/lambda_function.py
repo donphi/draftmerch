@@ -23,7 +23,7 @@ def lambda_handler(event, context):
                 message = {
                     "type": "vectorStatus",
                     "renderId": render_id,
-                    "renderStatus": vector_status
+                    "vectorStatus": vector_status
                 }
                 send_update(connection_id, message)
 
