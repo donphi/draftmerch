@@ -97,11 +97,13 @@ def update_vector_status(render_id, status, connection_id):
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
+    body = json.loads(event.get('body', '{}'))
+
+    render_id = body.get('renderId')
+    connection_id = body.get('connectionId')
     
     if 'renderId' in event:
         api_key = get_secret()
-        render_id = event['renderId']
-        connection_id = event['connectionId']
         
         update_vector_status(render_id, 0, connection_id)
         item = get_item_from_dynamodb(render_id)
