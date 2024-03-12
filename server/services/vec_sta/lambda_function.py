@@ -3,7 +3,7 @@ import json
 import os
 
 # Initialize the API Gateway Management API client outside the handler
-api_gateway_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://yourApiGatewayId.execute-api.yourRegion.amazonaws.com/Prod/')
+api_gateway_client = boto3.client('apigatewaymanagementapi', endpoint_url='https://0pgyxaha81.execute-api.us-east-1.amazonaws.com/prod/')
 
 def lambda_handler(event, context):
     for record in event['Records']:
