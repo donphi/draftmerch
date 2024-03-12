@@ -97,7 +97,7 @@ def update_vector_status(render_id, status, connection_id):
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
-    body = json.loads(event.get('body', '{}'))
+    body = json.loads(event['body'])
 
     render_id = body.get('renderId')
     connection_id = body.get('connectionId')
