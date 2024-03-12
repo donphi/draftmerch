@@ -10,7 +10,7 @@ def lambda_handler(event, context):
         if record['eventName'] in ('INSERT', 'MODIFY'):
             new_image = record['dynamodb']['NewImage']
             render_id = new_image['renderId']['S']
-            vector_status = int(new_image['vectorStatus']['N']) if 'vectorStatus' in new_image else None
+            render_status = int(new_image['renderStatus']['N']) if 'renderStatus' in new_image else None
             
             # Here you need to have the connectionId to send the message to the correct WebSocket client
             connection_id = new_image['connectionId']['S'] if 'connectionId' in new_image else None
@@ -18,7 +18,7 @@ def lambda_handler(event, context):
             message = {
                 "type": "vectorStatus",
                 "renderId": render_id,
-                "vectorStatus": vector_status
+                "renderStatus": render_status
             }
             send_update(connection_id, message)
 
