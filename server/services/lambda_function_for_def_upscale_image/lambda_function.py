@@ -98,24 +98,9 @@ def update_vector_status(render_id, status, connection_id):
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
     
-    # Attempt to parse for direct Step Function or Lambda invocation
-    if 'body' in event:
-        try:
-            # For API Gateway proxy integration, 'body' is a JSON string
-            body = json.loads(event['body'])
-        except json.JSONDecodeError as e:
-            logger.error(f"Error decoding JSON body: {str(e)}")
-            return {'statusCode': 400, 'body': json.dumps({'error': 'Could not decode the request body from JSON.'})}
-    else:
-        # For direct Lambda or Step Function invocation
-        body = event
-
-    try:
-        render_id = body['renderId']
-        connection_id = body['connectionId']
-    except KeyError as e:
-        logger.error(f"Missing required key in payload: {str(e)}")
-        return {'statusCode': 400, 'body': json.dumps({'error': f"Missing required key: {str(e)}"})}
+    ## Simplified event parsing and direct extraction
+    render_id = event.get('renderId')
+    connection_id = event.get('connectionId')  # This line is for extracting connectionId if it's also part of your payload.
 
     logger.info(f"Received renderId: {render_id}, connectionId: {connection_id}")
 
