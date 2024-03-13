@@ -86,7 +86,7 @@ def lambda_handler(event, context):
             TableName=generate_status_table_name,
             Item={
                 'renderId': {'S': render_id},
-                'renderStatus': {'N': '0'},
+                'renderStatus': {'N': '1'},
                 'connectionId': {'S': connection_id}
             }
         )
