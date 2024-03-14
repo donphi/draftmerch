@@ -99,7 +99,7 @@ def lambda_handler(event, context):
         # Extract renderId and message from the event
         render_id = event['renderId']
 
-        update_vector_status(render_id, 47)
+        update_vector_status(render_id, 90)
 
         # Retrieve the item from DynamoDB
         response = dynamodb_client.get_item(

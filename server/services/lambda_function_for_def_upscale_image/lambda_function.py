@@ -107,7 +107,7 @@ def lambda_handler(event, context):
     api_key = get_secret()  # Ensure this is called here to get the API key
 
     # Proceed with updating status, getting item, and processing the image
-    update_vector_status(render_id, 1, connection_id)  # Corrected to include connection_id
+    update_vector_status(render_id, 9, connection_id)  # Corrected to include connection_id
 
     item = get_item_from_dynamodb(render_id)
     if item and 'originalImageUrl' in item:
@@ -127,7 +127,7 @@ def lambda_handler(event, context):
                     base_filename, file_extension = os.path.splitext(os.path.basename(key))
                     upscaled_filename = f"{base_filename}_2x{file_extension}"
                     upscaled_key = f"{TARGET_FOLDER}/{upscaled_filename}"
-                    update_vector_status(render_id, 9, connection_id)
+                    update_vector_status(render_id, 20, connection_id)
 
                     if upload_to_s3(BUCKET_NAME, upscaled_key, upscaled_image_content):
                         upscaled_image_url = f"s3://{BUCKET_NAME}/{upscaled_key}"
