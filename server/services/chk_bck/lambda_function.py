@@ -70,7 +70,7 @@ def lambda_handler(event, context):
 
     if render_id:
         upscaled_image_url = get_image_location_from_dynamodb(render_id, table_name)
-        update_vector_status(render_id, 9)
+        update_vector_status(render_id, 10)
 
         if upscaled_image_url:
             # Parse the S3 bucket and key from the URL
@@ -101,7 +101,7 @@ def lambda_handler(event, context):
 
                 # Log after updating DynamoDB successfully
                 logger.info(f"DynamoDB update successful for renderId: {render_id}, response: {update_response}")
-                update_vector_status(render_id, 33)
+                update_vector_status(render_id, 34)
 
                 return {
 		    'statusCode': 200,

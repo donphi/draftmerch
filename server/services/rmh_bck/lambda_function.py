@@ -177,7 +177,7 @@ def lambda_handler(event, context):
         renderId = event['renderId']
 
         # Update VectorStatus to 33% at the start
-        update_vector_status(renderId, 33)
+        update_vector_status(renderId, 35)
         
         # Get the image URL and filename from DynamoDB
         response = dynamodb_client.get_item(
@@ -214,7 +214,7 @@ def lambda_handler(event, context):
         # Process the image
         remove_background_and_preserve_white(input_image_path, output_image_path)
         
-        update_vector_status(renderId, 45)
+        update_vector_status(renderId, 46)
 
         # Upload the processed image to S3
         output_s3_path = f"{S3_OUTPUT_FOLDER}/{filename}"  # Adjust path as needed

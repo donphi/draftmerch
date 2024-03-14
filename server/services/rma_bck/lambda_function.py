@@ -61,7 +61,7 @@ def lambda_handler(event, context):
             raise ValueError("renderId not provided in the event.")
         
         # Update VectorStatus to 33% at the start
-        update_vector_status(renderId, 33)
+        update_vector_status(renderId, 35)
         
         # Retrieve secret
         secret_name = "Backgroundremover"
@@ -116,7 +116,7 @@ def lambda_handler(event, context):
                     ':val1': new_image_url
                 }
             )
-            update_vector_status(renderId, 45)
+            update_vector_status(renderId, 46)
         else:
             next_step_payload['error'] = "Failed to remove background."
             return next_step_payload
