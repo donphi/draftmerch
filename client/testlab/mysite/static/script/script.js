@@ -808,15 +808,18 @@ function checkCustom(selectElement, customInputId) {
 }
 
 function updatePersonalityAndAction(selectedHero) {
+    const baseUrl = 'http://draft-static-bucket.s3-website-us-east-1.amazonaws.com/text_data';
+    
     if (selectedHero.trim() === 'custom') {
         // Reset the dropdowns if no hero is selected or if it's set back to empty
-        loadDropdownData('personality', '/static/text_data/dropdown_personality.txt');
-        loadDropdownData('action', '/static/text_data/dropdown_action.txt');
+        loadDropdownData('personality', `${baseUrl}/dropdown_personality.txt`);
+        loadDropdownData('action', `${baseUrl}/dropdown_action.txt`);
     } else {
         // Load personality and action for the chosen hero
-        loadDropdownData('personality', `/static/text_data/personality_data/${selectedHero}_personality.txt`);
+        loadDropdownData('personality', `${baseUrl}/personality_data/${selectedHero}_personality.txt`);
         // For action, combine options from the specific character and extra actions
-        loadDropdownData('action', `/static/text_data/action_data/${selectedHero}_action.txt`, '/static/text_data/extra_action.txt');
+        // Assuming loadDropdownData can accept multiple sources for a single dropdown as an array or additional arguments
+        loadDropdownData('action', `${baseUrl}/action_data/${selectedHero}_action.txt`, `${baseUrl}/extra_action.txt`);
     }
     // Remember to disable the form submit button since the options have changed
     checkAllDropdowns();
