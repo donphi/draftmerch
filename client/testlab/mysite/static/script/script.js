@@ -288,7 +288,7 @@ let intervalvecID = null;
             if (!renderId) {
                 console.error('No renderId found in localStorage.');
                 // Optionally, handle this case by updating UI or notifying the user
-                //indicateProcessingState(false); // Ensure UI is reset even if renderId is missing
+                indicateProcessingState(false); // Ensure UI is reset even if renderId is missing
                 return; // Exit the function if no renderId is present
             }
         
@@ -317,12 +317,12 @@ let intervalvecID = null;
         
                 // Handle retrieved data - like displaying images and filenames
                 updateUIWithRetrievedData(data);
-                //indicateProcessingState(false); // Reset UI to normal state
+                indicateProcessingState(false); // Reset UI to normal state
             })
             .catch(error => {
                 // Log any errors encountered during the fetch operation
                 console.error('Error fetching processed data:', error);
-                //indicateProcessingState(false); // Ensure UI is reset even on error
+                indicateProcessingState(false); // Ensure UI is reset even on error
             });
         }
         
