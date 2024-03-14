@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing AWS CLI..."
+      - apt-get update && apt-get install -y awscli
+  pre_build:
+    commands:
+      - echo "Pre-build phase..."
+  build:
+    commands:
+      - echo "Copying files to S3..."
+      - aws s3 cp client/testlab/mysite/favicon.ico s3://draft-static-bucket/favicon.ico
+      - aws s3 cp client/testlab/mysite/logo.png s3://draft-static-bucket/logo.png
+      - aws s3 cp client/testlab/mysite/index.html s3://draft-static-bucket/index.html
+      - aws s3 cp client/testlab/mysite/static/script/script.js s3://draft-static-bucket/script/script.js
+      - aws s3 cp client/testlab/mysite/static/style/style.css s3://draft-static-bucket/style/style.css
+      - aws s3 cp client/testlab/mysite/static/text_data s3://draft-static-bucket/text_data --recursive
+  post_build:
+    commands:
+      - echo "Build and deployment completed."
