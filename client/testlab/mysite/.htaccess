@@ -1,0 +1,3 @@
+<IfModule mod_headers.c>
+    Header set Content-Security-Policy "default-src 'self'; img-src 'self' https://draft-static-bucket.s3-website-us-east-1.amazonaws.com https://draftmerch.com https://www.draftmerch.com; script-src 'self' https://draft-static-bucket.s3-website-us-east-1.amazonaws.com https://draftmerch.com https://www.draftmerch.com; style-src 'self' https://draft-static-bucket.s3-website-us-east-1.amazonaws.com https://draftmerch.com https://www.draftmerch.com;"
+</IfModule>
