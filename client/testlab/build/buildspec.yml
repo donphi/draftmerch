@@ -16,6 +16,7 @@ phases:
       - ls -la
       - echo "Copying files to S3..."
       - aws s3 cp client/testlab/mysite/static/favicon.ico s3://draft-static-bucket/favicon.ico
+      - aws s3 cp client/testlab/mysite/static/.htaccess s3://draft-static-bucket/.htaccess
       - aws s3 cp client/testlab/mysite/static/logo.png s3://draft-static-bucket/logo.png
       - aws s3 cp client/testlab/mysite/index.html s3://draft-static-bucket/index.html
       - aws s3 cp client/testlab/mysite/static/script/script.js s3://draft-static-bucket/script/script.js
