@@ -748,11 +748,11 @@ let intervalvecID = null;
         
         // Call the function with the duration in milliseconds, e.g., 5000 milliseconds for 5 seconds
 
-    loadDropdownData('color','http://draft-static-bucket.s3-website-us-east-1.amazonaws.com/text_data/dropdown_color.txt');
-    loadDropdownData('hero', 'http://draft-static-bucket.s3-website-us-east-1.amazonaws.com/text_data/dropdown_hero.txt');
-    loadDropdownData('personality', 'http://draft-static-bucket.s3-website-us-east-1.amazonaws.com/text_data/dropdown_personality.txt');
-    loadDropdownData('sport', 'http://draft-static-bucket.s3-website-us-east-1.amazonaws.com/text_data/dropdown_sport.txt');
-    loadDropdownData('action', 'http://draft-static-bucket.s3-website-us-east-1.amazonaws.com/text_data/dropdown_action.txt');
+    loadDropdownData('color','http://draftmerch.com/text_data/dropdown_color.txt');
+    loadDropdownData('hero', 'http://draftmerch.com/text_data/dropdown_hero.txt');
+    loadDropdownData('personality', 'http://draftmerch.com/text_data/dropdown_personality.txt');
+    loadDropdownData('sport', 'http://draftmerch.com/text_data/dropdown_sport.txt');
+    loadDropdownData('action', 'http://draftmerch.com/text_data/dropdown_action.txt');
 
     document.getElementById('hero-dropdown').addEventListener('change', checkAllDropdowns);
     document.getElementById('personality-dropdown').addEventListener('change', checkAllDropdowns);
@@ -808,7 +808,7 @@ function checkCustom(selectElement, customInputId) {
 }
 
 function updatePersonalityAndAction(selectedHero) {
-    const baseUrl = 'http://draft-static-bucket.s3-website-us-east-1.amazonaws.com/text_data';
+    const baseUrl = 'http://draftmerch.com/text_data';
     
     if (selectedHero.trim() === 'custom') {
         // Reset the dropdowns if no hero is selected or if it's set back to empty
