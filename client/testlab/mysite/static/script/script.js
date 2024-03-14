@@ -748,11 +748,11 @@ let intervalvecID = null;
         
         // Call the function with the duration in milliseconds, e.g., 5000 milliseconds for 5 seconds
 
-    loadDropdownData('color','http://draftmerch.com/text_data/dropdown_color.txt');
-    loadDropdownData('hero', 'http://draftmerch.com/text_data/dropdown_hero.txt');
-    loadDropdownData('personality', 'http://draftmerch.com/text_data/dropdown_personality.txt');
-    loadDropdownData('sport', 'http://draftmerch.com/text_data/dropdown_sport.txt');
-    loadDropdownData('action', 'http://draftmerch.com/text_data/dropdown_action.txt');
+    loadDropdownData('color','https://draftmerch.com/text_data/dropdown_color.txt');
+    loadDropdownData('hero', 'https://draftmerch.com/text_data/dropdown_hero.txt');
+    loadDropdownData('personality', 'https://draftmerch.com/text_data/dropdown_personality.txt');
+    loadDropdownData('sport', 'https://draftmerch.com/text_data/dropdown_sport.txt');
+    loadDropdownData('action', 'https://draftmerch.com/text_data/dropdown_action.txt');
 
     document.getElementById('hero-dropdown').addEventListener('change', checkAllDropdowns);
     document.getElementById('personality-dropdown').addEventListener('change', checkAllDropdowns);
