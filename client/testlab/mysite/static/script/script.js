@@ -808,7 +808,7 @@ function checkCustom(selectElement, customInputId) {
 }
 
 function updatePersonalityAndAction(selectedHero) {
-    const baseUrl = 'http://draftmerch.com/text_data';
+    const baseUrl = 'https://draftmerch.com/text_data';
     
     if (selectedHero.trim() === 'custom') {
         // Reset the dropdowns if no hero is selected or if it's set back to empty
