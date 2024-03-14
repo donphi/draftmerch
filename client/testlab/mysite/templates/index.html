@@ -15,20 +15,24 @@
 
         <!-- Overlay for displaying messages on top of the image -->
         <div id="imageOverlay" class="overlay hidden">
-        <p id="overlayMessage">Optimizing & Vectorizing image, please wait...</p>
+            <p id="overlayMessage">Optimizing & Vectorizing image, please wait...</p>
         </div>
 
         {% if error %}
-        <p>{{ error }}</p>
+            <p>{{ error }}</p>
         {% elif image_url %}
-        <div class="image-wrapper checkered-background">
-            <a href="{{ image_url }}" target="_blank">
-                <img id="resultImage" src="{{ image_url }}" alt="Generated Image">
-            </a>
-        </div>
+            <div class="image-wrapper checkered-background">
+                <a href="{{ image_url }}" target="_blank">
+                    <img id="resultImage" src="{{ image_url }}" alt="Generated Image">
+                </a>
+            </div>
         {% else %}
-        <p id="loading" class="warning-message">Generating image, please wait...</p>
+            <p id="loading" class="warning-message">Generating image, please wait...</p>
         {% endif %}
+    </div>
+
+    <div id="progressBarContainer" class="hidden" style="width: 300px; background-color: #cccccc; height: 5px; margin: 10px auto; padding: 0; border-radius: 10px;">
+        <div id="progressBar" style="width: 0%; height: 100%; background-color: #FFCB37; border-radius: 10px;"></div>    
     </div>
     <div id="vectorizeSwitchContainer" class="switch-container hidden">
         <div>
@@ -37,7 +41,7 @@
                 <input type="checkbox" id="vectorizeSwitch" disabled>
                 <span class="slider round"></span>
             </label>
-            <span class="switch-label">Finalize Image</span>
+            <span class="switch-label">Vectorize Image</span>
         </div>
     </div>
 
@@ -90,7 +94,8 @@
     </div>
         <div class="footer">
         <p>Designed by <a href="https://chonkie.io/" target="_blank">chonkie</a></p>
-            <p>Version 7.1</p>
+            <p>Powered by Serverless Architecture</p>
+            <p>Version S12.5</p>
         </div>
     </div>
     <script src="{{ url_for('static', filename='script/script.js') }}"></script>
