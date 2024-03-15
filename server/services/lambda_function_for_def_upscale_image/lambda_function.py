@@ -97,33 +97,31 @@ def update_vector_status(render_id, status, connection_id):
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
-    
-    ## Simplified event parsing and direct extraction
     render_id = event.get('renderId')
-    connection_id = event.get('connectionId')  # This line is for extracting connectionId if it's also part of your payload.
+    connection_id = event.get('connectionId')
 
     logger.info(f"Received renderId: {render_id}, connectionId: {connection_id}")
 
-    api_key = get_secret()  # Ensure this is called here to get the API key
+    api_key = get_secret()
 
-    # Proceed with updating status, getting item, and processing the image
-    update_vector_status(render_id, 9, connection_id)  # Corrected to include connection_id
+    update_vector_status(render_id, 9, connection_id)
 
     item = get_item_from_dynamodb(render_id)
     if item and 'originalImageUrl' in item:
-            parsed_url = urlparse(item['originalImageUrl'])
-            key = parsed_url.path.lstrip('/')
+        parsed_url = urlparse(item['originalImageUrl'])
+        key = parsed_url.path.lstrip('/')
 
-            try:
-                # Download the image content from S3
-                image_object = s3_client.get_object(Bucket=BUCKET_NAME, Key=key)
-                image_content = image_object['Body'].read()
+        try:
+            image_object = s3_client.get_object(Bucket=BUCKET_NAME, Key=key)
+            image_content = image_object['Body'].read()
 
-                # Proceed with the upscaling using the image content
-                response = upscale_image(api_key, image_content)
+            response = upscale_image(api_key, image_content)
 
-                if response and response.status_code == 200:
-                    upscaled_image_content = base64.b64decode(response.json()["artifacts"][0]["base64"])
+            if response and response.status_code == 200:
+                response_data = response.json()
+                if 'artifacts' in response_data and len(response_data['artifacts']) > 0:
+                    upscaled_image_content = base64.b64decode(response_data["artifacts"][0]["base64"])
+                    
                     base_filename, file_extension = os.path.splitext(os.path.basename(key))
                     upscaled_filename = f"{base_filename}_2x{file_extension}"
                     upscaled_key = f"{TARGET_FOLDER}/{upscaled_filename}"
@@ -145,12 +143,13 @@ def lambda_handler(event, context):
                     else:
                         return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upload upscaled image to S3'})}
                 else:
-                    return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upscale image'})}
-            except Exception as e:
-                logger.error(f"Error processing image: {str(e)}")
-                return {'statusCode': 500, 'body': json.dumps({'error': 'Error processing image'})}
+                    logger.error(f"No artifacts found in response for renderId: {render_id}")
+                    return {'statusCode': 500, 'body': json.dumps({'error': 'No artifacts found in upscaling response'})}
+            else:
+                return {'statusCode': 500, 'body': json.dumps({'error': 'Failed to upscale image'})}
+        except Exception as e:
+            logger.error(f"Error processing image: {str(e)}")
+            return {'statusCode': 500, 'body': json.dumps({'error': 'Error processing image'})}
     else:
         logger.error('Original image URL or item not found in DynamoDB.')
         return {'statusCode': 404, 'body': json.dumps({'error': 'Original image URL or filename not found'})}
-
-
