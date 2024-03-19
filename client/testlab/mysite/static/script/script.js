@@ -241,6 +241,12 @@ let intervalvecID = null;
             imageContainer.style.display = 'flex';
             console.log('Attempting to show progressBarContainer', progressBarContainer.classList, progressBarContainer.style.display);
             
+            // Store the original border style
+            const originalBorderStyle = imageContainer.style.border;
+
+            // Temporarily remove the border for imageContainer
+            imageContainer.style.border = 'none'; // Add this line to remove the border
+
             // Retrieve the connectionId from local storage
             const connectionId = localStorage.getItem('connectionId');
 
@@ -269,9 +275,19 @@ let intervalvecID = null;
                 },
                 body: JSON.stringify(bodyData)
             })
+            .then(response => {
+                // Assuming you process the response here and possibly
+                // indicate the processing state to the user
+                
+                // Restore the original border style
+                imageContainer.style.border = originalBorderStyle;
+            })
             .catch(error => {
                 console.error('Error submitting initial request:', error);
                 indicateProcessingState(false);  // Reset the UI state
+                
+                // Restore the original border style even if there's an error
+                imageContainer.style.border = originalBorderStyle;
             });
             // Note: No handling of the response here. Waiting for WebSocket notification.
         });
