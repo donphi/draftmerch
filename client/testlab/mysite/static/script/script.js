@@ -15,10 +15,10 @@ let intervalvecID = null;
         const vectorizeSwitch = document.getElementById('vectorizeSwitch');
         const imageWrapper = document.querySelector('.image-wrapper');
         const resultImage = document.getElementById('resultImage');
-        //const uploadInput = document.getElementById('image-upload');
-        //const uploadButton = document.getElementById('upload-btn');
-        //const fileChosen = document.getElementById('file-chosen');
-        //const uploadSection = document.getElementById('upload-section');
+        const uploadInput = document.getElementById('image-upload');
+        const uploadButton = document.getElementById('upload-btn');
+        const fileChosen = document.getElementById('file-chosen');
+        const uploadSection = document.getElementById('upload-section');
         const progressBarContainer = document.getElementById('progressBarContainer')
         const downloadContainer = document.getElementById('downloadContainer');
         const progressBar = document.getElementById('progressBar');
@@ -91,12 +91,12 @@ let intervalvecID = null;
             
             if (value === 'Upload Image') {
                 // Show the upload section if "Upload Image" is selected
-                //uploadSection.classList.remove('hidden');
+                uploadSection.classList.remove('hidden');
                 document.querySelector('.pillbutton').classList.remove('hidden');
-                //fileChosen.classList.remove('hidden');
+                fileChosen.classList.remove('hidden');
             } else {
                 // Hide the upload section for all other selections
-                //uploadSection.classList.add('hidden'); // Use classList.add for consistency
+                uploadSection.classList.add('hidden'); // Use classList.add for consistency
         
                 // If the selection is not blank, update personality and actions
                 if (value !== '' && value !== 'default') { // Assuming 'default' is the value for the blank option
@@ -106,9 +106,9 @@ let intervalvecID = null;
         });
         
         // Attach click event listener to the upload button
-        //uploadButton.addEventListener('click', function() {
+        uploadButton.addEventListener('click', function() {
         // Trigger the actual upload process
-        //});
+        });
 
         document.getElementById('image-upload').addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
@@ -125,94 +125,94 @@ let intervalvecID = null;
         });
 
         // Attach click event listener to the upload button
-        //uploadButton.addEventListener('click', function() {
+        uploadButton.addEventListener('click', function() {
             // Ensure a file is selected
-        //    if (uploadInput.files.length === 0) {
-        //        alert('Please select a file to upload.');
-        //        return;
-        //    }
+            if (uploadInput.files.length === 0) {
+                alert('Please select a file to upload.');
+                return;
+            }
 
             // Prepare the file to be sent in a FormData object
-        //    var formData = new FormData();
-        //    formData.append('image-upload', uploadInput.files[0]);
+            var formData = new FormData();
+            formData.append('image-upload', uploadInput.files[0]);
 
             // Display loading or processing message
-        //    imageContainer.innerHTML = '<p>Processing image, please wait...</p>';
-        //    loading.classList.remove('hidden');
-        //    waitingMessage.classList.remove('hidden');
-        //    imageContainer.style.display = 'flex';
+            imageContainer.innerHTML = '<p>Processing image, please wait...</p>';
+            loading.classList.remove('hidden');
+            waitingMessage.classList.remove('hidden');
+            imageContainer.style.display = 'flex';
 
             //Hide other dropdowns
-        //    team_spirit.classList.add('hidden');
-        //    arenas.classList.add('hidden');
-        //    team_colors.classList.add('hidden');
-        //    winning_moves.classList.add('hidden');
-        //    document.getElementById("submit-button").classList.add('hidden');
+            team_spirit.classList.add('hidden');
+            arenas.classList.add('hidden');
+            team_colors.classList.add('hidden');
+            winning_moves.classList.add('hidden');
+            document.getElementById("submit-button").classList.add('hidden');
 
             //Hide Items
-        //    explainerBox.classList.add('hidden');
+            explainerBox.classList.add('hidden');
 
             // AJAX request to the /analyze-image route
-        //    fetch('/analyze-image', {
-        //        method: 'POST',
-        //        body: formData
-        //    })
-        //    .then(response => response.json())
-        //    .then(data => {
-        //        if(data.error) {
+            fetch('/analyze-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error) {
                     // Handle the error case
-        //            console.error('Error:', data.error);
-        //            // Display error message to the user
-        //        } else {
+                    console.error('Error:', data.error);
+                    // Display error message to the user
+                } else {
                     // Successful response from the server
                     // Hide upload section and buttons
-        //            uploadSection.classList.add('hidden');
-        //            uploadButton.classList.add('hidden');
-        //            document.querySelector('.pillbutton').classList.add('hidden');
-        //            fileChosen.classList.add('hidden');
+                    uploadSection.classList.add('hidden');
+                    uploadButton.classList.add('hidden');
+                    document.querySelector('.pillbutton').classList.add('hidden');
+                    fileChosen.classList.add('hidden');
             
                     //Bring back items
-        //            imageContainer.innerHTML = '<p>Processing complete, continue selection.</p>';
+                    imageContainer.innerHTML = '<p>Processing complete, continue selection.</p>';
             
                     //Bring back dropdowns
-        //            team_spirit.classList.remove('hidden');
-        //            arenas.classList.remove('hidden');
-        //            team_colors.classList.remove('hidden');
-        //            winning_moves.classList.remove('hidden');
+                    team_spirit.classList.remove('hidden');
+                    arenas.classList.remove('hidden');
+                    team_colors.classList.remove('hidden');
+                    winning_moves.classList.remove('hidden');
                     
                     // Show the submit button again
-        //            document.getElementById("submit-button").classList.remove('hidden');
+                    document.getElementById("submit-button").classList.remove('hidden');
             
                     // Update the hero dropdown
-        //            const heroDropdown = document.getElementById('hero-dropdown');
-        //            let fileName = uploadInput.files[0].name;
-        //            let fileExtension = fileName.split('.').pop();
-        //            let displayName = fileName.length > 23 ? fileName.substring(0, 23) + '...' + fileExtension : fileName;
+                    const heroDropdown = document.getElementById('hero-dropdown');
+                    let fileName = uploadInput.files[0].name;
+                    let fileExtension = fileName.split('.').pop();
+                    let displayName = fileName.length > 23 ? fileName.substring(0, 23) + '...' + fileExtension : fileName;
                     
                     // Find and update the 'Upload File' option
-        //            for (let i = 0; i < heroDropdown.options.length; i++) {
-        //                if (heroDropdown.options[i].value === 'Upload Image') {
-        //                    heroDropdown.options[i].textContent = 'Image: ' + displayName;
-        //                    heroDropdown.options[i].value = 'Uploaded Image';
-        //                    heroDropdown.selectedIndex = i; // Set this option as selected
-        //                    break;
-        //                }
-        //            }
+                    for (let i = 0; i < heroDropdown.options.length; i++) {
+                        if (heroDropdown.options[i].value === 'Upload Image') {
+                            heroDropdown.options[i].textContent = 'Image: ' + displayName;
+                            heroDropdown.options[i].value = 'Uploaded Image';
+                            heroDropdown.selectedIndex = i; // Set this option as selected
+                            break;
+                        }
+                    }
 
-        //            console.log('API Response:', data.api_response);
+                    console.log('API Response:', data.api_response);
                     // Process the successful response
-        //        }
-        //    })
-        //    .catch(error => {
-        //        console.error('Error:', error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
                 // Handle any additional errors
-        //    })
-        //    .finally(() => {
+            })
+            .finally(() => {
                 // Hide loading or processing message
-        //        loading.classList.add('hidden');
-        //        waitingMessage.classList.add('hidden');
-        //    });
-        //});
+                loading.classList.add('hidden');
+                waitingMessage.classList.add('hidden');
+            });
+        });
 
         // Set up the production API endpoint
         const apiEndpoint = 'https://api.draftmerch.com/gen'; // The production API endpoint
@@ -240,12 +240,9 @@ let intervalvecID = null;
             waitingMessage.classList.remove('hidden');
             imageContainer.style.display = 'flex';
             console.log('Attempting to show progressBarContainer', progressBarContainer.classList, progressBarContainer.style.display);
-            
-            // Store the original border style
-            const originalBorderStyle = imageContainer.style.border;
 
             // Temporarily remove the border for imageContainer
-            imageContainer.style.border = 'none'; // Add this line to remove the border
+            
 
             // Retrieve the connectionId from local storage
             const connectionId = localStorage.getItem('connectionId');
@@ -280,14 +277,14 @@ let intervalvecID = null;
                 // indicate the processing state to the user
                 
                 // Restore the original border style
-                imageContainer.style.border = originalBorderStyle;
+                
             })
             .catch(error => {
                 console.error('Error submitting initial request:', error);
                 indicateProcessingState(false);  // Reset the UI state
                 
-                // Restore the original border style even if there's an error
-                imageContainer.style.border = originalBorderStyle;
+                // Restore the original box-shadow style even in case of an error
+                imageContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
             });
             // Note: No handling of the response here. Waiting for WebSocket notification.
         });
@@ -304,7 +301,7 @@ let intervalvecID = null;
             if (!renderId) {
                 console.error('No renderId found in localStorage.');
                 // Optionally, handle this case by updating UI or notifying the user
-                indicateProcessingState(false); // Ensure UI is reset even if renderId is missing
+                //indicateProcessingState(false); // Ensure UI is reset even if renderId is missing
                 return; // Exit the function if no renderId is present
             }
         
@@ -333,12 +330,12 @@ let intervalvecID = null;
         
                 // Handle retrieved data - like displaying images and filenames
                 updateUIWithRetrievedData(data);
-                indicateProcessingState(false); // Reset UI to normal state
+                //indicateProcessingState(false); // Reset UI to normal state
             })
             .catch(error => {
                 // Log any errors encountered during the fetch operation
                 console.error('Error fetching processed data:', error);
-                indicateProcessingState(false); // Ensure UI is reset even on error
+                //indicateProcessingState(false); // Ensure UI is reset even on error
             });
         }
         
@@ -688,10 +685,10 @@ let intervalvecID = null;
         // Define interval speeds for vector progress updates in a single structure
         const vectorProgressConfig = {
             intervals: [
-                { range: [1, 19], speed: 100 },  // Interval 1: Fast updates (1-10)
-                { range: [20, 59], speed: 120 }, // Interval 2: Slow updates (11-34)
-                { range: [60, 79], speed: 200 }, // Interval 3: Medium updates (34-46)
-                { range: [80, 100], speed: 30 } // Interval 4: Slow updates again (46-100)
+                { range: [1, 10], speed: 100 },  // Interval 1: Fast updates (1-10)
+                { range: [10, 34], speed: 100 }, // Interval 2: Slow updates (11-34)
+                { range: [34, 46], speed: 200 }, // Interval 3: Medium updates (34-46)
+                { range: [46, 100], speed: 30 } // Interval 4: Slow updates again (46-100)
             ]
         };
 
@@ -764,11 +761,11 @@ let intervalvecID = null;
         
         // Call the function with the duration in milliseconds, e.g., 5000 milliseconds for 5 seconds
 
-    loadDropdownData('color','https://draftmerch.com/text_data/dropdown_color.txt');
-    loadDropdownData('hero', 'https://draftmerch.com/text_data/dropdown_hero.txt');
-    loadDropdownData('personality', 'https://draftmerch.com/text_data/dropdown_personality.txt');
-    loadDropdownData('sport', 'https://draftmerch.com/text_data/dropdown_sport.txt');
-    loadDropdownData('action', 'https://draftmerch.com/text_data/dropdown_action.txt');
+    loadDropdownData('color','/static/text_data/dropdown_color.txt');
+    loadDropdownData('hero', '/static/text_data/dropdown_hero.txt');
+    loadDropdownData('personality', '/static/text_data/dropdown_personality.txt');
+    loadDropdownData('sport', '/static/text_data/dropdown_sport.txt');
+    loadDropdownData('action', '/static/text_data/dropdown_action.txt');
 
     document.getElementById('hero-dropdown').addEventListener('change', checkAllDropdowns);
     document.getElementById('personality-dropdown').addEventListener('change', checkAllDropdowns);
@@ -824,18 +821,15 @@ function checkCustom(selectElement, customInputId) {
 }
 
 function updatePersonalityAndAction(selectedHero) {
-    const baseUrl = 'https://draftmerch.com/text_data';
-    
     if (selectedHero.trim() === 'custom') {
         // Reset the dropdowns if no hero is selected or if it's set back to empty
-        loadDropdownData('personality', `${baseUrl}/dropdown_personality.txt`);
-        loadDropdownData('action', `${baseUrl}/dropdown_action.txt`);
+        loadDropdownData('personality', '/static/text_data/dropdown_personality.txt');
+        loadDropdownData('action', '/static/text_data/dropdown_action.txt');
     } else {
         // Load personality and action for the chosen hero
-        loadDropdownData('personality', `${baseUrl}/personality_data/${selectedHero}_personality.txt`);
+        loadDropdownData('personality', `/static/text_data/personality_data/${selectedHero}_personality.txt`);
         // For action, combine options from the specific character and extra actions
-        // Assuming loadDropdownData can accept multiple sources for a single dropdown as an array or additional arguments
-        loadDropdownData('action', `${baseUrl}/action_data/${selectedHero}_action.txt`, `${baseUrl}/extra_action.txt`);
+        loadDropdownData('action', `/static/text_data/action_data/${selectedHero}_action.txt`, '/static/text_data/extra_action.txt');
     }
     // Remember to disable the form submit button since the options have changed
     checkAllDropdowns();
@@ -855,9 +849,9 @@ function loadDropdownData(dropdownId, filePath, extraFilePath = null) {
     dropdown.appendChild(new Option('', ''));
 
     // If this is the hero dropdown, add 'Upload Image' option
-    //if (dropdownId === 'hero') {
-    //    dropdown.appendChild(new Option('Upload Image', 'Upload Image'));
-    //}
+    if (dropdownId === 'hero') {
+        dropdown.appendChild(new Option('Upload Image', 'Upload Image'));
+    }
 
     // Add 'Custom' option
     dropdown.appendChild(new Option('Custom', 'custom'));
