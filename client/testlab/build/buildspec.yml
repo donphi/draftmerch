@@ -21,6 +21,7 @@ phases:
       - aws s3 cp client/testlab/mysite/static/script/script.js s3://draft-static-bucket/script/script.js
       - aws s3 cp client/testlab/mysite/static/style/style.css s3://draft-static-bucket/style/style.css
       - aws s3 cp client/testlab/mysite/static/text_data s3://draft-static-bucket/text_data --recursive
+      - aws s3 cp client/testlab/social.png s3://draft-static-bucket/social.png
   post_build:
     commands:
       - echo "Build and deployment completed."
