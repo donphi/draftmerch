@@ -414,7 +414,10 @@ input[type="button"]:hover, #generateNameButton:hover {
     }
 
     body {
-        display: block; /* Revert to block layout for mobile */
+        display: flex; /* Revert to block layout for mobile */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
     form {
         width: 95%; /* Slightly wider on smaller screens */
