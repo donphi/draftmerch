@@ -249,7 +249,6 @@ let intervalvecID = null;
 
             if (!connectionId) {
                 console.error('No connectionId available for the API call.');
-                indicateProcessingState(false);  // Reset the UI state
                 return;
             }
         
@@ -274,14 +273,12 @@ let intervalvecID = null;
             })
             .then(response => {
                 // Assuming you process the response here and possibly
-                // indicate the processing state to the user
                 
                 // Restore the original border style
                 imageContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
             })
             .catch(error => {
                 console.error('Error submitting initial request:', error);
-                indicateProcessingState(false);  // Reset the UI state
                 
                 // Restore the original box-shadow style even in case of an error
                 imageContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
@@ -301,7 +298,6 @@ let intervalvecID = null;
             if (!renderId) {
                 console.error('No renderId found in localStorage.');
                 // Optionally, handle this case by updating UI or notifying the user
-                indicateProcessingState(false); // Ensure UI is reset even if renderId is missing
                 return; // Exit the function if no renderId is present
             }
         
@@ -330,12 +326,10 @@ let intervalvecID = null;
         
                 // Handle retrieved data - like displaying images and filenames
                 updateUIWithRetrievedData(data);
-                indicateProcessingState(false); // Reset UI to normal state
             })
             .catch(error => {
                 // Log any errors encountered during the fetch operation
                 console.error('Error fetching processed data:', error);
-                indicateProcessingState(false); // Ensure UI is reset even on error
             });
         }
         
