@@ -23,7 +23,6 @@ def lambda_handler(event, context):
         'message': message_content,
         'status': 'VectorComplete',
         'renderId': render_id,
-        'connectionId': connection_id,
         'action': action  # This could be used by the client to determine the next steps
     }
 
