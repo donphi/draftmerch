@@ -289,7 +289,7 @@ let intervalvecID = null;
                         messageIndex = 0; // Loop back to the first message
                     }
                     messageContainer.innerText = messages[messageIndex++];
-                    setTimeout(changeMessage, 8000 + Math.random() * 2000); // Schedule next update
+                    setTimeout(changeMessage, 6000 + Math.random() * 2000); // Schedule next update
                 }
         
                 changeMessage();
