@@ -410,7 +410,6 @@ let intervalvecID = null;
                 }
                 imageOverlay.appendChild(progressBarContainer);
                 
-
                 document.getElementById('imageContainer').style.display = 'flex'; // Adjust this line as necessary
             
             } else {
@@ -419,13 +418,48 @@ let intervalvecID = null;
                 // Ensure progressBarContainer is positioned correctly
                 if (progressBarContainer && progressBarContainer.parentNode !== imageOverlay) {
                     imageOverlay.appendChild(progressBarContainer);
-            }
+                }
             }
             // Hide Buttons and Overlay
             imageOverlay.classList.remove('hidden');
             document.querySelector('form').classList.add('hidden');
             progressBarContainer.classList.remove('hidden');
             vectorizeSwitchContainer.classList.add('hidden');
+        
+            // URLs of the text files
+            const textFilesUrls = [
+                'https://draftmerch.com/text_data/messages/list.txt',
+                'https://draftmerch.com/text_data/messages/list2.txt',
+                'https://draftmerch.com/text_data/messages/list3.txt'
+            ];
+        
+            // Function to fetch and return text file content as an array of lines
+            async function fetchTextFile(url) {
+                const response = await fetch(url);
+                const text = await response.text();
+                return text.split('\n'); // Assuming each message is on a new line
+            }
+        
+            // Function to update the overlay message periodically
+            async function updateMessage(messages) {
+                let messageIndex = 0;
+        
+                function changeMessage() {
+                    if (messageIndex >= messages.length) {
+                        messageIndex = 0; // Loop back to the first message
+                    }
+                    overlayMessage.innerText = messages[messageIndex++];
+                    setTimeout(changeMessage, 8000 + Math.random() * 2000); // Schedule next update
+                }
+        
+                changeMessage();
+            }
+        
+            // Select a random text file URL and start updating messages
+            const selectedFileUrl = textFilesUrls[Math.floor(Math.random() * textFilesUrls.length)];
+            fetchTextFile(selectedFileUrl)
+                .then(messages => updateMessage(messages))
+                .catch(error => console.error('Failed to fetch text file:', error));
         
             const apiUrl = 'https://api.draftmerch.com/fnl_ima';
             const apiKey = 'x4ISPCpxA2ZXNqd7awV5a2SF7YlN5gu9OpVbIVA0';
@@ -449,9 +483,10 @@ let intervalvecID = null;
             })
             .catch(error => {
                 console.error('Error during image processing initiation:', error);
-            imageOverlay.classList.add('hidden'); // Hide the overlay on error
+                imageOverlay.classList.add('hidden'); // Hide the overlay on error
             });
         }
+        
         
         // Helper function to manage the active state of the buttons
         function setActiveButton(activeButton) {
