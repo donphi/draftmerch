@@ -22,6 +22,7 @@ let intervalvecID = null;
         const progressBarContainer = document.getElementById('progressBarContainer')
         const downloadContainer = document.getElementById('downloadContainer');
         const progressBar = document.getElementById('progressBar');
+        preloadTextFiles();
 
         // Define the WebSocket URL (replace with your own)
         const WEBSOCKET_URL = 'wss://web.draftmerch.com'; // Replace with your API Gateway WebSocket URL
@@ -823,6 +824,36 @@ let intervalvecID = null;
             waitingMessage.classList.add('hidden');
             downloadContainer.classList.add('hidden');
             resetProgressBar();
+        });
+
+        let preloadedMessages = [];
+
+        async function preloadTextFiles() {
+            const textFilesUrls = [
+                'https://draftmerch.com/text_data/messages/list.txt',
+                'https://draftmerch.com/text_data/messages/list2.txt',
+                'https://draftmerch.com/text_data/messages/list3.txt',
+                'https://draftmerch.com/text_data/messages/shortlist.txt',
+                'https://draftmerch.com/text_data/messages/shortlist2.txt',
+                'https://draftmerch.com/text_data/messages/shortlist3.txt'
+            ];
+
+            try {
+                const filesContents = await Promise.all(
+                    textFilesUrls.map(async (url) => {
+                        const response = await fetch(url);
+                        const text = await response.text();
+                        return text.split('\n');
+                    })
+                );
+                preloadedMessages = filesContents;
+            } catch (error) {
+                console.error('Failed to preload text files:', error);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', (event) => {
+            preloadTextFiles();
         });
         
         // Call the function with the duration in milliseconds, e.g., 5000 milliseconds for 5 seconds
