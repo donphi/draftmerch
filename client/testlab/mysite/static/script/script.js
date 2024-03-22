@@ -26,23 +26,30 @@ let intervalvecID = null;
 
         // Define the WebSocket URL (replace with your own)
         const WEBSOCKET_URL = 'wss://web.draftmerch.com'; // Replace with your API Gateway WebSocket URL
+        let websocket; // Define websocket variable globally to manage its state across the application
+        let reconnectAttempts = 0; // Initialize a counter for reconnect attempts
 
         // Function to initialize or re-initialize the WebSocket connection
         function initializeWebSocketConnection() {
+            // Check if websocket is already open and return to avoid multiple connections
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                return; // If the connection is already open, no need to initialize again
+            }
+
             websocket = new WebSocket(WEBSOCKET_URL);
-    
+
             websocket.onopen = function(event) {
                 console.log('WebSocket connection established:', event);
+                reconnectAttempts = 0; // Reset reconnect attempts on successful connection
                 // Optionally send a message to the server if needed
             };
-    
+
             websocket.onmessage = function(event) {
-                const message = JSON.parse(event.data);
-                console.log(`Received message at ${new Date().toISOString()}:`, message);
+                console.log(`Received message at ${new Date().toISOString()}:`, event.data);
 
                 try {
                     const message = JSON.parse(event.data);
-                    // Adjusted logic to check for renderId presence
+                    // Logic to handle different types of messages
                     if (message.status === "VectorComplete" && message.renderId) {
                         console.log('Websocket message received. Calling data function...');
                         localStorage.setItem('renderId', message.renderId);
@@ -56,13 +63,10 @@ let intervalvecID = null;
                     } else if (message.connectionId) {
                         localStorage.setItem('connectionId', message.connectionId);
                         console.log('Stored connectionId in local storage:', message.connectionId);
-                    // Handle progress updates specifically
                     } else if (message.type === "generateStatus" && message.renderId && message.renderStatus !== undefined) {
-                        // Update the progress bar with the renderStatus value
                         updateProgressBar(message.renderStatus);
                         console.log("WebSocket message received:", event.data);
                     } else if (message.type === "vectorStatus" && message.renderId && message.renderStatus !== undefined) {
-                        // Update the progress bar with the renderStatus value
                         updateProgressVectorBar(message.renderStatus);
                         console.log("WebSocket message received:", event.data);
                     } else {
@@ -72,19 +76,21 @@ let intervalvecID = null;
                     console.error('Error processing the WebSocket message:', e);
                 }
             };
-    
+
             websocket.onerror = function(event) {
                 console.error('WebSocket error:', event);
+                // Explicitly close on error to ensure clean state for reconnection
+                websocket.close();
             };
-    
+
             websocket.onclose = function(event) {
                 console.log('WebSocket connection closed:', event);
-                setTimeout(initializeWebSocketConnection, 1000); // Attempt to reconnect after 1 second
+                // Implement exponential backoff for reconnection attempts
+                var reconnectInterval = 1000 * Math.pow(2, reconnectAttempts);
+                setTimeout(initializeWebSocketConnection, reconnectInterval);
+                reconnectAttempts++; // Increment the reconnect attempt counter
             };
         }
-    
-        // Initialize WebSocket connection for the first time
-        initializeWebSocketConnection();
 
         // Hero dropdown listener
         document.getElementById('hero-dropdown').addEventListener('change', function() {
@@ -523,6 +529,7 @@ let intervalvecID = null;
                 console.error('Error during image processing initiation:', error);
                 imageOverlay.classList.add('hidden'); // Hide the overlay on error
             });
+            vectorizeSwitch.checked = false;
         }
         
         
@@ -855,6 +862,9 @@ let intervalvecID = null;
         window.addEventListener('DOMContentLoaded', (event) => {
             preloadTextFiles();
         });
+
+        // Initialize WebSocket connection for the first time
+        initializeWebSocketConnection();
         
         // Call the function with the duration in milliseconds, e.g., 5000 milliseconds for 5 seconds
 
