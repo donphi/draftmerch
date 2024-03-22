@@ -227,7 +227,7 @@ let intervalvecID = null;
             // Reset and disable the toggle switch
             vectorizeSwitch.disabled = true;
             vectorizeSwitch.checked = false;
-
+        
             // Hide UI elements indicating processing
             progressBarContainer.classList.remove('hidden');
             progressBarContainer.style.display = 'block';
@@ -235,18 +235,18 @@ let intervalvecID = null;
             vectorizeSwitchContainer.classList.add('hidden');
             downloadContainer.classList.add('hidden');
             form.classList.add('hidden');
-            imageContainer.innerHTML = '<p>Generating image, please wait...</p>';
+            imageContainer.innerHTML = '<p>Generating image, please wait...</p>'; // This message will be replaced by the fetched messages
             loading.classList.remove('hidden');
             waitingMessage.classList.remove('hidden');
             imageContainer.style.display = 'flex';
             console.log('Attempting to show progressBarContainer', progressBarContainer.classList, progressBarContainer.style.display);
-
+        
             // Temporarily remove the border for imageContainer
-            imageContainer.style.boxShadow = 'none'; // Add this line to remove the border
-
+            imageContainer.style.boxShadow = 'none';
+        
             // Retrieve the connectionId from local storage
             const connectionId = localStorage.getItem('connectionId');
-
+        
             if (!connectionId) {
                 console.error('No connectionId available for the API call.');
                 return;
@@ -263,6 +263,44 @@ let intervalvecID = null;
         
             console.log("Submitting data with connectionId:", bodyData);
         
+            // URLs of the text files
+            const textFilesUrls = [
+                'https://draftmerch.com/text_data/messages/shortlist.txt',
+                'https://draftmerch.com/text_data/messages/shortlist2.txt',
+                'https://draftmerch.com/text_data/messages/shortlist3.txt'
+            ];
+        
+            // Function to fetch and return text file content as an array of lines
+            async function fetchTextFile(url) {
+                const response = await fetch(url);
+                const text = await response.text();
+                return text.split('\n'); // Assuming each message is on a new line
+            }
+        
+            // Function to update the message periodically
+            async function updateMessage(messages) {
+                let messageIndex = 0;
+                const messageContainer = document.createElement('p'); // Create a new element to show messages
+                imageContainer.innerHTML = ''; // Clear existing content
+                imageContainer.appendChild(messageContainer); // Add the new message container to the imageContainer
+        
+                function changeMessage() {
+                    if (messageIndex >= messages.length) {
+                        messageIndex = 0; // Loop back to the first message
+                    }
+                    messageContainer.innerText = messages[messageIndex++];
+                    setTimeout(changeMessage, 8000 + Math.random() * 2000); // Schedule next update
+                }
+        
+                changeMessage();
+            }
+        
+            // Select a random text file URL and start updating messages
+            const selectedFileUrl = textFilesUrls[Math.floor(Math.random() * textFilesUrls.length)];
+            fetchTextFile(selectedFileUrl)
+                .then(messages => updateMessage(messages))
+                .catch(error => console.error('Failed to fetch text file:', error));
+        
             fetch(apiEndpoint, {
                 method: 'POST',
                 headers: {
@@ -273,18 +311,17 @@ let intervalvecID = null;
             })
             .then(response => {
                 // Assuming you process the response here and possibly
-                
                 // Restore the original border style
                 imageContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
             })
             .catch(error => {
                 console.error('Error submitting initial request:', error);
-                
                 // Restore the original box-shadow style even in case of an error
                 imageContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
             });
             // Note: No handling of the response here. Waiting for WebSocket notification.
         });
+        
 
         function fetchProcessedData() {
             // Log to check if the function is being called
