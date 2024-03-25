@@ -8,6 +8,7 @@ let intervalgenID = null;
 let intervalvecID = null;
 
     document.addEventListener('DOMContentLoaded', function() {
+        preloadTextFiles();
         const form = document.querySelector('form');
         const loading = document.getElementById('loading');
         const imageContainer = document.getElementById('imageContainer');
@@ -22,7 +23,6 @@ let intervalvecID = null;
         const progressBarContainer = document.getElementById('progressBarContainer')
         const downloadContainer = document.getElementById('downloadContainer');
         const progressBar = document.getElementById('progressBar');
-        preloadTextFiles();
 
         // Define the WebSocket URL (replace with your own)
         const WEBSOCKET_URL = 'wss://web.draftmerch.com'; // Replace with your API Gateway WebSocket URL
@@ -91,6 +91,9 @@ let intervalvecID = null;
                 reconnectAttempts++; // Increment the reconnect attempt counter
             };
         }
+
+        // Initialize WebSocket connection for the first time
+        initializeWebSocketConnection();
 
         // Hero dropdown listener
         document.getElementById('hero-dropdown').addEventListener('change', function() {
@@ -842,29 +845,41 @@ let intervalvecID = null;
                 'https://draftmerch.com/text_data/messages/list3.txt',
                 'https://draftmerch.com/text_data/messages/shortlist.txt',
                 'https://draftmerch.com/text_data/messages/shortlist2.txt',
-                'https://draftmerch.com/text_data/messages/shortlist3.txt'
+                'https://draftmerch.com/text_data/messages/shortlist3.txt',
+                'https://draftmerch.com/text_data/dropdown_color.txt',
+                'https://draftmerch.com/text_data/dropdown_hero.txt',
+                'https://draftmerch.com/text_data/dropdown_personality.txt',
+                'https://draftmerch.com/text_data/dropdown_sport.txt',
+                'https://draftmerch.com/text_data/dropdown_action.txt'
             ];
-
+        
+            // Function to fetch text file with retry logic
+            async function fetchWithRetry(url, retries = 3, backoff = 300) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const text = await response.text();
+                    return text.split('\n');
+                } catch (error) {
+                    if (retries > 0) {
+                        console.log(`Retrying ${url}...`);
+                        await new Promise(resolve => setTimeout(resolve, backoff));
+                        return fetchWithRetry(url, retries - 1, backoff * 2); // Exponential backoff
+                    } else {
+                        console.error(`Failed to fetch ${url} after retries:`, error);
+                        return []; // Return an empty array in case of ultimate failure
+                    }
+                }
+            }
+        
             try {
-                const filesContents = await Promise.all(
-                    textFilesUrls.map(async (url) => {
-                        const response = await fetch(url);
-                        const text = await response.text();
-                        return text.split('\n');
-                    })
-                );
-                preloadedMessages = filesContents;
+                const filesContentsPromises = textFilesUrls.map(url => fetchWithRetry(url));
+                const filesContents = await Promise.all(filesContentsPromises);
+                preloadedMessages = filesContents.flat(); // Flatten the array of arrays to a single array
             } catch (error) {
                 console.error('Failed to preload text files:', error);
             }
         }
-
-        window.addEventListener('DOMContentLoaded', (event) => {
-            preloadTextFiles();
-        });
-
-        // Initialize WebSocket connection for the first time
-        initializeWebSocketConnection();
         
         // Call the function with the duration in milliseconds, e.g., 5000 milliseconds for 5 seconds
 
