@@ -2,13 +2,18 @@
 <html>
 <head>
     <!-- Google tag (gtag.js) -->
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-S9Y0LVGKKF"></script>
     <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-S9Y0LVGKKF');
+    // Configuring Google Analytics with first-party cookie settings for draftmerch.com
+    gtag('config', 'G-S9Y0LVGKKF', {
+    'cookie_domain': 'draftmerch.com', // Sets cookies specifically for your domain
+    'cookie_flags': 'SameSite=None;Secure' // Ensures proper handling in a cross-site context with Secure flag for HTTPS
+    });
     </script>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
