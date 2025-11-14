@@ -32,12 +32,12 @@ To this day, that prompt remains a secret. However, if you're a fellow developer
 This project was a full-stack, serverless application.
 
 * **Frontend:** Hand-coded with love using **HTML, CSS, and vanilla JavaScript**.
-* **Backend Logic:** **Python** & **AWS Lambda**
-* **AI & Image Processing:** **OpenAI** & **OpenCV**
-* **Database:** **Amazon DynamoDB**
-* **API & Real-Time:** **AWS API Gateway** & **Websockets**
-* **CI/CD & Security:** **AWS CodeBuild**, **AWS CodePipeline**, & **AWS Secret Manager**
-* **Hosting:** **GitHub** (repository) & **AWS** (services)
+* **Backend Logic:** **Python** & **AWS Lambda** (a 12-stage pipeline).
+* **AI & Image Processing:** **OpenAI** & **OpenCV**.
+* **Database:** **Amazon DynamoDB**.
+* **API & Real-Time:** **AWS API Gateway** & **Websockets**.
+* **CI/CD Pipeline:** A seamless **CI/CD** (Continuous Integration/Continuous Deployment) pipeline using **AWS CodeBuild** & **AWS CodePipeline**. This provided automated, seamless updates from **GitHub** directly to the 12-stage **AWS Lambda** servers.
+* **Security:** **AWS Secret Manager**.
 
 ### Running This Code (Archive)
 
@@ -50,4 +50,4 @@ As this project is archived, it is no longer maintained. Running it would be a c
     * Setting up the **DynamoDB** tables.
     * Configuring **API Gateway** and **Websockets**.
     * Populating **AWS Secret Manager** with your **OpenAI** API keys and other credentials.
-    * Setting up the **CodePipeline** and **CodeBuild** for CI/CD.
+    * Rebuilding the **CodePipeline** and **CodeBuild** CI/CD process.
